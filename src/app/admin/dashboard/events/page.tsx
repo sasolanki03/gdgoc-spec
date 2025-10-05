@@ -167,7 +167,7 @@ export default function AdminEventsPage() {
                   {events.map((event) => {
                      const isPlaceholder = !event.imageUrl.startsWith('data:');
                      const image = isPlaceholder ? PlaceHolderImages.find(img => img.id === event.imageUrl) : null;
-                     const imageUrl = image ? image.imageUrl : event.imageUrl;
+                     const imageUrl = image ? image.imageUrl : (event.imageUrl || 'https://picsum.photos/seed/placeholder/64/64');
                      
                      return (
                         <TableRow key={event.id}>
