@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { Github, Twitter, Linkedin, Instagram, Discord } from 'lucide-react';
+import { Github, Twitter, Linkedin, Instagram } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import type { TeamMember, SocialLink } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
@@ -9,12 +9,24 @@ interface TeamMemberCardProps {
   member: TeamMember;
 }
 
+const DiscordIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      {...props}
+    >
+      <path d="M20.317,4.3698a19.7913,19.7913,0,0,0-4.8852-1.5152.0741.0741,0,0,0-.0785.0371A12.111,12.111,0,0,0,12,4.7222a12.0837,12.0837,0,0,0-3.3533-1.83.0741.0741,0,0,0-.0785-.0371,19.7363,19.7363,0,0,0-4.8852,1.5152.069.069,0,0,0-.0321.0252.0759.0759,0,0,0-.01.0741,18.9666,18.9666,0,0,0-2.17,10.0445.0741.0741,0,0,0,.03.066,18.01,18.01,0,0,0,4.9158,2.9461.0741.0741,0,0,0,.0883-.0171,13.821,13.821,0,0,0,1.385-2.0084.0741.0741,0,0,0-.0443-.1043,10.4578,10.4578,0,0,1-1.425-1.1448.0741.0741,0,0,0-.0962-.0171,12.0034,12.0034,0,0,0-2.31.8448.0741.0741,0,0,0-.02,0,14.0414,14.0414,0,0,0-1.5226-1.59.0741.0741,0,0,0-.01-.0171,13.001,13.001,0,0,1,1.5492,0,.0741.0741,0,0,0,.0252,0,12.0837,12.0837,0,0,0,2.3364-.8448.0741.0741,0,0,0-.0962.0171,10.4578,10.4578,0,0,1-1.425,1.1448.0741.0741,0,0,0-.0443.1043,13.821,13.821,0,0,0,1.385,2.0084.0741.0741,0,0,0,.0883.0171,18.01,18.01,0,0,0,4.9158-2.9461.0741.0741,0,0,0,.03-.066,18.9666,18.9666,0,0,0-2.17-10.0445.0759.0759,0,0,0-.01-.0741A.069.069,0,0,0,20.317,4.3698ZM8.02,15.3312a2.4922,2.4922,0,0,1-2.4922-2.4922,2.4922,2.4922,0,0,1,2.4922-2.4922,2.4922,2.4922,0,0,1,0,4.9844Zm7.96,0a2.4922,2.4922,0,0,1-2.4922-2.4922,2.4922,2.4922,0,0,1,2.4922-2.4922,2.4922,2.4922,0,0,1,0,4.9844Z" />
+    </svg>
+);
+
+
 const iconComponents: Record<SocialLink['name'], React.ElementType> = {
   GitHub: Github,
   Twitter: Twitter,
   LinkedIn: Linkedin,
   Instagram: Instagram,
-  Discord: Discord,
+  Discord: DiscordIcon,
 };
 
 export function TeamMemberCard({ member }: TeamMemberCardProps) {
