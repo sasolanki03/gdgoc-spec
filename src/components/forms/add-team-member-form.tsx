@@ -18,6 +18,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import type { TeamMember } from '@/lib/types';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
+
+const teamPhotos = PlaceHolderImages.filter(p => p.id.startsWith('team-') || p.id.startsWith('leader-'));
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -26,10 +29,11 @@ const formSchema = z.object({
   branch: z.string().min(1, 'Please select a branch.'),
   year: z.string().min(1, 'Please select a year.'),
   bio: z.string().min(10, 'Bio must be at least 10 characters.'),
+  photo: z.string().min(1, 'Please select a photo.'),
 });
 
 interface AddTeamMemberFormProps {
-  onSuccess: (newMember: Omit<TeamMember, 'id' | 'photo' | 'socials'>) => void;
+  onSuccess: (newMember: Omit<TeamMember, 'id' | 'socials'>) => void;
 }
 
 export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
@@ -44,12 +48,12 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
       branch: '',
       year: '',
       bio: '',
+      photo: 'leader-1',
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     // This is where you would call your server action to create in Firestore.
-    // e.g., await createTeamMember(values);
     console.log(values);
 
     toast({
@@ -64,6 +68,30 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="photo"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Photo</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a photo" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {teamPhotos.map((photo) => (
+                    <SelectItem key={photo.id} value={photo.id}>
+                      {photo.description}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <div className="grid grid-cols-2 gap-4">
             <FormField
             control={form.control}

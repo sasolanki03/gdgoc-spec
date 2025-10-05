@@ -60,17 +60,23 @@ export default function AdminTeamPage() {
     const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
     const { toast } = useToast();
 
-    const handleAddMember = (newMemberData: Omit<TeamMember, 'id' | 'photo' | 'socials'>) => {
+    const handleAddMember = (newMemberData: Omit<TeamMember, 'id' | 'socials'>) => {
       const newMember: TeamMember = {
         id: (teamMembers.length + 1).toString(),
         ...newMemberData,
-        photo: 'leader-1', // Default photo for new members
         socials: [], // Default empty socials for new members
       };
 
       setTeamMembers((prevMembers) => [...prevMembers, newMember]);
       setIsAddDialogOpen(false);
     };
+
+    const handleEditMember = (updatedMember: TeamMember) => {
+        setTeamMembers((prevMembers) => 
+            prevMembers.map(member => member.id === updatedMember.id ? updatedMember : member)
+        );
+        setIsEditDialogOpen(false);
+    }
 
     const handleEditClick = (member: TeamMember) => {
         setSelectedMember(member);
@@ -97,7 +103,7 @@ export default function AdminTeamPage() {
                 </div>
                 <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button size="sm" className="gap-1">
+                    <Button size="sm" className="gap-1" onClick={() => setIsAddDialogOpen(true)}>
                         <PlusCircle className="h-3.5 w-3.5" />
                         <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                         Add Member
@@ -214,7 +220,7 @@ export default function AdminTeamPage() {
                 </DialogHeader>
                 <EditTeamMemberForm 
                     member={selectedMember} 
-                    onSuccess={() => setIsEditDialogOpen(false)} 
+                    onSuccess={handleEditMember} 
                 />
                 </DialogContent>
             </Dialog>

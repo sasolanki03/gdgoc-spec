@@ -18,6 +18,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import type { TeamMember } from '@/lib/types';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
+
+const teamPhotos = PlaceHolderImages.filter(p => p.id.startsWith('team-') || p.id.startsWith('leader-'));
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -26,11 +29,12 @@ const formSchema = z.object({
   branch: z.string().min(1, 'Please select a branch.'),
   year: z.string().min(1, 'Please select a year.'),
   bio: z.string().min(10, 'Bio must be at least 10 characters.'),
+  photo: z.string().min(1, 'Please select a photo.'),
 });
 
 interface EditTeamMemberFormProps {
   member: TeamMember;
-  onSuccess: () => void;
+  onSuccess: (updatedMember: TeamMember) => void;
 }
 
 export function EditTeamMemberForm({ member, onSuccess }: EditTeamMemberFormProps) {
@@ -45,25 +49,50 @@ export function EditTeamMemberForm({ member, onSuccess }: EditTeamMemberFormProp
       branch: member.branch,
       year: member.year,
       bio: member.bio,
+      photo: member.photo,
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     // This is where you would call your server action to update in Firestore.
-    // e.g., await updateTeamMember({ ...values, id: member.id });
-    console.log({ ...values, id: member.id });
+    const updatedMember = { ...member, ...values };
+    console.log(updatedMember);
 
     toast({
       title: 'Member Updated!',
       description: `${values.name}'s information has been updated.`,
     });
     
-    onSuccess();
+    onSuccess(updatedMember);
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="photo"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Photo</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a photo" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {teamPhotos.map((photo) => (
+                    <SelectItem key={photo.id} value={photo.id}>
+                      {photo.description}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <div className="grid grid-cols-2 gap-4">
             <FormField
             control={form.control}
