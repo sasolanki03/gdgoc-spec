@@ -34,13 +34,17 @@ const formSchema = z.object({
   year: z.string().min(1, 'Please select a year.'),
   bio: z.string().min(10, 'Bio must be at least 10 characters.'),
   photo: z.any()
-    .optional() // Make photo optional for editing
+    .optional()
     .refine((files) => !files || files.length === 0 || files?.[0]?.size <= MAX_FILE_SIZE, `Max file size is 4MB.`)
     .refine(
       (files) => !files || files.length === 0 || ACCEPTED_IMAGE_TYPES.includes(files?.[0]?.type),
       ".jpg, .jpeg, .png and .webp files are accepted."
     ),
 });
+
+type FormValues = Omit<z.infer<typeof formSchema>, 'photo'> & {
+    photo: string;
+};
 
 interface EditTeamMemberFormProps {
   member: TeamMember;
@@ -267,7 +271,7 @@ export function EditTeamMemberForm({ member, onSuccess }: EditTeamMemberFormProp
           )}
         />
         
-        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting || !form.formState.isValid}>
+        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
           {form.formState.isSubmitting ? 'Saving...' : 'Save Changes'}
         </Button>
       </form>
