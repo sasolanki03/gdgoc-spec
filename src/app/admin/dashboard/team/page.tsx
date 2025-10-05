@@ -4,6 +4,9 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { PlusCircle, MoreHorizontal, Trash } from 'lucide-react';
+import { collection } from 'firebase/firestore';
+import { useCollection, useFirestore } from '@/firebase';
+
 import {
     Table,
     TableBody,
@@ -47,35 +50,39 @@ import {
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu"
   import { Button } from '@/components/ui/button';
-  import { teamMembers as initialTeamMembers } from '@/lib/placeholder-data';
   import type { TeamMember } from '@/lib/types';
   import { EditTeamMemberForm } from '@/components/forms/edit-team-member-form';
   import { AddTeamMemberForm } from '@/components/forms/add-team-member-form';
   import { useToast } from '@/hooks/use-toast';
+  import { deleteTeamMember } from '@/app/actions/team';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminTeamPage() {
-    const [teamMembers, setTeamMembers] = useState<TeamMember[]>(initialTeamMembers);
+    const firestore = useFirestore();
+    const { data: teamMembers, loading } = useCollection<TeamMember>(
+        firestore ? collection(firestore, 'team') : null
+    );
+
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
     const { toast } = useToast();
 
-    const handleAddMember = (newMemberData: Omit<TeamMember, 'id' | 'socials'>) => {
-      const newMember: TeamMember = {
-        id: (teamMembers.length + 1).toString(),
-        ...newMemberData,
-        socials: [], // Default empty socials for new members
-      };
+    const handleAddSuccess = () => {
+        setIsAddDialogOpen(false);
+        toast({
+            title: 'Member Added!',
+            description: `A new member has been added to the team.`,
+        });
+    }
 
-      setTeamMembers((prevMembers) => [...prevMembers, newMember]);
-      setIsAddDialogOpen(false);
-    };
-
-    const handleEditMember = (updatedMember: TeamMember) => {
-        setTeamMembers((prevMembers) => 
-            prevMembers.map(member => member.id === updatedMember.id ? updatedMember : member)
-        );
+    const handleEditSuccess = () => {
         setIsEditDialogOpen(false);
+        setSelectedMember(null);
+        toast({
+            title: 'Member Updated!',
+            description: `The team member's details have been saved.`,
+        });
     }
 
     const handleEditClick = (member: TeamMember) => {
@@ -83,13 +90,20 @@ export default function AdminTeamPage() {
         setIsEditDialogOpen(true);
     };
 
-    const handleDeleteMember = (memberId: string) => {
-      setTeamMembers((prevMembers) => prevMembers.filter(member => member.id !== memberId));
-
-      toast({
-        title: 'Member Deleted',
-        description: 'The team member has been removed.',
-      });
+    const handleDeleteMember = async (memberId: string, memberName: string) => {
+      const result = await deleteTeamMember(memberId);
+      if (result.success) {
+        toast({
+          title: 'Member Deleted',
+          description: `${memberName} has been removed from the team.`,
+        });
+      } else {
+        toast({
+            variant: 'destructive',
+            title: 'Error Deleting Member',
+            description: result.error,
+        });
+      }
     };
 
     return (
@@ -115,7 +129,7 @@ export default function AdminTeamPage() {
                         <DialogTitle className="font-headline text-2xl">Add New Team Member</DialogTitle>
                     </DialogHeader>
                     <AddTeamMemberForm 
-                        onSuccess={handleAddMember} 
+                        onSuccess={handleAddSuccess} 
                     />
                   </DialogContent>
                 </Dialog>
@@ -142,7 +156,22 @@ export default function AdminTeamPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {teamMembers.map((member) => (
+                  {loading ? (
+                    [...Array(5)].map((_, i) => (
+                        <TableRow key={i}>
+                            <TableCell className="hidden sm:table-cell">
+                                <Skeleton className="h-16 w-16 rounded-full" />
+                            </TableCell>
+                            <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                            <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                            <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-28" /></TableCell>
+                            <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-32" /></TableCell>
+                            <TableCell>
+                                <Skeleton className="h-8 w-8" />
+                            </TableCell>
+                        </TableRow>
+                    ))
+                  ) : teamMembers && teamMembers.map((member) => (
                         <TableRow key={member.id}>
                             <TableCell className="hidden sm:table-cell">
                                 <Image
@@ -189,7 +218,7 @@ export default function AdminTeamPage() {
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={() => handleDeleteMember(member.id)} className="bg-destructive hover:bg-destructive/90">
+                                        <AlertDialogAction onClick={() => handleDeleteMember(member.id, member.name)} className="bg-destructive hover:bg-destructive/90">
                                             Delete
                                         </AlertDialogAction>
                                         </AlertDialogFooter>
@@ -203,19 +232,22 @@ export default function AdminTeamPage() {
             </CardContent>
             <CardFooter>
               <div className="text-xs text-muted-foreground">
-                Showing <strong>1-{teamMembers.length}</strong> of <strong>{teamMembers.length}</strong> members
+                Showing <strong>1-{teamMembers?.length || 0}</strong> of <strong>{teamMembers?.length || 0}</strong> members
               </div>
             </CardFooter>
           </Card>
            {selectedMember && (
-             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+             <Dialog open={isEditDialogOpen} onOpenChange={(isOpen) => {
+                if(!isOpen) setSelectedMember(null);
+                setIsEditDialogOpen(isOpen);
+             }}>
                 <DialogContent className="sm:max-w-[480px]">
                 <DialogHeader>
                     <DialogTitle className="font-headline text-2xl">Edit {selectedMember.name}</DialogTitle>
                 </DialogHeader>
                 <EditTeamMemberForm 
                     member={selectedMember} 
-                    onSuccess={handleEditMember} 
+                    onSuccess={handleEditSuccess}
                 />
                 </DialogContent>
             </Dialog>

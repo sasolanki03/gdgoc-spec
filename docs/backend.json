@@ -37,7 +37,9 @@
               "type": "string"
             }
           },
-          "required": ["name"]
+          "required": [
+            "name"
+          ]
         },
         "totalPoints": {
           "type": "number"
@@ -55,7 +57,77 @@
           "type": "string"
         }
       },
-      "required": ["student", "totalPoints", "skillBadges", "quests", "genAIGames", "profileId"]
+      "required": [
+        "student",
+        "totalPoints",
+        "skillBadges",
+        "quests",
+        "genAIGames",
+        "profileId"
+      ]
+    },
+    "team_member": {
+      "title": "Team Member",
+      "description": "Represents a member of the GDG core team.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Full name of the team member."
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "Lead",
+            "Co-Lead",
+            "Technical Team",
+            "Management Team",
+            "Design Team",
+            "Core Team"
+          ]
+        },
+        "position": {
+          "type": "string",
+          "description": "The specific position or title (e.g., Web Lead, Android Lead)."
+        },
+        "branch": {
+          "type": "string"
+        },
+        "year": {
+          "type": "string"
+        },
+        "photo": {
+          "type": "string",
+          "description": "A data URI of the member's photo."
+        },
+        "bio": {
+          "type": "string",
+          "description": "A short biography of the member."
+        },
+        "socials": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "href": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "name",
+        "role",
+        "position",
+        "branch",
+        "year",
+        "photo",
+        "bio"
+      ]
     }
   },
   "auth": {
@@ -69,6 +141,12 @@
         "$ref": "#/entities/leaderboard_entry"
       },
       "description": "Stores the leaderboard entries for the Google Cloud Career Practitioner campaign."
+    },
+    "/team/{member}": {
+      "schema": {
+        "$ref": "#/entities/team_member"
+      },
+      "description": "Stores the information for each core team member."
     }
   }
 }

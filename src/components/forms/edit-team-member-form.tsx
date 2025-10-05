@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { updateTeamMember } from '@/app/actions/team';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -42,13 +43,10 @@ const formSchema = z.object({
     ),
 });
 
-type FormValues = Omit<z.infer<typeof formSchema>, 'photo'> & {
-    photo: string;
-};
 
 interface EditTeamMemberFormProps {
   member: TeamMember;
-  onSuccess: (updatedMember: TeamMember) => void;
+  onSuccess: () => void;
 }
 
 export function EditTeamMemberForm({ member, onSuccess }: EditTeamMemberFormProps) {
@@ -99,24 +97,28 @@ export function EditTeamMemberForm({ member, onSuccess }: EditTeamMemberFormProp
         photoDataUrl = await readFileAsDataURL(file);
       }
 
-      const updatedMember = {
-        ...member,
+      const updatedMemberData = {
         ...values,
         photo: photoDataUrl,
       };
 
-      toast({
-        title: 'Member Updated!',
-        description: `${values.name}'s information has been updated.`,
-      });
+      const result = await updateTeamMember(member.id, updatedMemberData);
 
-      onSuccess(updatedMember);
+      if (result.success) {
+        onSuccess();
+      } else {
+        toast({
+            variant: 'destructive',
+            title: 'Error updating member',
+            description: result.error,
+        });
+      }
     } catch (error) {
-      console.error("Error processing file:", error);
+      console.error("Error processing form:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Could not process the photo file."
+        description: "Could not process the form."
       });
     }
   };

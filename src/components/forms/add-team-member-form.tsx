@@ -22,6 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { TeamMember } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { User } from 'lucide-react';
+import { addTeamMember } from '@/app/actions/team';
 
 
 const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB
@@ -48,7 +49,7 @@ type FormValues = Omit<z.infer<typeof formSchema>, 'photo'> & {
 };
 
 interface AddTeamMemberFormProps {
-  onSuccess: (newMember: Omit<TeamMember, 'id' | 'socials'>) => void;
+  onSuccess: () => void;
 }
 
 export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
@@ -99,26 +100,32 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
     try {
       const photoDataUrl = await readFileAsDataURL(file);
       
-      const newMemberData: FormValues = {
+      const newMemberData: Omit<TeamMember, 'id' | 'socials'> = {
           ...values,
           photo: photoDataUrl,
+          // Socials will be empty by default, can be edited later
       };
 
-      toast({
-        title: 'Member Added!',
-        description: `${values.name} has been added to the team.`,
-      });
-      
-      onSuccess(newMemberData);
-      form.reset();
-      setPhotoPreview(null);
+      const result = await addTeamMember(newMemberData);
+
+      if (result.success) {
+        onSuccess();
+        form.reset();
+        setPhotoPreview(null);
+      } else {
+        toast({
+            variant: "destructive",
+            title: "Error adding member",
+            description: result.error
+        });
+      }
 
     } catch (error) {
-      console.error("Error reading file:", error);
+      console.error("Error processing form:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Could not process the photo file."
+        description: "Could not process the form."
       })
     }
   };
@@ -275,7 +282,7 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
           )}
         />
         
-        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting || !form.formState.isValid}>
           {form.formState.isSubmitting ? 'Adding...' : 'Add Member'}
         </Button>
       </form>
