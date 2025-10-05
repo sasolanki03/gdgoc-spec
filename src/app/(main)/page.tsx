@@ -40,29 +40,9 @@ const galleryImages = PlaceHolderImages.filter(img => galleryImageIds.includes(i
 
 export default function HomePage() {
   const upcomingEvents = events.filter(e => e.status === 'Upcoming').slice(0, 3);
-  const heroBanner = PlaceHolderImages.find(img => img.id === 'home-banner');
 
   return (
     <div className="flex flex-col">
-      {/* Hero Banner Section */}
-      {heroBanner && (
-        <section className="bg-background">
-          <div className="container max-w-7xl px-0 sm:px-6">
-            <div className="relative aspect-[21/9] sm:aspect-[1200/400] w-full">
-              <Image
-                src={heroBanner.imageUrl}
-                alt={heroBanner.description}
-                fill
-                sizes="(max-width: 768px) 100vw, 1200px"
-                className="object-cover"
-                data-ai-hint={heroBanner.imageHint}
-                priority
-              />
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* Hero Section */}
       <section className="relative py-20 md:py-32 bg-card">
         <div className="container max-w-7xl text-center">
