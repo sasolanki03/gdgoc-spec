@@ -16,21 +16,25 @@ const whyJoinPoints = [
     icon: Group,
     title: 'Connect with Peers',
     description: 'Network with fellow students who are passionate about technology.',
+    color: 'text-google-blue',
   },
   {
     icon: Mic,
     title: 'Expert-Led Workshops',
     description: 'Learn new skills directly from industry experts and Google Developers.',
+    color: 'text-google-green',
   },
   {
     icon: Lightbulb,
     title: 'Build Real Projects',
     description: 'Apply your skills to solve real-world problems in hackathons and projects.',
+    color: 'text-google-yellow',
   },
   {
     icon: Award,
     title: 'Career Growth',
     description: 'Enhance your resume, and get a head start in your tech career.',
+    color: 'text-google-red',
   },
 ];
 
@@ -47,7 +51,7 @@ export default function HomePage() {
         <div className="container max-w-7xl text-center">
             
             <h1 className="text-4xl md:text-6xl font-extrabold font-headline tracking-tight">
-                Google developer group
+                Google developer Group
             </h1>
             <p className="text-2xl md:text-4xl font-normal text-muted-foreground">on Campus</p>
             <p className="mt-4 text-2xl md:text-3xl font-semibold text-primary">
@@ -132,8 +136,8 @@ export default function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {whyJoinPoints.map((point) => (
               <div key={point.title} className="text-center p-6">
-                <div className="flex items-center justify-center h-16 w-16 rounded-full bg-primary/10 mx-auto mb-4">
-                    <point.icon className="h-8 w-8 text-primary" />
+                <div className={`flex items-center justify-center h-16 w-16 rounded-full bg-opacity-10 mx-auto mb-4 ${point.color.replace('text-', 'bg-')}/10`}>
+                    <point.icon className={`h-8 w-8 ${point.color}`} />
                 </div>
                 <h3 className="text-xl font-semibold font-headline">{point.title}</h3>
                 <p className="mt-2 text-muted-foreground">{point.description}</p>
