@@ -45,7 +45,7 @@ import {
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu"
   import { Button } from '@/components/ui/button';
-  import { teamMembers } from '@/lib/placeholder-data';
+  import { teamMembers as initialTeamMembers } from '@/lib/placeholder-data';
   import Image from 'next/image';
   import { PlaceHolderImages } from '@/lib/placeholder-images';
   import type { TeamMember } from '@/lib/types';
@@ -54,6 +54,7 @@ import {
   import { useToast } from '@/hooks/use-toast';
 
 export default function AdminTeamPage() {
+    const [teamMembers, setTeamMembers] = useState<TeamMember[]>(initialTeamMembers);
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
@@ -68,6 +69,8 @@ export default function AdminTeamPage() {
       // This is where you would call your server action to delete from Firestore.
       // e.g., await deleteTeamMember(memberId);
       console.log(`Deleting member ${memberId}`);
+
+      setTeamMembers((prevMembers) => prevMembers.filter(member => member.id !== memberId));
 
       toast({
         title: 'Member Deleted',
