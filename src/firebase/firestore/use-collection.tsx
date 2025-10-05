@@ -8,9 +8,18 @@ import {
   DocumentData,
   FirestoreError,
   QuerySnapshot,
+  FirestoreDataConverter,
 } from 'firebase/firestore';
 
-export function useCollection<T>(query: Query<T> | null) {
+const getConverter = <T,>(): FirestoreDataConverter<T> => ({
+    toFirestore: (data: T): DocumentData => data as DocumentData,
+    fromFirestore: (snapshot, options) => {
+        const data = snapshot.data(options);
+        return { ...data, id: snapshot.id } as T;
+    },
+});
+
+export function useCollection<T>(query: Query<DocumentData> | null) {
   const [data, setData] = useState<T[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<FirestoreError | null>(null);
@@ -21,13 +30,16 @@ export function useCollection<T>(query: Query<T> | null) {
       setLoading(false);
       return;
     }
+    
+    const converter = getConverter<T>();
+    const finalQuery = query.withConverter(converter);
 
     const unsubscribe = onSnapshot(
-      query,
+      finalQuery,
       (snapshot: QuerySnapshot<T>) => {
         const result: T[] = [];
         snapshot.forEach((doc) => {
-          result.push({ ...doc.data(), id: doc.id });
+          result.push(doc.data());
         });
         setData(result);
         setLoading(false);
