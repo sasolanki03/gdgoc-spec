@@ -73,7 +73,6 @@ export function EditTeamMemberForm({ member, onSuccess }: EditTeamMemberFormProp
         setPhotoPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
-      form.trigger('photo');
     }
   };
 

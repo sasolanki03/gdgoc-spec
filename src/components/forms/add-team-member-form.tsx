@@ -77,7 +77,6 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
         setPhotoPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
-      form.trigger('photo');
     } else {
         setPhotoPreview(null);
     }
