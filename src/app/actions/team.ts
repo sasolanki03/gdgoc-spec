@@ -63,5 +63,3 @@ export async function deleteTeamMember(id: string) {
         return { success: false, error: error.message };
     }
 }
-
-    
