@@ -50,19 +50,21 @@ export function TeamMemberCard({ member }: TeamMemberCardProps) {
         <h3 className="text-xl font-bold font-headline">{member.name}</h3>
         <p className="text-primary">{member.position}</p>
         <p className="mt-4 flex-grow text-sm text-muted-foreground">{member.bio}</p>
-        <div className="mt-4 flex items-center space-x-2">
-          {member.socials.map((social) => {
-            const Icon = iconComponents[social.name];
-            return (
-              <Button key={social.name} variant="ghost" size="icon" asChild>
-                <a href={social.href} target="_blank" rel="noopener noreferrer">
-                  <Icon className="h-5 w-5" />
-                  <span className="sr-only">{social.name}</span>
-                </a>
-              </Button>
-            );
-          })}
-        </div>
+        {member.socials && member.socials.length > 0 && (
+          <div className="mt-4 flex items-center space-x-2">
+            {member.socials.map((social) => {
+              const Icon = iconComponents[social.name];
+              return (
+                <Button key={social.name} variant="ghost" size="icon" asChild>
+                  <a href={social.href} target="_blank" rel="noopener noreferrer">
+                    <Icon className="h-5 w-5" />
+                    <span className="sr-only">{social.name}</span>
+                  </a>
+                </Button>
+              );
+            })}
+          </div>
+        )}
       </div>
     </Card>
   );
