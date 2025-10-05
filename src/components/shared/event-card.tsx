@@ -1,3 +1,4 @@
+
 import Image from 'next/image';
 import { Calendar, MapPin } from 'lucide-react';
 
@@ -12,22 +13,22 @@ interface EventCardProps {
 }
 
 export function EventCard({ event }: EventCardProps) {
-  const image = PlaceHolderImages.find(img => img.id === event.imageUrl);
+    const isPlaceholder = !event.imageUrl.startsWith('data:');
+    const image = isPlaceholder ? PlaceHolderImages.find(img => img.id === event.imageUrl) : null;
+    const imageUrl = image ? image.imageUrl : event.imageUrl;
 
   return (
     <Card className="overflow-hidden flex flex-col h-full transition-transform transform hover:-translate-y-2 hover:shadow-xl">
       <CardHeader className="p-0">
-        {image && (
-          <div className="relative h-48 w-full">
+        <div className="relative h-48 w-full">
             <Image
-              src={image.imageUrl}
-              alt={event.title}
-              fill
-              className="object-cover"
-              data-ai-hint={image.imageHint}
+                src={imageUrl}
+                alt={event.title}
+                fill
+                className="object-cover"
+                data-ai-hint={image?.imageHint || 'event banner'}
             />
-          </div>
-        )}
+        </div>
         <div className="p-6 pb-2">
             <Badge variant={event.status === 'Upcoming' ? 'default' : 'secondary'} className={`absolute top-4 right-4 ${event.status === 'Upcoming' ? 'bg-google-green hover:bg-google-green/90' : ''}`}>
                 {event.status}
@@ -58,3 +59,5 @@ export function EventCard({ event }: EventCardProps) {
     </Card>
   );
 }
+
+    

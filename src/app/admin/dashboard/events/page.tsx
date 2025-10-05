@@ -75,14 +75,15 @@ export default function AdminEventsPage() {
       });
     };
 
-    const handleEditEvent = (updatedEvent: Event) => {
+    const handleEditEvent = (updatedEventData: Omit<Event, 'id'>) => {
         setEvents((prevEvents) => 
-            prevEvents.map(event => event.id === updatedEvent.id ? updatedEvent : event)
+            prevEvents.map(event => event.id === selectedEvent!.id ? { ...selectedEvent!, ...updatedEventData } : event)
         );
         setIsEditDialogOpen(false);
+        setSelectedEvent(null);
         toast({
             title: 'Event Updated!',
-            description: `${updatedEvent.title}'s details have been saved.`,
+            description: `${updatedEventData.title}'s details have been saved.`,
         });
     }
 
@@ -150,21 +151,20 @@ export default function AdminEventsPage() {
                 </TableHeader>
                 <TableBody>
                   {events.map((event) => {
-                     const image = PlaceHolderImages.find(img => img.id === event.imageUrl);
+                     const isPlaceholder = !event.imageUrl.startsWith('data:');
+                     const image = isPlaceholder ? PlaceHolderImages.find(img => img.id === event.imageUrl) : null;
+                     const imageUrl = image ? image.imageUrl : event.imageUrl;
+                     
                      return (
                         <TableRow key={event.id}>
                             <TableCell className="hidden sm:table-cell">
-                                {image ? 
-                                    <Image
-                                        alt={event.title}
-                                        className="aspect-square rounded-md object-cover"
-                                        height="64"
-                                        src={image.imageUrl}
-                                        width="64"
-                                    />
-                                :
-                                    <div className="aspect-square rounded-md bg-muted w-16 h-16" />
-                                }
+                                <Image
+                                    alt={event.title}
+                                    className="aspect-square rounded-md object-cover"
+                                    height="64"
+                                    src={imageUrl}
+                                    width="64"
+                                />
                             </TableCell>
                             <TableCell className="font-medium">{event.title}</TableCell>
                             <TableCell>
@@ -224,7 +224,10 @@ export default function AdminEventsPage() {
             </CardFooter>
           </Card>
           {selectedEvent && (
-            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+            <Dialog open={isEditDialogOpen} onOpenChange={(isOpen) => {
+                setIsEditDialogOpen(isOpen);
+                if (!isOpen) setSelectedEvent(null);
+            }}>
                 <DialogContent className="sm:max-w-xl">
                     <DialogHeader>
                         <DialogTitle className="font-headline text-2xl">Edit {selectedEvent.title}</DialogTitle>
@@ -236,3 +239,5 @@ export default function AdminEventsPage() {
         </>
     );
 }
+
+    
