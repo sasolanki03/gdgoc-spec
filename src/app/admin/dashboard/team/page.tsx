@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import { PlusCircle, MoreHorizontal } from 'lucide-react';
 import {
     Table,
@@ -16,6 +19,13 @@ import {
     CardTitle,
   } from "@/components/ui/card"
   import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+  } from "@/components/ui/dialog"
+  import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
@@ -26,9 +36,20 @@ import {
   import { teamMembers } from '@/lib/placeholder-data';
   import Image from 'next/image';
   import { PlaceHolderImages } from '@/lib/placeholder-images';
+  import type { TeamMember } from '@/lib/types';
+  import { EditTeamMemberForm } from '@/components/forms/edit-team-member-form';
 
 export default function AdminTeamPage() {
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
+
+    const handleEditClick = (member: TeamMember) => {
+        setSelectedMember(member);
+        setIsEditDialogOpen(true);
+    };
+
     return (
+      <>
         <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -94,7 +115,9 @@ export default function AdminTeamPage() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                    <DropdownMenuItem>Edit</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleEditClick(member)}>
+                                        Edit
+                                    </DropdownMenuItem>
                                     <DropdownMenuItem>Delete</DropdownMenuItem>
                                 </DropdownMenuContent>
                                 </DropdownMenu>
@@ -111,5 +134,19 @@ export default function AdminTeamPage() {
               </div>
             </CardFooter>
           </Card>
+           {selectedMember && (
+             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                <DialogContent className="sm:max-w-[480px]">
+                <DialogHeader>
+                    <DialogTitle className="font-headline text-2xl">Edit {selectedMember.name}</DialogTitle>
+                </DialogHeader>
+                <EditTeamMemberForm 
+                    member={selectedMember} 
+                    onSuccess={() => setIsEditDialogOpen(false)} 
+                />
+                </DialogContent>
+            </Dialog>
+           )}
+        </>
     );
 }
