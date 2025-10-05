@@ -1,8 +1,8 @@
+
 import Image from 'next/image';
 import { Github, Twitter, Linkedin, Instagram } from 'lucide-react';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import type { TeamMember, SocialLink } from '@/lib/types';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 interface TeamMemberCardProps {
@@ -30,20 +30,16 @@ const iconComponents: Record<SocialLink['name'], React.ElementType> = {
 };
 
 export function TeamMemberCard({ member }: TeamMemberCardProps) {
-  const image = PlaceHolderImages.find(img => img.id === member.photo);
 
   return (
     <Card className="group relative overflow-hidden text-center">
       <div className="relative aspect-square">
-        {image && (
-          <Image
-            src={image.imageUrl}
+        <Image
+            src={member.photo}
             alt={member.name}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-110"
-            data-ai-hint={image.imageHint}
-          />
-        )}
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
         <div className="absolute bottom-0 left-0 right-0 p-4">
           <h3 className="text-lg font-bold text-white font-headline">{member.name}</h3>

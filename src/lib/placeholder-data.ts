@@ -1,4 +1,13 @@
+
 import type { TeamMember, Event, Resource, FaqItem, LeaderboardEntry } from '@/lib/types';
+import { PlaceHolderImages } from './placeholder-images';
+
+// Function to get image URL from placeholder ID
+const getImageUrl = (id: string) => {
+  const image = PlaceHolderImages.find(img => img.id === id);
+  return image ? image.imageUrl : 'https://picsum.photos/seed/placeholder/400/400';
+};
+
 
 export const teamMembers: TeamMember[] = [
   {
@@ -8,7 +17,7 @@ export const teamMembers: TeamMember[] = [
     position: 'GDG Lead',
     branch: 'Computer Engineering',
     year: 'Final Year',
-    photo: 'team-lead',
+    photo: getImageUrl('team-lead'),
     bio: 'Passionate about building communities and exploring new technologies. Focussing on Cloud and AI.',
     socials: [
       { name: 'LinkedIn', href: '#' },
@@ -23,7 +32,7 @@ export const teamMembers: TeamMember[] = [
     position: 'GDG Co-Lead',
     branch: 'Information Technology',
     year: 'Third Year',
-    photo: 'team-co-lead',
+    photo: getImageUrl('team-co-lead'),
     bio: 'A design enthusiast and frontend developer who loves creating beautiful and intuitive user interfaces.',
     socials: [
       { name: 'LinkedIn', href: '#' },
@@ -38,7 +47,7 @@ export const teamMembers: TeamMember[] = [
     position: 'Android Lead',
     branch: 'Computer Engineering',
     year: 'Third Year',
-    photo: 'team-android-lead',
+    photo: getImageUrl('team-android-lead'),
     bio: 'Android developer who loves Kotlin and Jetpack Compose. Always excited to build cool apps.',
     socials: [
       { name: 'LinkedIn', href: '#' },
@@ -53,7 +62,7 @@ export const teamMembers: TeamMember[] = [
     position: 'Web Lead',
     branch: 'Computer Science',
     year: 'Third Year',
-    photo: 'team-web-lead',
+    photo: getImageUrl('team-web-lead'),
     bio: 'Full-stack web developer with a knack for React and Next.js. Believes in a fast and accessible web.',
     socials: [
       { name: 'LinkedIn', href: '#' },
@@ -68,7 +77,7 @@ export const teamMembers: TeamMember[] = [
     position: 'Cloud Lead',
     branch: 'Information Technology',
     year: 'Second Year',
-    photo: 'team-cloud-lead',
+    photo: getImageUrl('team-cloud-lead'),
     bio: 'Cloud enthusiast exploring the vast possibilities of GCP and Firebase. Loves serverless architecture.',
     socials: [
       { name: 'LinkedIn', href: '#' },
@@ -83,7 +92,7 @@ export const teamMembers: TeamMember[] = [
     position: 'ML Lead',
     branch: 'Computer Engineering',
     year: 'Third Year',
-    photo: 'team-ml-lead',
+    photo: getImageUrl('team-ml-lead'),
     bio: 'AI/ML aficionado who finds joy in data and algorithms. Currently working with TensorFlow and PyTorch.',
     socials: [
       { name: 'LinkedIn', href: '#' },
@@ -98,7 +107,7 @@ export const teamMembers: TeamMember[] = [
     position: 'Design Lead',
     branch: 'Mechanical Engineering',
     year: 'Third Year',
-    photo: 'team-design-lead',
+    photo: getImageUrl('team-design-lead'),
     bio: 'Creative mind translating ideas into visually stunning designs. Master of Figma and motion graphics.',
     socials: [
       { name: 'LinkedIn', href: '#' },
@@ -112,7 +121,7 @@ export const teamMembers: TeamMember[] = [
     position: 'Marketing Lead',
     branch: 'Information Technology',
     year: 'Second Year',
-    photo: 'team-marketing-lead',
+    photo: getImageUrl('team-marketing-lead'),
     bio: 'The voice of GDG, connecting with the community through social media and outreach.',
     socials: [
       { name: 'LinkedIn', href: '#' },

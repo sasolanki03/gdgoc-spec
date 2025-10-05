@@ -1,8 +1,11 @@
+
 'use client';
 
+import React, { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import Image from 'next/image';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -18,9 +21,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import type { TeamMember } from '@/lib/types';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { User } from 'lucide-react';
 
-const teamPhotos = PlaceHolderImages.filter(p => p.id.startsWith('team-') || p.id.startsWith('leader-'));
+
+const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -29,8 +35,18 @@ const formSchema = z.object({
   branch: z.string().min(1, 'Please select a branch.'),
   year: z.string().min(1, 'Please select a year.'),
   bio: z.string().min(10, 'Bio must be at least 10 characters.'),
-  photo: z.string().min(1, 'Please select a photo.'),
+  photo: z.any()
+    .refine((files) => files?.length == 1, "Photo is required.")
+    .refine((files) => files?.[0]?.size <= MAX_FILE_SIZE, `Max file size is 4MB.`)
+    .refine(
+      (files) => ACCEPTED_IMAGE_TYPES.includes(files?.[0]?.type),
+      ".jpg, .jpeg, .png and .webp files are accepted."
+    ),
 });
+
+type FormValues = Omit<z.infer<typeof formSchema>, 'photo'> & {
+    photo: string;
+};
 
 interface AddTeamMemberFormProps {
   onSuccess: (newMember: Omit<TeamMember, 'id' | 'socials'>) => void;
@@ -38,6 +54,7 @@ interface AddTeamMemberFormProps {
 
 export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
   const { toast } = useToast();
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -48,50 +65,80 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
       branch: '',
       year: '',
       bio: '',
-      photo: 'leader-1',
+      photo: undefined,
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    // This is where you would call your server action to create in Firestore.
-    console.log(values);
+  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+        setPhotoPreview(null);
+    }
+  };
 
-    toast({
-      title: 'Member Added!',
-      description: `${values.name} has been added to the team.`,
-    });
-    
-    onSuccess(values);
-    form.reset();
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const file = values.photo[0];
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onloadend = () => {
+        const photoDataUrl = reader.result as string;
+        
+        const newMemberData: FormValues = {
+            ...values,
+            photo: photoDataUrl,
+        }
+
+        toast({
+          title: 'Member Added!',
+          description: `${values.name} has been added to the team.`,
+        });
+        
+        onSuccess(newMemberData);
+        form.reset();
+        setPhotoPreview(null);
+    };
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+
         <FormField
-          control={form.control}
-          name="photo"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Photo</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a photo" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {teamPhotos.map((photo) => (
-                    <SelectItem key={photo.id} value={photo.id}>
-                      {photo.description}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
+            control={form.control}
+            name="photo"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>Photo</FormLabel>
+                <div className='flex items-center gap-4'>
+                    <Avatar className='h-20 w-20'>
+                        <AvatarImage src={photoPreview || ''} alt="Photo preview" />
+                        <AvatarFallback>
+                            <User className='h-10 w-10 text-muted-foreground' />
+                        </AvatarFallback>
+                    </Avatar>
+                    <FormControl>
+                        <Input 
+                            type="file" 
+                            accept="image/*" 
+                            onChange={(e) => {
+                                field.onChange(e.target.files);
+                                handlePhotoChange(e);
+                            }}
+                        />
+                    </FormControl>
+                </div>
+                <FormMessage />
+                </FormItem>
+            )}
         />
+        
         <div className="grid grid-cols-2 gap-4">
             <FormField
             control={form.control}

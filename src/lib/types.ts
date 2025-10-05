@@ -1,3 +1,4 @@
+
 export type NavItem = {
   title: string;
   href: string;
@@ -16,7 +17,7 @@ export type TeamMember = {
   position: string;
   branch: string;
   year: string;
-  photo: string;
+  photo: string; // Can be an ID from placeholder-images or a data URI
   bio: string;
   socials: SocialLink[];
 };

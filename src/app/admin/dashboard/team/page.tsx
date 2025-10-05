@@ -1,6 +1,8 @@
+
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { PlusCircle, MoreHorizontal, Trash } from 'lucide-react';
 import {
     Table,
@@ -46,8 +48,6 @@ import {
   } from "@/components/ui/dropdown-menu"
   import { Button } from '@/components/ui/button';
   import { teamMembers as initialTeamMembers } from '@/lib/placeholder-data';
-  import Image from 'next/image';
-  import { PlaceHolderImages } from '@/lib/placeholder-images';
   import type { TeamMember } from '@/lib/types';
   import { EditTeamMemberForm } from '@/components/forms/edit-team-member-form';
   import { AddTeamMemberForm } from '@/components/forms/add-team-member-form';
@@ -103,7 +103,7 @@ export default function AdminTeamPage() {
                 </div>
                 <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button size="sm" className="gap-1" onClick={() => setIsAddDialogOpen(true)}>
+                    <Button size="sm" className="gap-1">
                         <PlusCircle className="h-3.5 w-3.5" />
                         <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                         Add Member
@@ -142,20 +142,16 @@ export default function AdminTeamPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {teamMembers.map((member) => {
-                     const image = PlaceHolderImages.find(img => img.id === member.photo);
-                     return (
+                  {teamMembers.map((member) => (
                         <TableRow key={member.id}>
                             <TableCell className="hidden sm:table-cell">
-                                {image && 
-                                    <Image
-                                        alt={member.name}
-                                        className="aspect-square rounded-full object-cover"
-                                        height="64"
-                                        src={image.imageUrl}
-                                        width="64"
-                                    />
-                                }
+                                <Image
+                                    alt={member.name}
+                                    className="aspect-square rounded-full object-cover"
+                                    height="64"
+                                    src={member.photo}
+                                    width="64"
+                                />
                             </TableCell>
                             <TableCell className="font-medium">{member.name}</TableCell>
                             <TableCell>{member.role}</TableCell>
@@ -201,8 +197,7 @@ export default function AdminTeamPage() {
                                 </AlertDialog>
                             </TableCell>
                         </TableRow>
-                     )
-                  })}
+                  ))}
                 </TableBody>
               </Table>
             </CardContent>
