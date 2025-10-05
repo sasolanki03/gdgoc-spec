@@ -100,10 +100,10 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
     try {
       const photoDataUrl = await readFileAsDataURL(file);
       
-      const newMemberData: Omit<TeamMember, 'id' | 'socials'> = {
+      const newMemberData: Omit<TeamMember, 'id'> = {
           ...values,
           photo: photoDataUrl,
-          // Socials will be empty by default, can be edited later
+          socials: [], // Initialize with empty socials
       };
 
       const result = await addTeamMember(newMemberData);
@@ -289,3 +289,5 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
     </Form>
   );
 }
+
+    

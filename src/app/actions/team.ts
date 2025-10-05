@@ -7,7 +7,7 @@ import { initializeAdminApp } from '@/firebase/admin';
 import type { TeamMember } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 
-type AddTeamMemberData = Omit<TeamMember, 'id' | 'socials'>;
+type AddTeamMemberData = Omit<TeamMember, 'id'>;
 type UpdateTeamMemberData = Omit<TeamMember, 'id' | 'socials'>;
 
 export async function addTeamMember(data: AddTeamMemberData) {
@@ -18,13 +18,8 @@ export async function addTeamMember(data: AddTeamMemberData) {
         }
         const db = getFirestore(adminApp);
         const teamCollection = db.collection('team');
-        
-        const newMember: Omit<TeamMember, 'id'> = {
-            ...data,
-            socials: [], // Initialize with empty socials
-        };
 
-        await teamCollection.add(newMember);
+        await teamCollection.add(data);
 
         revalidatePath('/team');
         revalidatePath('/admin/dashboard/team');
@@ -45,7 +40,6 @@ export async function updateTeamMember(id: string, data: UpdateTeamMemberData) {
         const db = getFirestore(adminApp);
         const docRef = db.collection('team').doc(id);
 
-        // We don't update socials from this form, so we keep the existing ones
         const updatedData: Partial<UpdateTeamMemberData> = { ...data };
 
         await docRef.update(updatedData);
@@ -78,3 +72,5 @@ export async function deleteTeamMember(id: string) {
         return { success: false, error: error.message };
     }
 }
+
+    
