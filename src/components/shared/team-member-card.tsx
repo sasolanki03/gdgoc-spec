@@ -46,7 +46,7 @@ export function TeamMemberCard({ member }: TeamMemberCardProps) {
           <p className="text-sm text-primary">{member.position}</p>
         </div>
       </div>
-      <div className="absolute inset-0 flex translate-y-full flex-col items-center justify-center bg-background/95 p-6 text-center transition-transform duration-500 ease-in-out group-hover:translate-y-0">
+      <div className="absolute inset-0 flex -translate-y-full flex-col items-center justify-center bg-background/95 p-6 text-center opacity-0 transition-all duration-500 ease-in-out group-hover:translate-y-0 group-hover:opacity-100">
         <h3 className="text-xl font-bold font-headline">{member.name}</h3>
         <p className="text-primary">{member.position}</p>
         <p className="mt-4 flex-grow text-sm text-muted-foreground">{member.bio}</p>
