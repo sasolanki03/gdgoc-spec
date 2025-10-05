@@ -36,7 +36,7 @@ const formSchema = z.object({
   year: z.string().min(1, 'Please select a year.'),
   bio: z.string().min(10, 'Bio must be at least 10 characters.'),
   photo: z.any()
-    .refine((files) => files?.length == 1, "Photo is required.")
+    .refine((files) => files?.[0], "Photo is required.")
     .refine((files) => files?.[0]?.size <= MAX_FILE_SIZE, `Max file size is 4MB.`)
     .refine(
       (files) => ACCEPTED_IMAGE_TYPES.includes(files?.[0]?.type),
@@ -289,5 +289,3 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
     </Form>
   );
 }
-
-    
