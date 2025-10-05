@@ -47,8 +47,9 @@ export default function HomePage() {
         <div className="container max-w-7xl text-center">
             
             <h1 className="text-4xl md:text-6xl font-extrabold font-headline tracking-tight">
-                Google developer Group on Campus
+                Google developer group
             </h1>
+            <p className="text-2xl md:text-4xl font-normal text-muted-foreground">on Campus</p>
             <p className="mt-4 text-2xl md:text-3xl font-semibold text-primary">
                 Shree Parekh engineering College mahuva
             </p>
