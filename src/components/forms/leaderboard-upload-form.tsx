@@ -10,14 +10,20 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
+import { updateLeaderboard } from '@/app/actions/leaderboard';
+import type { LeaderboardEntry } from '@/lib/types';
 
-type ParsedData = Record<string, string>;
+
+type ParsedData = Omit<LeaderboardEntry, 'rank' | 'student' | 'profileId'> & {
+    studentName: string;
+    profileId: string;
+};
 
 export function LeaderboardUploadForm() {
   const [file, setFile] = useState<File | null>(null);
   const [parsedData, setParsedData] = useState<ParsedData[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isParsing, setIsParsing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { register, handleSubmit, reset } = useForm();
 
@@ -47,12 +53,13 @@ export function LeaderboardUploadForm() {
       return;
     }
 
-    setIsLoading(true);
+    setIsParsing(true);
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
+      dynamicTyping: true,
       complete: (results: ParseResult<ParsedData>) => {
-        setIsLoading(false);
+        setIsParsing(false);
         if (results.errors.length > 0) {
           toast({
             variant: 'destructive',
@@ -69,7 +76,7 @@ export function LeaderboardUploadForm() {
         });
       },
       error: (error: Error) => {
-        setIsLoading(false);
+        setIsParsing(false);
         toast({
           variant: 'destructive',
           title: 'Parsing Error',
@@ -80,7 +87,7 @@ export function LeaderboardUploadForm() {
     });
   };
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     if (parsedData.length === 0) {
         toast({
             variant: 'destructive',
@@ -89,18 +96,28 @@ export function LeaderboardUploadForm() {
         });
         return;
     }
-    // Here you would typically send the parsedData to your server/database
-    console.log('Submitting data:', parsedData);
     
-    toast({
-      title: 'Leaderboard Updated!',
-      description: 'The new student progress data has been saved.',
-    });
-
-    // Reset state
-    setFile(null);
-    setParsedData([]);
-    reset();
+    setIsSubmitting(true);
+    try {
+        await updateLeaderboard(parsedData);
+        toast({
+            title: 'Leaderboard Updated!',
+            description: 'The new student progress data has been saved.',
+        });
+        // Reset state
+        setFile(null);
+        setParsedData([]);
+        reset();
+    } catch (error) {
+        console.error('Submission error:', error);
+        toast({
+            variant: 'destructive',
+            title: 'Uh oh! Something went wrong.',
+            description: 'Could not update the leaderboard. Please try again.',
+        });
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   return (
@@ -123,8 +140,8 @@ export function LeaderboardUploadForm() {
             onChange={handleFileChange} 
           />
         </div>
-        <Button type="submit" disabled={!file || isLoading} className="w-full sm:w-auto">
-          {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileText className="mr-2 h-4 w-4" />}
+        <Button type="submit" disabled={!file || isParsing || isSubmitting} className="w-full sm:w-auto">
+          {isParsing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileText className="mr-2 h-4 w-4" />}
           Parse File
         </Button>
       </form>
@@ -151,15 +168,15 @@ export function LeaderboardUploadForm() {
                   {parsedData.slice(0, 10).map((row, index) => (
                     <TableRow key={index}>
                       {Object.values(row).map((value, i) => (
-                        <TableCell key={i}>{value}</TableCell>
+                        <TableCell key={i}>{String(value)}</TableCell>
                       ))}
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             </div>
-            <Button onClick={onSubmit} className="mt-6 w-full sm:w-auto">
-              <CheckCircle className="mr-2 h-4 w-4" />
+            <Button onClick={onSubmit} disabled={isSubmitting} className="mt-6 w-full sm:w-auto">
+              {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
               Save Changes
             </Button>
           </CardContent>

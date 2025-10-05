@@ -2,20 +2,20 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
-import { Search, Trophy, Star, Shield, ExternalLink, Crown } from 'lucide-react';
+import { Search, Trophy, Shield, ExternalLink, Crown, Star } from 'lucide-react';
 import { PageHeader } from '@/components/shared/page-header';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { leaderboardData as initialLeaderboardData } from '@/lib/placeholder-data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import type { LeaderboardEntry } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
+import { useCollection } from '@/firebase';
+import { collection } from 'firebase/firestore';
 
 const getRankColor = (rank: number) => {
   if (rank === 1) return 'text-yellow-400';
@@ -26,18 +26,21 @@ const getRankColor = (rank: number) => {
 
 export default function LeaderboardPage() {
   const [searchTerm, setSearchTerm] = useState('');
-  
-  const leaderboardData = useMemo(() => {
-    return initialLeaderboardData
-      .map((student, index) => ({ ...student, rank: index + 1 }))
-      .sort((a, b) => a.rank - b.rank);
-  }, []);
+  const { data: leaderboardData, loading } = useCollection<Omit<LeaderboardEntry, 'rank'>>(collection(useFirestore(), 'leaderboard'));
+
+
+  const sortedData = useMemo(() => {
+    if (!leaderboardData) return [];
+    return leaderboardData
+      .sort((a, b) => b.totalPoints - a.totalPoints)
+      .map((student, index) => ({ ...student, rank: index + 1 }));
+  }, [leaderboardData]);
 
   const filteredData = useMemo(() => {
-    return leaderboardData.filter(entry =>
+    return sortedData.filter(entry =>
       entry.student.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [leaderboardData, searchTerm]);
+  }, [sortedData, searchTerm]);
 
   return (
     <TooltipProvider>
@@ -76,7 +79,14 @@ export default function LeaderboardPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredData.map((entry) => {
+                    {loading ? (
+                        <TableRow>
+                            <TableCell colSpan={7} className="text-center py-16">
+                                Loading leaderboard...
+                            </TableCell>
+                        </TableRow>
+                    ) : filteredData.length > 0 ? (
+                      filteredData.map((entry) => {
                       const avatarImage = PlaceHolderImages.find(img => img.id === entry.student.avatar);
                       return (
                         <TableRow key={entry.rank} className={cn(
@@ -160,16 +170,20 @@ export default function LeaderboardPage() {
                           </TableCell>
                         </TableRow>
                       );
-                    })}
+                    })
+                    ) : (
+                      <TableRow>
+                          <TableCell colSpan={7} className="text-center py-16">
+                            <h3 className="text-2xl font-bold font-headline">No Students Found</h3>
+                            <p className="text-muted-foreground mt-2">
+                                {searchTerm ? "Try adjusting your search." : "The leaderboard is currently empty."}
+                            </p>
+                          </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </div>
-              {filteredData.length === 0 && (
-                <div className="text-center py-16">
-                  <h3 className="text-2xl font-bold font-headline">No Students Found</h3>
-                  <p className="text-muted-foreground mt-2">Try adjusting your search.</p>
-                </div>
-              )}
             </CardContent>
           </Card>
         </div>
