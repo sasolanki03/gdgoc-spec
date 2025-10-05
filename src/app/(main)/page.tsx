@@ -5,7 +5,6 @@ import { Users, Calendar, Lightbulb, Code, ArrowRight, Mic, Group, Award } from 
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AnimatedGdgLogo } from '@/components/shared/animated-gdg-logo';
 import { StatCounter } from '@/components/shared/stat-counter';
 import { events } from '@/lib/placeholder-data';
 import { EventCard } from '@/components/shared/event-card';
@@ -48,10 +47,10 @@ export default function HomePage() {
         <div className="container max-w-7xl text-center">
             
             <h1 className="text-4xl md:text-6xl font-extrabold font-headline tracking-tight">
-                Google Developer Group
+                Google developer Group on Campus
             </h1>
             <p className="mt-4 text-2xl md:text-3xl font-semibold text-primary">
-                Shree Parekh Engineering College, Mahuva
+                Shree Parekh engineering College mahuva
             </p>
             <p className="mt-6 max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground">
                 Learn, Connect, Grow
