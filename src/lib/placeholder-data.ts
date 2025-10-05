@@ -1,5 +1,5 @@
 
-import type { TeamMember, Event, Resource, FaqItem, LeaderboardEntry } from '@/lib/types';
+import type { TeamMember, Event, FaqItem, LeaderboardEntry } from '@/lib/types';
 import { PlaceHolderImages } from './placeholder-images';
 
 // Function to get image URL from placeholder ID
@@ -196,64 +196,6 @@ export const events: Event[] = [
     imageUrl: 'event-tech-talk',
     type: 'Seminar',
     status: 'Past',
-  },
-];
-
-
-export const resources: Resource[] = [
-  {
-    id: '1',
-    title: 'Android Basics in Kotlin',
-    description: 'A free course by Google to get started with building Android apps.',
-    category: 'Android',
-    link: '#',
-    type: 'Course',
-    difficulty: 'Beginner',
-  },
-  {
-    id: '2',
-    title: 'Next.js 14 Tutorial',
-    description: 'An in-depth video series on the latest features of Next.js.',
-    category: 'Web',
-    link: '#',
-    type: 'Video',
-    difficulty: 'Intermediate',
-  },
-  {
-    id: '3',
-    title: 'Google Cloud Skills Boost',
-    description: 'Hands-on labs to learn and practice cloud skills.',
-    category: 'Cloud',
-    link: '#',
-    type: 'Course',
-    difficulty: 'Intermediate',
-  },
-  {
-    id: '4',
-    title: 'Introduction to Large Language Models',
-    description: 'Learn the fundamentals of how LLMs work.',
-    category: 'AI/ML',
-    link: '#',
-    type: 'Documentation',
-    difficulty: 'Beginner',
-  },
-  {
-    id: '5',
-    title: 'Flutter Official Documentation',
-    description: 'The complete guide to Flutter development.',
-    category: 'Flutter',
-    link: '#',
-    type: 'Documentation',
-    difficulty: 'Advanced',
-  },
-  {
-    id: '6',
-    title: 'NeetCode 150',
-    description: 'A curated list of 150 LeetCode problems to crack coding interviews.',
-    category: 'DSA',
-    link: '#',
-    type: 'Article',
-    difficulty: 'Intermediate',
   },
 ];
 

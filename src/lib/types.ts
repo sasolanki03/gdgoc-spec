@@ -34,16 +34,6 @@ export type Event = {
   status: 'Upcoming' | 'Past' | 'Continue';
 };
 
-export type Resource = {
-  id: string;
-  title: string;
-  description: string;
-  category: 'Android' | 'Web' | 'Cloud' | 'AI/ML' | 'Flutter' | 'DSA';
-  link: string;
-  type: 'Video' | 'Article' | 'Course' | 'Documentation';
-  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
-};
-
 export type FaqItem = {
   question: string;
   answer: string;

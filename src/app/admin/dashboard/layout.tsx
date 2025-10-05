@@ -39,7 +39,6 @@ const adminNavItems = [
     { href: '/admin/dashboard/events', label: 'Events', icon: Calendar },
     { href: '/admin/dashboard/team', label: 'Team Members', icon: Users },
     { href: '/admin/dashboard/leaderboard', label: 'Leaderboard', icon: Trophy },
-    { href: '/admin/dashboard/resources', label: 'Resources', icon: Book },
     { href: '/admin/dashboard/registrations', label: 'Registrations', icon: FileText },
     { href: '/admin/dashboard/contacts', label: 'Contact Messages', icon: Mail },
 ];
