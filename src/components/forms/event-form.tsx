@@ -43,15 +43,17 @@ const formSchema = z.object({
   date: z.date({ required_error: 'A date is required.' }),
   time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]\s(AM|PM)$/i, 'Invalid time format (e.g., 10:00 AM)'),
   venue: z.string().min(3, 'Venue is required.'),
-  status: z.enum(['Upcoming', 'Past']),
+  status: z.enum(['Upcoming', 'Past', 'Continue']),
   type: z.enum(['Workshop', 'Hackathon', 'Seminar', 'Study Jam', 'Tech Talk']),
   imageUrl: z.any()
     .refine((value) => {
         if (typeof value === 'string') return true; // Already a URL/Data URI
+        if (!value || value.length === 0) return false; // Must have a file if not string
         return value?.[0]?.size <= MAX_FILE_SIZE;
     }, `Max file size is 4MB.`)
     .refine((value) => {
         if (typeof value === 'string') return true;
+        if (!value || value.length === 0) return false;
         return ACCEPTED_IMAGE_TYPES.includes(value?.[0]?.type);
     }, ".jpg, .jpeg, .png and .webp files are accepted.")
 });
@@ -317,6 +319,7 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
                     <SelectContent>
                         <SelectItem value="Upcoming">Upcoming</SelectItem>
                         <SelectItem value="Past">Past</SelectItem>
+                        <SelectItem value="Continue">Continue</SelectItem>
                     </SelectContent>
                 </Select>
                 <FormMessage />
@@ -325,12 +328,10 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
             />
         </div>
 
-        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting || !form.formState.isValid}>
           {form.formState.isSubmitting ? 'Saving...' : (event ? 'Save Changes' : 'Create Event')}
         </Button>
       </form>
     </Form>
   );
 }
-
-    

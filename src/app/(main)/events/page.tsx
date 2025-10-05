@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -13,7 +14,7 @@ import { EventRegistrationForm } from '@/components/forms/event-registration-for
 
 export default function EventsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const upcomingEvents = events.filter(e => e.status === 'Upcoming');
+  const upcomingEvents = events.filter(e => e.status === 'Upcoming' || e.status === 'Continue');
   const pastEvents = events.filter(e => e.status === 'Past');
 
   return (
@@ -25,14 +26,14 @@ export default function EventsPage() {
       <div className="container max-w-7xl py-16">
         <Tabs defaultValue="upcoming" className="w-full">
           <TabsList className="grid w-full grid-cols-2 md:w-96 md:mx-auto">
-            <TabsTrigger value="upcoming">Upcoming Events</TabsTrigger>
+            <TabsTrigger value="upcoming">Upcoming & Ongoing</TabsTrigger>
             <TabsTrigger value="past">Past Events</TabsTrigger>
           </TabsList>
           <TabsContent value="upcoming" className="mt-8">
             {upcomingEvents.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {upcomingEvents.map(event => (
-                  <Dialog key={event.id} open={isModalOpen && event.id === '1'} onOpenChange={setIsModalOpen}>
+                  <Dialog key={event.id} open={isModalOpen && (event.status === 'Upcoming' || event.status === 'Continue')} onOpenChange={setIsModalOpen}>
                     <DialogTrigger asChild>
                        <div className="cursor-pointer">
                          <EventCard event={event} />

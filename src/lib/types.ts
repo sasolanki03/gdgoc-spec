@@ -31,7 +31,7 @@ export type Event = {
   venue: string;
   imageUrl: string;
   type: 'Workshop' | 'Hackathon' | 'Seminar' | 'Study Jam' | 'Tech Talk';
-  status: 'Upcoming' | 'Past';
+  status: 'Upcoming' | 'Past' | 'Continue';
 };
 
 export type Resource = {

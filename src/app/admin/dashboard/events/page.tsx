@@ -53,6 +53,7 @@ import {
   import type { Event } from '@/lib/types';
   import { useToast } from '@/hooks/use-toast';
   import { EventForm } from '@/components/forms/event-form';
+import { cn } from '@/lib/utils';
 
 export default function AdminEventsPage() {
     const [events, setEvents] = useState<Event[]>(initialEvents);
@@ -60,6 +61,19 @@ export default function AdminEventsPage() {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
     const { toast } = useToast();
+
+    const getBadgeVariant = (status: Event['status']): "default" | "secondary" | "destructive" | "outline" => {
+        switch (status) {
+          case 'Upcoming':
+            return 'default';
+          case 'Continue':
+            return 'outline';
+          case 'Past':
+            return 'secondary';
+          default:
+            return 'secondary';
+        }
+      };
 
     const handleAddEvent = (newEventData: Omit<Event, 'id'>) => {
       const newEvent: Event = {
@@ -168,7 +182,15 @@ export default function AdminEventsPage() {
                             </TableCell>
                             <TableCell className="font-medium">{event.title}</TableCell>
                             <TableCell>
-                                <Badge variant={event.status === 'Upcoming' ? 'default': 'secondary'}>{event.status}</Badge>
+                                <Badge 
+                                    variant={getBadgeVariant(event.status)}
+                                    className={cn({
+                                        'bg-google-green hover:bg-google-green/90 text-white': event.status === 'Upcoming',
+                                        'bg-google-yellow hover:bg-google-yellow/90 text-black': event.status === 'Continue',
+                                    })}
+                                >
+                                    {event.status}
+                                </Badge>
                             </TableCell>
                             <TableCell className="hidden md:table-cell">{event.venue}</TableCell>
                             <TableCell className="hidden md:table-cell">{event.date}</TableCell>
@@ -239,5 +261,3 @@ export default function AdminEventsPage() {
         </>
     );
 }
-
-    
