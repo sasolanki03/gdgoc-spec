@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, query, orderBy } from 'firebase/firestore';
 
 const getRankColor = (rank: number) => {
   if (rank === 1) return 'text-yellow-400';
@@ -27,15 +27,18 @@ const getRankColor = (rank: number) => {
 export default function LeaderboardPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const firestore = useFirestore();
-  const { data: leaderboardData, loading } = useCollection<Omit<LeaderboardEntry, 'rank'>>(
-    firestore ? collection(firestore, 'leaderboard') : null
-  );
+  
+  const leaderboardQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'leaderboard'), orderBy('totalPoints', 'desc'));
+  }, [firestore]);
+
+  const { data: leaderboardData, loading } = useCollection<Omit<LeaderboardEntry, 'rank'>>(leaderboardQuery);
 
   const sortedData = useMemo(() => {
     if (!leaderboardData) return [];
-    return leaderboardData
-      .sort((a, b) => b.totalPoints - a.totalPoints)
-      .map((student, index) => ({ ...student, rank: index + 1 }));
+    // The data is already sorted by the query, so we just add the rank
+    return leaderboardData.map((student, index) => ({ ...student, rank: index + 1 }));
   }, [leaderboardData]);
 
   const filteredData = useMemo(() => {
@@ -91,7 +94,7 @@ export default function LeaderboardPage() {
                       filteredData.map((entry) => {
                       const avatarImage = PlaceHolderImages.find(img => img.id === entry.student.avatar);
                       return (
-                        <TableRow key={entry.rank} className={cn(
+                        <TableRow key={entry.id} className={cn(
                           'transition-colors',
                           entry.rank <= 3 && 'bg-card',
                           {'bg-yellow-400/10 hover:bg-yellow-400/20': entry.rank === 1},

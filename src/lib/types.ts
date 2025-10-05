@@ -1,4 +1,6 @@
 
+import type { Timestamp } from 'firebase/firestore';
+
 export type NavItem = {
   title: string;
   href: string;
@@ -40,6 +42,7 @@ export type FaqItem = {
 };
 
 export type LeaderboardEntry = {
+  id: string;
   rank: number;
   student: {
     name: string;
@@ -50,4 +53,27 @@ export type LeaderboardEntry = {
   quests: number;
   genAIGames: number;
   profileId: string;
+};
+
+export type EventRegistration = {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    rollNo: string;
+    branch: string;
+    year: string;
+    eventId: string;
+    eventName: string;
+    registeredAt: Timestamp;
+};
+
+export type ContactMessage = {
+    id: string;
+    name: string;
+    email: string;
+    subject: string;
+    message: string;
+    createdAt: Timestamp;
+    isRead: boolean;
 };

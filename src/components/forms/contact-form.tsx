@@ -1,9 +1,11 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { sendContactMessage } from '@/app/actions/contact';
+import { useFirestore } from '@/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -27,6 +29,7 @@ const formSchema = z.object({
 
 export function ContactForm() {
   const { toast } = useToast();
+  const firestore = useFirestore();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -39,19 +42,31 @@ export function ContactForm() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const result = await sendContactMessage(values);
+    if (!firestore) {
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'Database not available. Please try again later.',
+        });
+        return;
+    }
+    try {
+        await addDoc(collection(firestore, 'contacts'), {
+            ...values,
+            createdAt: serverTimestamp(),
+            isRead: false,
+        });
 
-    if (result.success) {
         toast({
             title: 'Message Sent!',
             description: 'Thanks for reaching out. We will get back to you shortly.',
         });
         form.reset();
-    } else {
+    } catch (error: any) {
         toast({
             variant: 'destructive',
             title: 'Error Sending Message',
-            description: result.error,
+            description: error.message,
         });
     }
   }

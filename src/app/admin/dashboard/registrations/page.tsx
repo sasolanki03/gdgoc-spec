@@ -1,6 +1,11 @@
 
 'use client';
 
+import { collection, query, orderBy } from 'firebase/firestore';
+import { useCollection, useFirestore } from '@/firebase';
+import type { EventRegistration } from '@/lib/types';
+import { format } from 'date-fns';
+
 import {
     Table,
     TableBody,
@@ -18,17 +23,14 @@ import {
     CardTitle,
   } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge";
-
-// Placeholder data until we connect to Firestore
-const registrations = [
-    { id: '1', name: 'Liam Johnson', email: 'liam@example.com', event: 'Android Study Jam', status: 'Approved', date: '2023-06-23' },
-    { id: '2', name: 'Olivia Smith', email: 'olivia@example.com', event: 'Web Workshop', status: 'Declined', date: '2023-06-24' },
-    { id: '3', name: 'Noah Williams', email: 'noah@example.com', event: 'Android Study Jam', status: 'Approved', date: '2023-06-25' },
-    { id: '4', name: 'Emma Brown', email: 'emma@example.com', event: 'Cloud Study Jam', status: 'Pending', date: '2023-06-26' },
-    { id: '5', name: 'James Jones', email: 'james@example.com', event: 'Web Workshop', status: 'Approved', date: '2023-06-27' },
-];
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminRegistrationsPage() {
+    const firestore = useFirestore();
+    const { data: registrations, loading } = useCollection<EventRegistration>(
+        firestore ? query(collection(firestore, 'registrations'), orderBy('registeredAt', 'desc')) : null
+    );
+
     return (
         <Card>
             <CardHeader>
@@ -43,32 +45,45 @@ export default function AdminRegistrationsPage() {
                             <TableHead>Email</TableHead>
                             <TableHead className="hidden md:table-cell">Event</TableHead>
                             <TableHead className="hidden md:table-cell">Date</TableHead>
-                            <TableHead className="text-right">Status</TableHead>
+                            <TableHead className="hidden md:table-cell">Year</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {registrations.map((reg) => (
-                            <TableRow key={reg.id}>
-                                <TableCell className="font-medium">{reg.name}</TableCell>
-                                <TableCell>{reg.email}</TableCell>
-                                <TableCell className="hidden md:table-cell">{reg.event}</TableCell>
-                                <TableCell className="hidden md:table-cell">{reg.date}</TableCell>
-                                <TableCell className="text-right">
-                                    <Badge variant={
-                                        reg.status === 'Approved' ? 'default' : 
-                                        reg.status === 'Declined' ? 'destructive' : 'secondary'
-                                    }>
-                                        {reg.status}
-                                    </Badge>
+                        {loading ? (
+                             [...Array(5)].map((_, i) => (
+                                <TableRow key={i}>
+                                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                                    <TableCell><Skeleton className="h-5 w-40" /></TableCell>
+                                    <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-32" /></TableCell>
+                                    <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-24" /></TableCell>
+                                    <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-16" /></TableCell>
+                                </TableRow>
+                            ))
+                        ) : registrations && registrations.length > 0 ? (
+                            registrations.map((reg) => (
+                                <TableRow key={reg.id}>
+                                    <TableCell className="font-medium">{reg.name}</TableCell>
+                                    <TableCell>{reg.email}</TableCell>
+                                    <TableCell className="hidden md:table-cell">{reg.eventName}</TableCell>
+                                    <TableCell className="hidden md:table-cell">
+                                        {reg.registeredAt ? format(new Date(reg.registeredAt.toDate()), 'PP') : 'N/A'}
+                                    </TableCell>
+                                    <TableCell className="hidden md:table-cell">{reg.year}</TableCell>
+                                </TableRow>
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell colSpan={5} className="text-center py-16">
+                                    No registrations yet.
                                 </TableCell>
                             </TableRow>
-                        ))}
+                        )}
                     </TableBody>
                 </Table>
             </CardContent>
             <CardFooter>
               <div className="text-xs text-muted-foreground">
-                Showing <strong>1-{registrations.length}</strong> of <strong>{registrations.length}</strong> registrations
+                Showing <strong>{registrations?.length || 0}</strong> of <strong>{registrations?.length || 0}</strong> registrations
               </div>
             </CardFooter>
         </Card>

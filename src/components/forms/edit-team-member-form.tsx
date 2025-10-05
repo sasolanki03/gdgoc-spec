@@ -5,7 +5,6 @@ import React, { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { updateTeamMember } from '@/app/actions/team';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -46,7 +45,7 @@ const formSchema = z.object({
 
 interface EditTeamMemberFormProps {
   member: TeamMember;
-  onSuccess: () => void;
+  onSuccess: (id: string, data: Partial<TeamMember>) => void;
 }
 
 export function EditTeamMemberForm({ member, onSuccess }: EditTeamMemberFormProps) {
@@ -97,22 +96,13 @@ export function EditTeamMemberForm({ member, onSuccess }: EditTeamMemberFormProp
         photoDataUrl = await readFileAsDataURL(file);
       }
 
-      const updatedMemberData = {
+      const updatedMemberData: Partial<TeamMember> = {
         ...values,
         photo: photoDataUrl,
       };
 
-      const result = await updateTeamMember(member.id, updatedMemberData);
+      onSuccess(member.id, updatedMemberData);
 
-      if (result.success) {
-        onSuccess();
-      } else {
-        toast({
-            variant: 'destructive',
-            title: 'Error updating member',
-            description: result.error,
-        });
-      }
     } catch (error) {
       console.error("Error processing form:", error);
       toast({

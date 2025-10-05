@@ -22,7 +22,6 @@ import { useToast } from '@/hooks/use-toast';
 import type { TeamMember } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { User } from 'lucide-react';
-import { addTeamMember } from '@/app/actions/team';
 
 
 const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB
@@ -49,7 +48,7 @@ type FormValues = Omit<z.infer<typeof formSchema>, 'photo'> & {
 };
 
 interface AddTeamMemberFormProps {
-  onSuccess: () => void;
+  onSuccess: (data: Omit<TeamMember, 'id'>) => void;
 }
 
 export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
@@ -106,19 +105,9 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
           socials: [], // Initialize with empty socials
       };
 
-      const result = await addTeamMember(newMemberData);
-
-      if (result.success) {
-        onSuccess();
-        form.reset();
-        setPhotoPreview(null);
-      } else {
-        toast({
-            variant: "destructive",
-            title: "Error adding member",
-            description: result.error
-        });
-      }
+      onSuccess(newMemberData);
+      form.reset();
+      setPhotoPreview(null);
 
     } catch (error) {
       console.error("Error processing form:", error);

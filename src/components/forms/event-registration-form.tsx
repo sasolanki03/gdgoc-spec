@@ -1,8 +1,11 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { useFirestore } from '@/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -34,6 +37,7 @@ interface EventRegistrationFormProps {
 
 export function EventRegistrationForm({ event, onSuccess }: EventRegistrationFormProps) {
   const { toast } = useToast();
+  const firestore = useFirestore();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -46,17 +50,39 @@ export function EventRegistrationForm({ event, onSuccess }: EventRegistrationFor
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    // This is where you would call your server action to submit to Firestore.
-    // e.g., await registerForEvent({ ...values, eventId: event.id });
-    console.log({ ...values, eventId: event.id });
-
-    toast({
-      title: 'Registration Successful!',
-      description: `You are now registered for ${event.title}.`,
-    });
+    if (!firestore) {
+        toast({
+            variant: 'destructive',
+            title: 'Database Error',
+            description: 'Could not connect to the database. Please try again later.',
+        });
+        return;
+    }
     
-    onSuccess();
-    form.reset();
+    try {
+        await addDoc(collection(firestore, 'registrations'), {
+            ...values,
+            eventId: event.id,
+            eventName: event.title,
+            registeredAt: serverTimestamp(),
+        });
+
+        toast({
+            title: 'Registration Successful!',
+            description: `You are now registered for ${event.title}.`,
+        });
+        
+        onSuccess();
+        form.reset();
+
+    } catch (error: any) {
+        console.error('Error submitting registration:', error);
+        toast({
+            variant: 'destructive',
+            title: 'Registration Failed',
+            description: error.message || 'An unexpected error occurred.',
+        });
+    }
   }
 
   return (

@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { PlusCircle, MoreHorizontal, Trash } from 'lucide-react';
-import { collection } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { useCollection, useFirestore } from '@/firebase';
 
 import {
@@ -54,12 +54,11 @@ import {
   import { EditTeamMemberForm } from '@/components/forms/edit-team-member-form';
   import { AddTeamMemberForm } from '@/components/forms/add-team-member-form';
   import { useToast } from '@/hooks/use-toast';
-  import { deleteTeamMember } from '@/app/actions/team';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminTeamPage() {
     const firestore = useFirestore();
-    const { data: teamMembers, loading } = useCollection<TeamMember>(
+    const { data: teamMembers, loading, error } = useCollection<TeamMember>(
         firestore ? collection(firestore, 'team') : null
     );
 
@@ -68,42 +67,66 @@ export default function AdminTeamPage() {
     const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
     const { toast } = useToast();
 
-    const handleAddSuccess = () => {
-        setIsAddDialogOpen(false);
-        toast({
-            title: 'Member Added!',
-            description: `A new member has been added to the team.`,
-        });
-    }
+    const handleAddMember = async (data: Omit<TeamMember, 'id'>) => {
+        if (!firestore) return;
+        try {
+            await addDoc(collection(firestore, 'team'), data);
+            setIsAddDialogOpen(false);
+            toast({
+                title: 'Member Added!',
+                description: `${data.name} has been added to the team.`,
+            });
+        } catch (e: any) {
+            console.error("Error adding document: ", e);
+            toast({
+                variant: 'destructive',
+                title: 'Error Adding Member',
+                description: e.message,
+            });
+        }
+    };
 
-    const handleEditSuccess = () => {
-        setIsEditDialogOpen(false);
-        setSelectedMember(null);
-        toast({
-            title: 'Member Updated!',
-            description: `The team member's details have been saved.`,
-        });
-    }
+    const handleUpdateMember = async (id: string, data: Partial<TeamMember>) => {
+        if (!firestore) return;
+        try {
+            await updateDoc(doc(firestore, 'team', id), data);
+            setIsEditDialogOpen(false);
+            setSelectedMember(null);
+            toast({
+                title: 'Member Updated!',
+                description: "The team member's details have been saved.",
+            });
+        } catch (e: any) {
+            console.error("Error updating document: ", e);
+            toast({
+                variant: 'destructive',
+                title: 'Error Updating Member',
+                description: e.message,
+            });
+        }
+    };
+
+    const handleDeleteMember = async (memberId: string, memberName: string) => {
+        if (!firestore) return;
+        try {
+            await deleteDoc(doc(firestore, 'team', memberId));
+            toast({
+                title: 'Member Deleted',
+                description: `${memberName} has been removed from the team.`,
+            });
+        } catch (e: any) {
+            console.error("Error deleting document: ", e);
+            toast({
+                variant: 'destructive',
+                title: 'Error Deleting Member',
+                description: e.message,
+            });
+        }
+    };
 
     const handleEditClick = (member: TeamMember) => {
         setSelectedMember(member);
         setIsEditDialogOpen(true);
-    };
-
-    const handleDeleteMember = async (memberId: string, memberName: string) => {
-      const result = await deleteTeamMember(memberId);
-      if (result.success) {
-        toast({
-          title: 'Member Deleted',
-          description: `${memberName} has been removed from the team.`,
-        });
-      } else {
-        toast({
-            variant: 'destructive',
-            title: 'Error Deleting Member',
-            description: result.error,
-        });
-      }
     };
 
     return (
@@ -129,7 +152,7 @@ export default function AdminTeamPage() {
                         <DialogTitle className="font-headline text-2xl">Add New Team Member</DialogTitle>
                     </DialogHeader>
                     <AddTeamMemberForm 
-                        onSuccess={handleAddSuccess} 
+                        onSuccess={handleAddMember}
                     />
                   </DialogContent>
                 </Dialog>
@@ -229,10 +252,11 @@ export default function AdminTeamPage() {
                   ))}
                 </TableBody>
               </Table>
+                {error && <p className='text-destructive text-center p-4'>Error: {error.message}</p>}
             </CardContent>
             <CardFooter>
               <div className="text-xs text-muted-foreground">
-                Showing <strong>1-{teamMembers?.length || 0}</strong> of <strong>{teamMembers?.length || 0}</strong> members
+                Showing <strong>{teamMembers?.length || 0}</strong> of <strong>{teamMembers?.length || 0}</strong> members
               </div>
             </CardFooter>
           </Card>
@@ -247,7 +271,7 @@ export default function AdminTeamPage() {
                 </DialogHeader>
                 <EditTeamMemberForm 
                     member={selectedMember} 
-                    onSuccess={handleEditSuccess}
+                    onSuccess={(id, data) => handleUpdateMember(id, data)}
                 />
                 </DialogContent>
             </Dialog>
