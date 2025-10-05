@@ -5,15 +5,21 @@ export function GoogleLogo(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 43.14 26.57"
+      viewBox="0 0 208 110"
       fill="none"
       {...props}
     >
-      <path fill="#4285F4" d="M26.57 13.28v.03l-6.4 6.4h-6.89l8.6-8.6-8.6-8.6h6.89l6.4 6.4v.02l2.7-2.7V0H16.14L0 13.28l16.13 13.29h13.14V15.98l-2.7-2.7Z" />
-      <path fill="#0F9D58" d="m16.14 26.57 8.6-8.6-8.6-8.6v17.2Z" />
-      <path fill="#DB4437" d="M16.14 0v17.2l-8.6-8.6L16.14 0Z" />
-      <path fill="#F4B400" d="M43.14 6.89 34.54 15.5v-4.32l-2.5-2.5-2.7-2.7V0h13.8v6.89Z" />
-      <path fill="#DB4437" d="M29.34 8.68v6.82l2.7 2.7V8.68h-2.7Z" />
+      <g clipPath="url(#clip0_1_2)">
+        <path d="M74.629 1.93359e-05L9.13898 33.35L74.629 66.7L60.039 80.85L16.089 54.1L0.638977 66.7L0.638977 44.45L37.389 22.2L0.638977 0L74.629 1.93359e-05Z" fill="#EA4335"/>
+        <path d="M74.625 110L9.13501 76.65L74.625 43.3L60.035 29.15L16.085 55.9L0.63501 43.3V65.55L37.385 87.8L0.63501 110H74.625Z" fill="#4285F4"/>
+        <path d="M133 110L207.5 76.65L133 43.3L147.59 29.15L191.54 55.9L207 43.3V65.55L169.75 87.8L207 110H133Z" fill="#34A853"/>
+        <path d="M133 0L207.5 33.35L133 66.7L147.59 80.85L191.54 54.1L207 66.7V44.45L169.75 22.2L207 0H133Z" fill="#FBBC04"/>
+      </g>
+      <defs>
+        <clipPath id="clip0_1_2">
+        <rect width="207" height="110" fill="white" transform="translate(0.5)"/>
+        </clipPath>
+      </defs>
     </svg>
   );
 }
