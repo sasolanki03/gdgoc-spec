@@ -1,3 +1,4 @@
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { Users, Calendar, Lightbulb, Code, ArrowRight, Mic, Group, Award } from 'lucide-react';
@@ -44,7 +45,7 @@ export default function HomePage() {
   return (
     <div className="flex flex-col">
       {heroBanner && (
-          <section className="bg-[#d9efd9]">
+          <section className="bg-background">
                <div className="container max-w-7xl">
                 <Image
                     src={heroBanner.imageUrl}
@@ -53,6 +54,7 @@ export default function HomePage() {
                     height={400}
                     className="w-full h-auto"
                     data-ai-hint={heroBanner.imageHint}
+                    priority
                 />
                </div>
           </section>
@@ -211,3 +213,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
