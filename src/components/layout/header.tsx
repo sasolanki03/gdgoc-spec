@@ -28,7 +28,7 @@ export function Header() {
       <div className="container flex h-16 max-w-7xl items-center">
         <Link href="/" className="mr-6 flex items-center space-x-2">
           <GoogleLogo className="h-6 w-6" />
-          <span className="font-bold sm:inline-block font-headline">GDG SPECM</span>
+          <span className="font-bold sm:inline-block font-headline">GDG SPEC</span>
         </Link>
 
         <nav className="hidden gap-6 md:flex">

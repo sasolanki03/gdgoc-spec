@@ -6,7 +6,7 @@ import type { TeamMember } from '@/lib/types';
 
 export const metadata: Metadata = {
   title: 'Our Team',
-  description: 'Meet the passionate individuals behind GDG SPECM.',
+  description: 'Meet the passionate individuals behind GDG SPEC.',
 };
 
 const teamOrder: TeamMember['role'][] = ['Lead', 'Co-Lead', 'Technical Team', 'Management Team', 'Design Team'];

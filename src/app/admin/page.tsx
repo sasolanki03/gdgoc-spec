@@ -9,7 +9,7 @@ export default function AdminLoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-headline">Admin Panel</CardTitle>
-          <CardDescription>Sign in to manage the GDG SPECM website.</CardDescription>
+          <CardDescription>Sign in to manage the GDG SPEC website.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-4">

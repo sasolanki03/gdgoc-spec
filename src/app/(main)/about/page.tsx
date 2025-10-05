@@ -7,7 +7,7 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export const metadata: Metadata = {
   title: 'About Us',
-  description: 'Learn about the mission, vision, and activities of GDG SPECM.',
+  description: 'Learn about the mission, vision, and activities of GDG SPEC.',
 };
 
 const AndroidIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -28,7 +28,7 @@ export default function AboutPage() {
   return (
     <div>
       <PageHeader
-        title="About GDG SPECM"
+        title="About GDG SPEC"
         description="We are a community of student developers at Shree Parekh Engineering College, passionate about Google technologies and building impactful solutions."
       />
 

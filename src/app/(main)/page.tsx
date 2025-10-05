@@ -125,7 +125,7 @@ export default function HomePage() {
       <section className="py-16 md:py-24 bg-card border-y">
         <div className="container max-w-7xl">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold font-headline">Why Join GDG SPECM?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold font-headline">Why Join GDG SPEC?</h2>
             <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
               Become part of a thriving community of student developers.
             </p>

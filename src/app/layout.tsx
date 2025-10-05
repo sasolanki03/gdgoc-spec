@@ -3,9 +3,9 @@ import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'GDG SPECM',
+  title: 'GDG SPEC',
   description: 'Google Developer Group on Campus - Shree Parekh Engineering College, Mahuva',
-  keywords: ['GDG', 'SPECM', 'Google Developer Group', 'Mahuva', 'Engineering College'],
+  keywords: ['GDG', 'SPEC', 'Google Developer Group', 'Mahuva', 'Engineering College'],
 };
 
 export default function RootLayout({

@@ -13,7 +13,7 @@ import { Card, CardContent } from '@/components/ui/card';
 
 export const metadata: Metadata = {
   title: 'Contact Us',
-  description: 'Get in touch with GDG SPECM. We\'d love to hear from you!',
+  description: 'Get in touch with GDG SPEC. We\'d love to hear from you!',
 };
 
 export default function ContactPage() {
@@ -46,7 +46,7 @@ export default function ContactPage() {
                                 <Mail className="h-6 w-6 text-primary mt-1"/>
                                 <div>
                                     <h4 className="font-semibold">Email</h4>
-                                    <a href="mailto:contact@gdgspecm.in" className="text-muted-foreground hover:text-primary">contact@gdgspecm.in</a>
+                                    <a href="mailto:contact@gdgspec.in" className="text-muted-foreground hover:text-primary">contact@gdgspec.in</a>
                                 </div>
                             </div>
                             <div className="flex items-start gap-4">

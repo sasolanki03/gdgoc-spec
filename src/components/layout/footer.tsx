@@ -39,7 +39,7 @@ export function Footer() {
           <div className="flex flex-col items-start gap-4">
             <Link href="/" className="flex items-center space-x-2">
               <GoogleLogo className="h-8 w-8 text-primary" />
-              <span className="text-xl font-bold font-headline">GDG SPECM</span>
+              <span className="text-xl font-bold font-headline">GDG SPEC</span>
             </Link>
             <p className="text-muted-foreground">
               Learn, Connect, Grow with the Google Developer Group at Shree Parekh Engineering College, Mahuva.
@@ -72,7 +72,7 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-8 border-t pt-6 text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} GDG SPECM. All Rights Reserved.</p>
+          <p>&copy; {new Date().getFullYear()} GDG SPEC. All Rights Reserved.</p>
         </div>
       </div>
     </footer>
