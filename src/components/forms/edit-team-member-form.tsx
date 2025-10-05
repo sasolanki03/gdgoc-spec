@@ -5,7 +5,6 @@ import React, { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import Image from 'next/image';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -76,35 +75,45 @@ export function EditTeamMemberForm({ member, onSuccess }: EditTeamMemberFormProp
     }
   };
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     const file = values.photo?.[0];
 
-    const processUpdate = (photoDataUrl: string) => {
-        const updatedMember = { 
-            ...member, 
-            ...values,
-            photo: photoDataUrl,
-        };
-
-        toast({
-          title: 'Member Updated!',
-          description: `${values.name}'s information has been updated.`,
-        });
-        
-        onSuccess(updatedMember);
-    }
-    
-    if (file) {
+    const readFileAsDataURL = (file: File): Promise<string> => {
+      return new Promise((resolve, reject) => {
         const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
         reader.readAsDataURL(file);
-        reader.onloadend = () => {
-            processUpdate(reader.result as string);
-        };
-    } else {
-        // No new file, so use existing photo
-        processUpdate(member.photo);
+      });
+    };
+
+    try {
+      let photoDataUrl = member.photo;
+      if (file) {
+        photoDataUrl = await readFileAsDataURL(file);
+      }
+
+      const updatedMember = {
+        ...member,
+        ...values,
+        photo: photoDataUrl,
+      };
+
+      toast({
+        title: 'Member Updated!',
+        description: `${values.name}'s information has been updated.`,
+      });
+
+      onSuccess(updatedMember);
+    } catch (error) {
+      console.error("Error processing file:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not process the photo file."
+      });
     }
-  }
+  };
 
   return (
     <Form {...form}>

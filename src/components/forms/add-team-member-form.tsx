@@ -5,7 +5,6 @@ import React, { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import Image from 'next/image';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -83,28 +82,44 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
   };
 
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     const file = values.photo[0];
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onloadend = () => {
-        const photoDataUrl = reader.result as string;
-        
-        const newMemberData: FormValues = {
-            ...values,
-            photo: photoDataUrl,
-        }
-
-        toast({
-          title: 'Member Added!',
-          description: `${values.name} has been added to the team.`,
-        });
-        
-        onSuccess(newMemberData);
-        form.reset();
-        setPhotoPreview(null);
+    
+    const readFileAsDataURL = (file: File): Promise<string> => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
     };
-  }
+
+    try {
+      const photoDataUrl = await readFileAsDataURL(file);
+      
+      const newMemberData: FormValues = {
+          ...values,
+          photo: photoDataUrl,
+      };
+
+      toast({
+        title: 'Member Added!',
+        description: `${values.name} has been added to the team.`,
+      });
+      
+      onSuccess(newMemberData);
+      form.reset();
+      setPhotoPreview(null);
+
+    } catch (error) {
+      console.error("Error reading file:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not process the photo file."
+      })
+    }
+  };
 
   return (
     <Form {...form}>
