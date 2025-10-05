@@ -7,7 +7,10 @@ import { initializeAdminApp } from '@/firebase/admin';
 import type { TeamMember } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 
-type AddTeamMemberData = Omit<TeamMember, 'id'>;
+type AddTeamMemberData = Omit<TeamMember, 'id' | 'socials'> & {
+    photo: string;
+    socials?: any[];
+};
 type UpdateTeamMemberData = Omit<TeamMember, 'id' | 'socials'>;
 
 export async function addTeamMember(data: AddTeamMemberData) {
@@ -16,7 +19,18 @@ export async function addTeamMember(data: AddTeamMemberData) {
         const db = getFirestore(adminApp);
         const teamCollection = db.collection('team');
 
-        await teamCollection.add(data);
+        const newMemberData: Omit<TeamMember, 'id'> = {
+            name: data.name,
+            role: data.role,
+            position: data.position,
+            branch: data.branch,
+            year: data.year,
+            photo: data.photo,
+            bio: data.bio,
+            socials: [], // Always initialize with empty socials
+        };
+
+        await teamCollection.add(newMemberData);
 
         revalidatePath('/team');
         revalidatePath('/admin/dashboard/team');
