@@ -5,7 +5,6 @@ import 'server-only';
 import { getFirestore } from 'firebase-admin/firestore';
 import { initializeAdminApp } from '@/firebase/admin';
 import type { LeaderboardEntry } from '@/lib/types';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 type LeaderboardData = Omit<LeaderboardEntry, 'rank' | 'student'> & {
     studentName: string;
@@ -13,7 +12,10 @@ type LeaderboardData = Omit<LeaderboardEntry, 'rank' | 'student'> & {
 
 export async function updateLeaderboard(data: LeaderboardData[]) {
     try {
-        const adminApp = await initializeAdminApp();
+        const adminApp = initializeAdminApp();
+        if (!adminApp) {
+            throw new Error('Firebase Admin SDK not initialized.');
+        }
         const db = getFirestore(adminApp);
         const leaderboardCollection = db.collection('leaderboard');
         
