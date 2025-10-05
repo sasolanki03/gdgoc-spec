@@ -1,0 +1,178 @@
+
+'use client';
+
+import { useState, useMemo } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Search, Trophy, Star, Shield, ExternalLink, Crown } from 'lucide-react';
+import { PageHeader } from '@/components/shared/page-header';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { leaderboardData as initialLeaderboardData } from '@/lib/placeholder-data';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
+import type { LeaderboardEntry } from '@/lib/types';
+import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
+const getRankColor = (rank: number) => {
+  if (rank === 1) return 'text-yellow-400';
+  if (rank === 2) return 'text-slate-400';
+  if (rank === 3) return 'text-yellow-600';
+  return 'text-muted-foreground';
+};
+
+export default function LeaderboardPage() {
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  const leaderboardData = useMemo(() => {
+    return initialLeaderboardData
+      .map((student, index) => ({ ...student, rank: index + 1 }))
+      .sort((a, b) => a.rank - b.rank);
+  }, []);
+
+  const filteredData = useMemo(() => {
+    return leaderboardData.filter(entry =>
+      entry.student.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [leaderboardData, searchTerm]);
+
+  return (
+    <TooltipProvider>
+      <div>
+        <PageHeader
+          title="Student Leaderboard"
+          description="Track your progress and see how you stack up against your peers in the Google Cloud Career Practitioner campaign."
+        />
+        <div className="container max-w-7xl py-16">
+          <div className="mb-8 flex flex-col md:flex-row gap-4 items-center">
+            <div className="relative w-full md:flex-grow">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search for a student..."
+                className="pl-10 text-base"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-20 text-center">Rank</TableHead>
+                      <TableHead>Student</TableHead>
+                      <TableHead className="text-center">Skill Badges</TableHead>
+                      <TableHead className="text-center">Quests</TableHead>
+                      <TableHead className="text-center">GenAI Games</TableHead>
+                      <TableHead className="text-right">Total Points</TableHead>
+                      <TableHead className="text-center">Profile</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredData.map((entry) => {
+                      const avatarImage = PlaceHolderImages.find(img => img.id === entry.student.avatar);
+                      return (
+                        <TableRow key={entry.rank} className={cn(
+                          'transition-colors',
+                          entry.rank <= 3 && 'bg-card',
+                          {'bg-yellow-400/10 hover:bg-yellow-400/20': entry.rank === 1},
+                          {'bg-slate-400/10 hover:bg-slate-400/20': entry.rank === 2},
+                          {'bg-yellow-600/10 hover:bg-yellow-600/20': entry.rank === 3},
+                        )}>
+                          <TableCell className="text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              <span className={cn('text-xl font-bold', getRankColor(entry.rank))}>
+                                {entry.rank}
+                              </span>
+                              {entry.rank <= 3 && <Trophy className={cn('h-5 w-5', getRankColor(entry.rank))} />}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-4">
+                              <Avatar>
+                                {avatarImage && <AvatarImage src={avatarImage.imageUrl} alt={entry.student.name} data-ai-hint={avatarImage.imageHint} />}
+                                <AvatarFallback>{entry.student.name.charAt(0)}</AvatarFallback>
+                              </Avatar>
+                              <span className="font-medium">{entry.student.name}</span>
+                            </div>
+                          </TableCell>
+                           <TableCell className="text-center">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                                  <Shield className="h-5 w-5 text-google-blue" />
+                                  <span className="font-semibold">{entry.skillBadges}</span>
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{entry.skillBadges} Skill Badges Completed</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TableCell>
+                          <TableCell className="text-center">
+                             <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                                  <Star className="h-5 w-5 text-google-yellow" />
+                                  <span className="font-semibold">{entry.quests}</span>
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{entry.quests} Quests Completed</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                                  <Crown className="h-5 w-5 text-google-green" />
+                                  <span className="font-semibold">{entry.genAIGames}</span>
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{entry.genAIGames} GenAI Arcade Games Completed</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TableCell>
+                          <TableCell className="text-right font-bold text-lg text-primary">{entry.totalPoints}</TableCell>
+                          <TableCell className="text-center">
+                             <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" asChild>
+                                  <Link href={entry.profileId} target="_blank" rel="noopener noreferrer">
+                                    <ExternalLink className="h-5 w-5 text-muted-foreground" />
+                                    <span className="sr-only">View Profile</span>
+                                  </Link>
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>View Google Cloud Skills Boost Profile</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+              {filteredData.length === 0 && (
+                <div className="text-center py-16">
+                  <h3 className="text-2xl font-bold font-headline">No Students Found</h3>
+                  <p className="text-muted-foreground mt-2">Try adjusting your search.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </TooltipProvider>
+  );
+}
