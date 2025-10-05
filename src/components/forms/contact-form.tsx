@@ -3,6 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { sendContactMessage } from '@/app/actions/contact';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -38,16 +39,21 @@ export function ContactForm() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    // This is where you would call your server action to submit to Firestore.
-    // e.g., await sendContactMessage(values);
-    console.log(values);
+    const result = await sendContactMessage(values);
 
-    toast({
-      title: 'Message Sent!',
-      description: 'Thanks for reaching out. We will get back to you shortly.',
-    });
-    
-    form.reset();
+    if (result.success) {
+        toast({
+            title: 'Message Sent!',
+            description: 'Thanks for reaching out. We will get back to you shortly.',
+        });
+        form.reset();
+    } else {
+        toast({
+            variant: 'destructive',
+            title: 'Error Sending Message',
+            description: result.error,
+        });
+    }
   }
 
   return (

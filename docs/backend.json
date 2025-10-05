@@ -128,6 +128,37 @@
         "photo",
         "bio"
       ]
+    },
+    "event_registration": {
+      "title": "Event Registration",
+      "description": "Represents a user's registration for an event.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "rollNo": { "type": "string" },
+        "branch": { "type": "string" },
+        "year": { "type": "string" },
+        "eventId": { "type": "string" },
+        "eventName": { "type": "string" },
+        "registeredAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "email", "eventId", "eventName", "registeredAt"]
+    },
+    "contact_message": {
+        "title": "Contact Message",
+        "description": "Represents a message submitted through the contact form.",
+        "type": "object",
+        "properties": {
+            "name": { "type": "string" },
+            "email": { "type": "string", "format": "email" },
+            "subject": { "type": "string" },
+            "message": { "type": "string" },
+            "createdAt": { "type": "string", "format": "date-time" },
+            "isRead": { "type": "boolean" }
+        },
+        "required": ["name", "email", "subject", "message", "createdAt"]
     }
   },
   "auth": {
@@ -147,6 +178,14 @@
         "$ref": "#/entities/team_member"
       },
       "description": "Stores the information for each core team member."
+    },
+    "/registrations/{registration}": {
+        "schema": { "$ref": "#/entities/event_registration" },
+        "description": "Stores all event registration data."
+    },
+    "/contacts/{message}": {
+        "schema": { "$ref": "#/entities/contact_message" },
+        "description": "Stores all messages from the contact form."
     }
   }
 }
