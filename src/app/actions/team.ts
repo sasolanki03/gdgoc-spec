@@ -13,9 +13,6 @@ type UpdateTeamMemberData = Omit<TeamMember, 'id' | 'socials'>;
 export async function addTeamMember(data: AddTeamMemberData) {
     try {
         const adminApp = initializeAdminApp();
-        if (!adminApp) {
-            throw new Error('Firebase Admin SDK not initialized.');
-        }
         const db = getFirestore(adminApp);
         const teamCollection = db.collection('team');
 
@@ -34,9 +31,6 @@ export async function addTeamMember(data: AddTeamMemberData) {
 export async function updateTeamMember(id: string, data: UpdateTeamMemberData) {
     try {
         const adminApp = initializeAdminApp();
-        if (!adminApp) {
-            throw new Error('Firebase Admin SDK not initialized.');
-        }
         const db = getFirestore(adminApp);
         const docRef = db.collection('team').doc(id);
 
@@ -57,9 +51,6 @@ export async function updateTeamMember(id: string, data: UpdateTeamMemberData) {
 export async function deleteTeamMember(id: string) {
     try {
         const adminApp = initializeAdminApp();
-        if (!adminApp) {
-            throw new Error('Firebase Admin SDK not initialized.');
-        }
         const db = getFirestore(adminApp);
         await db.collection('team').doc(id).delete();
 

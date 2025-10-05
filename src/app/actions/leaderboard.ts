@@ -13,9 +13,6 @@ type LeaderboardData = Omit<LeaderboardEntry, 'rank' | 'student'> & {
 export async function updateLeaderboard(data: LeaderboardData[]) {
     try {
         const adminApp = initializeAdminApp();
-        if (!adminApp) {
-            throw new Error('Firebase Admin SDK not initialized.');
-        }
         const db = getFirestore(adminApp);
         const leaderboardCollection = db.collection('leaderboard');
         
