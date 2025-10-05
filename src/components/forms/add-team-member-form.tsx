@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import type { TeamMember } from '@/lib/types';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -28,7 +29,7 @@ const formSchema = z.object({
 });
 
 interface AddTeamMemberFormProps {
-  onSuccess: () => void;
+  onSuccess: (newMember: Omit<TeamMember, 'id' | 'photo' | 'socials'>) => void;
 }
 
 export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
@@ -56,7 +57,7 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
       description: `${values.name} has been added to the team.`,
     });
     
-    onSuccess();
+    onSuccess(values);
     form.reset();
   }
 

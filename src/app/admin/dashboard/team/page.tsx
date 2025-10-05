@@ -60,6 +60,18 @@ export default function AdminTeamPage() {
     const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
     const { toast } = useToast();
 
+    const handleAddMember = (newMemberData: Omit<TeamMember, 'id' | 'photo' | 'socials'>) => {
+      const newMember: TeamMember = {
+        id: (teamMembers.length + 1).toString(),
+        ...newMemberData,
+        photo: 'leader-1', // Default photo for new members
+        socials: [], // Default empty socials for new members
+      };
+
+      setTeamMembers((prevMembers) => [...prevMembers, newMember]);
+      setIsAddDialogOpen(false);
+    };
+
     const handleEditClick = (member: TeamMember) => {
         setSelectedMember(member);
         setIsEditDialogOpen(true);
@@ -101,7 +113,7 @@ export default function AdminTeamPage() {
                         <DialogTitle className="font-headline text-2xl">Add New Team Member</DialogTitle>
                     </DialogHeader>
                     <AddTeamMemberForm 
-                        onSuccess={() => setIsAddDialogOpen(false)} 
+                        onSuccess={handleAddMember} 
                     />
                   </DialogContent>
                 </Dialog>
