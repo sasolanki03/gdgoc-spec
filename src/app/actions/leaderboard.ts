@@ -48,6 +48,9 @@ export async function updateLeaderboard(data: LeaderboardData[]) {
         return { success: true };
     } catch (error: any) {
         console.error('Error updating leaderboard:', error);
-        return { success: false, error: error.message };
+        const errorMessage = error.message.includes('FIREBASE_SERVICE_ACCOUNT_KEY')
+            ? 'Firebase Admin setup is incomplete. Please check server configuration.'
+            : error.message;
+        return { success: false, error: errorMessage };
     }
 }

@@ -29,6 +29,9 @@ export async function sendContactMessage(data: ContactMessage) {
         return { success: true };
     } catch (error: any) {
         console.error('Error sending contact message:', error);
-        return { success: false, error: 'Could not submit your message. Please try again later.' };
+        const errorMessage = error.message.includes('FIREBASE_SERVICE_ACCOUNT_KEY')
+            ? 'Firebase Admin setup is incomplete. Please check server configuration.'
+            : 'Could not submit your message. Please try again later.';
+        return { success: false, error: errorMessage };
     }
 }
