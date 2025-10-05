@@ -175,23 +175,14 @@ export default function HomePage() {
 
       {/* Newsletter Section */}
       <section id="newsletter" className="py-16 md:py-24 bg-card border-t">
-        <div className="container max-w-7xl">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold font-headline">Stay in the Loop!</h2>
-              <p className="mt-4 text-lg text-muted-foreground">
-                Subscribe to our newsletter to get the latest updates on events, workshops, and opportunities right in your inbox.
-              </p>
-            </div>
-            <div className="max-w-md lg:justify-self-end w-full">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-headline">Join Our Mailing List</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <NewsletterForm />
-                </CardContent>
-              </Card>
+        <div className="container max-w-4xl text-center">
+          <div className="space-y-6">
+            <h2 className="text-3xl md:text-4xl font-bold font-headline">Stay in the Loop!</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Subscribe to our newsletter to get the latest updates on events, workshops, and opportunities right in your inbox.
+            </p>
+            <div className="max-w-md mx-auto">
+              <NewsletterForm />
             </div>
           </div>
         </div>

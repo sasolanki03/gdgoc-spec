@@ -60,7 +60,7 @@ export function NewsletterForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full h-12 text-base font-semibold bg-accent hover:bg-accent/90" disabled={form.formState.isSubmitting}>
+        <Button type="submit" className="w-full h-12 text-base font-semibold bg-primary hover:bg-primary/90" disabled={form.formState.isSubmitting}>
           {form.formState.isSubmitting ? 'Subscribing...' : 'Subscribe Now'}
         </Button>
       </form>
