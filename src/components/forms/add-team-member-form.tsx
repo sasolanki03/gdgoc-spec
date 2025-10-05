@@ -57,6 +57,7 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    mode: 'onChange',
     defaultValues: {
       name: '',
       position: '',
@@ -76,6 +77,7 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
         setPhotoPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+      form.trigger('photo');
     } else {
         setPhotoPreview(null);
     }
@@ -273,7 +275,7 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
           )}
         />
         
-        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting || !form.formState.isValid}>
           {form.formState.isSubmitting ? 'Adding...' : 'Add Member'}
         </Button>
       </form>

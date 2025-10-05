@@ -53,6 +53,7 @@ export function EditTeamMemberForm({ member, onSuccess }: EditTeamMemberFormProp
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    mode: 'onChange',
     defaultValues: {
       name: member.name,
       position: member.position,
@@ -72,6 +73,7 @@ export function EditTeamMemberForm({ member, onSuccess }: EditTeamMemberFormProp
         setPhotoPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+      form.trigger('photo');
     }
   };
 
@@ -266,7 +268,7 @@ export function EditTeamMemberForm({ member, onSuccess }: EditTeamMemberFormProp
           )}
         />
         
-        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting || !form.formState.isValid}>
           {form.formState.isSubmitting ? 'Saving...' : 'Save Changes'}
         </Button>
       </form>
