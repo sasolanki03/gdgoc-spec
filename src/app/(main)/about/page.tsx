@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { Metadata } from 'next';
-import { Target, Eye, Activity, Android, Globe, Cloud, BrainCircuit, Bot } from 'lucide-react';
+import { Target, Eye, Activity, Globe, Cloud, BrainCircuit, Bot } from 'lucide-react';
 
 import { PageHeader } from '@/components/shared/page-header';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -10,8 +10,13 @@ export const metadata: Metadata = {
   description: 'Learn about the mission, vision, and activities of GDG SPECM.',
 };
 
+const AndroidIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M17.5 12a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" /><path d="M12 4V2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m5.64 17.66-1.41 1.41" /><path d="m18.36 5.64-1.41 1.41" /></svg>
+);
+
+
 const techFocus = [
-    { name: 'Android', icon: Android, color: 'text-google-green' },
+    { name: 'Android', icon: AndroidIcon, color: 'text-google-green' },
     { name: 'Web', icon: Globe, color: 'text-google-blue' },
     { name: 'Cloud', icon: Cloud, color: 'text-google-yellow' },
     { name: 'AI/ML', icon: BrainCircuit, color: 'text-google-red' },
