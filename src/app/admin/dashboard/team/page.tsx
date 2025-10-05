@@ -78,10 +78,6 @@ export default function AdminTeamPage() {
     };
 
     const handleDeleteMember = (memberId: string) => {
-      // This is where you would call your server action to delete from Firestore.
-      // e.g., await deleteTeamMember(memberId);
-      console.log(`Deleting member ${memberId}`);
-
       setTeamMembers((prevMembers) => prevMembers.filter(member => member.id !== memberId));
 
       toast({
@@ -170,7 +166,7 @@ export default function AdminTeamPage() {
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
                                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                            <DropdownMenuItem onClick={() => handleEditClick(member)}>
+                                            <DropdownMenuItem onSelect={() => handleEditClick(member)}>
                                                 Edit
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator />
