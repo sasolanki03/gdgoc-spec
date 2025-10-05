@@ -14,7 +14,7 @@ import type { LeaderboardEntry } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
-import { useCollection } from '@/firebase';
+import { useCollection, useFirestore } from '@/firebase';
 import { collection } from 'firebase/firestore';
 
 const getRankColor = (rank: number) => {
@@ -26,8 +26,10 @@ const getRankColor = (rank: number) => {
 
 export default function LeaderboardPage() {
   const [searchTerm, setSearchTerm] = useState('');
-  const { data: leaderboardData, loading } = useCollection<Omit<LeaderboardEntry, 'rank'>>(collection(useFirestore(), 'leaderboard'));
-
+  const firestore = useFirestore();
+  const { data: leaderboardData, loading } = useCollection<Omit<LeaderboardEntry, 'rank'>>(
+    firestore ? collection(firestore, 'leaderboard') : null
+  );
 
   const sortedData = useMemo(() => {
     if (!leaderboardData) return [];
