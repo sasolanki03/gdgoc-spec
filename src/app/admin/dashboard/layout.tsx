@@ -52,7 +52,7 @@ export default function DashboardLayout({
         <Sidebar>
             <SidebarHeader className="flex items-center justify-between p-2">
                 <Link href="/admin/dashboard" className="flex items-center gap-2">
-                    <GoogleLogo className="w-7 h-7" />
+                    
                     <span className="font-semibold text-lg font-headline">GDG SPEC Admin</span>
                 </Link>
                 <SidebarTrigger className="hidden md:flex" />

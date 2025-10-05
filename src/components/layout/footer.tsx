@@ -38,7 +38,7 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           <div className="flex flex-col items-start gap-4">
             <Link href="/" className="flex items-center space-x-2">
-              <GoogleLogo className="h-8 w-8 text-primary" />
+              
               <span className="text-xl font-bold font-headline">GDG SPEC</span>
             </Link>
             <p className="text-muted-foreground">

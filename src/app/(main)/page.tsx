@@ -40,15 +40,13 @@ const galleryImages = PlaceHolderImages.filter(img => galleryImageIds.includes(i
 
 export default function HomePage() {
   const upcomingEvents = events.filter(e => e.status === 'Upcoming').slice(0, 3);
-
+  
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
       <section className="relative py-20 md:py-32 bg-card">
         <div className="container max-w-7xl text-center">
-            <div className="flex justify-center mb-6">
-                 <AnimatedGdgLogo />
-            </div>
+            
             <h1 className="text-4xl md:text-6xl font-extrabold font-headline tracking-tight">
                 Google Developer Group
             </h1>
