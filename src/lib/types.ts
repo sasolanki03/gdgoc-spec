@@ -30,7 +30,7 @@ export type Event = {
   time: string;
   venue: string;
   imageUrl: string;
-  type: 'Workshop' | 'Hackathon' | 'Seminar' | 'Study Jam' | 'Tech Talk';
+  type: 'Workshop' | 'Hackathon' | 'Seminar' | 'Study Jam' | 'Tech Talk' | 'Info Session';
   status: 'Upcoming' | 'Past' | 'Continue';
 };
 

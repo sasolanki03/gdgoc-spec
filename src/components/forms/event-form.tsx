@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { format } from 'date-fns';
-import { Calendar as CalendarIcon, Upload, User } from 'lucide-react';
+import { Calendar as CalendarIcon, Upload } from 'lucide-react';
 import Image from 'next/image';
 
 import { Button } from '@/components/ui/button';
@@ -44,7 +44,7 @@ const formSchema = z.object({
   time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]\s(AM|PM)$/i, 'Invalid time format (e.g., 10:00 AM)'),
   venue: z.string().min(3, 'Venue is required.'),
   status: z.enum(['Upcoming', 'Past', 'Continue']),
-  type: z.enum(['Workshop', 'Hackathon', 'Seminar', 'Study Jam', 'Tech Talk']),
+  type: z.enum(['Workshop', 'Hackathon', 'Seminar', 'Study Jam', 'Tech Talk', 'Info Session']),
   imageUrl: z.any()
     .refine((value) => {
         if (typeof value === 'string') return true; // Already a URL/Data URI
@@ -295,6 +295,7 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
                         <SelectItem value="Seminar">Seminar</SelectItem>
                         <SelectItem value="Study Jam">Study Jam</SelectItem>
                         <SelectItem value="Tech Talk">Tech Talk</SelectItem>
+                        <SelectItem value="Info Session">Info Session</SelectItem>
                     </SelectContent>
                 </Select>
                 <FormMessage />
