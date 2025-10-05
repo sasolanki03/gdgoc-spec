@@ -33,9 +33,13 @@ const TeamSkeleton = () => (
 
 export default function TeamPage() {
   const firestore = useFirestore();
-  const { data: teamMembers, loading } = useCollection<TeamMember>(
-    firestore ? collection(firestore, 'team') : null
-  );
+
+  const teamQuery = useMemo(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'team');
+  }, [firestore]);
+
+  const { data: teamMembers, loading } = useCollection<TeamMember>(teamQuery);
 
   const groupedTeams = useMemo(() => {
     if (!teamMembers) return {};
