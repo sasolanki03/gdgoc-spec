@@ -131,7 +131,7 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
                 <FormLabel>Photo</FormLabel>
                 <div className='flex items-center gap-4'>
                     <Avatar className='h-20 w-20'>
-                        <AvatarImage src={photoPreview || ''} alt="Photo preview" />
+                        <AvatarImage src={photoPreview} alt="Photo preview" />
                         <AvatarFallback>
                             <User className='h-10 w-10 text-muted-foreground' />
                         </AvatarFallback>

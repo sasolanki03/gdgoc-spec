@@ -124,7 +124,7 @@ export function EditTeamMemberForm({ member, onSuccess }: EditTeamMemberFormProp
                 <FormLabel>Photo</FormLabel>
                 <div className='flex items-center gap-4'>
                     <Avatar className='h-20 w-20'>
-                        <AvatarImage src={photoPreview || ''} alt={member.name} />
+                        <AvatarImage src={photoPreview} alt={member.name} />
                         <AvatarFallback>
                             <User className='h-10 w-10 text-muted-foreground' />
                         </AvatarFallback>
