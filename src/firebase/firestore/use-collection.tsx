@@ -1,6 +1,6 @@
 
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   collection,
   onSnapshot,
@@ -24,13 +24,10 @@ export function useCollection<T>(query: Query<DocumentData> | null) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<FirestoreError | null>(null);
 
-  useEffect(() => {
-    if (!query) {
-      setData([]);
-      setLoading(false);
-      return;
-    }
+  const fetchData = useCallback(() => {
+    if (!query) return;
     
+    setLoading(true);
     const converter = getConverter<T>();
     const finalQuery = query.withConverter(converter);
 
@@ -51,9 +48,17 @@ export function useCollection<T>(query: Query<DocumentData> | null) {
         setLoading(false);
       }
     );
-
-    return () => unsubscribe();
+    return unsubscribe;
   }, [query]);
 
-  return { data, loading, error };
+  useEffect(() => {
+    const unsubscribe = fetchData();
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [fetchData]);
+
+  return { data, loading, error, refetch: fetchData };
 }

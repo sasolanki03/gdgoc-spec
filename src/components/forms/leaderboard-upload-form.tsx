@@ -10,8 +10,10 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { updateLeaderboard } from '@/app/actions/leaderboard';
 import { ScrollArea } from '../ui/scroll-area';
+import { scrapeAndProcessProfiles } from '@/ai/flows/scrape-leaderboard-flow';
+import type { LeaderboardEntry } from '@/lib/types';
+
 
 type ParsedData = {
     studentName: string;
@@ -19,7 +21,7 @@ type ParsedData = {
 };
 
 interface LeaderboardUploadFormProps {
-    onSuccess: () => void;
+    onSuccess: (data: Omit<LeaderboardEntry, 'id' | 'rank'>[]) => void;
 }
 
 export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps) {
@@ -60,7 +62,7 @@ export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps)
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
-      dynamicTyping: false, // Keep all as strings
+      dynamicTyping: false,
       complete: (results: ParseResult<ParsedData>) => {
         setIsParsing(false);
         const requiredHeaders = ['studentName', 'profileId'];
@@ -117,27 +119,39 @@ export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps)
         title: 'Scraping in Progress...',
         description: 'Fetching data from profiles. This may take a while, please do not close this window.',
     });
-    const result = await updateLeaderboard(parsedData);
+    
+    try {
+        const result = await scrapeAndProcessProfiles(parsedData);
 
-    if (result.success) {
-        toast({
-            title: 'Leaderboard Updated!',
-            description: 'The new student progress data has been saved.',
-        });
-        // Reset state
+        // Filter out any null results from scraping errors
+        const successfulScrapes = result.filter(r => r !== null) as Omit<LeaderboardEntry, 'id' | 'rank'>[];
+
+        if(successfulScrapes.length === 0) {
+            throw new Error("Scraping failed for all profiles. Please check profile URLs and website structure.");
+        }
+
+        if (successfulScrapes.length < parsedData.length) {
+            toast({
+                variant: 'destructive',
+                title: 'Partial Scraping Failure',
+                description: `Could not scrape ${parsedData.length - successfulScrapes.length} profiles. The leaderboard will be updated with the successful ones.`,
+            });
+        }
+
+        onSuccess(successfulScrapes);
         setFile(null);
         setParsedData([]);
         reset();
-        onSuccess();
-    } else {
+
+    } catch (error: any) {
         toast({
             variant: 'destructive',
             title: 'Uh oh! Something went wrong.',
-            description: result.error || 'Could not update the leaderboard. Please try again.',
+            description: error.message || 'Could not update the leaderboard. Please try again.',
         });
+    } finally {
+        setIsSubmitting(false);
     }
-    
-    setIsSubmitting(false);
   };
 
   return (
@@ -205,5 +219,3 @@ export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps)
     </div>
   );
 }
-
-    

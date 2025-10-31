@@ -2,9 +2,9 @@
 'use client';
 
 import { useState } from 'react';
-import { collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy, writeBatch } from 'firebase/firestore';
 import { useCollection, useFirestore } from '@/firebase';
-import { PlusCircle, MoreHorizontal, Trash } from 'lucide-react';
+import { PlusCircle, MoreHorizontal, Trash, Upload } from 'lucide-react';
 
 import {
     Table,
@@ -25,8 +25,10 @@ import {
   import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
+    DialogTrigger,
   } from "@/components/ui/dialog"
   import {
     AlertDialog,
@@ -54,13 +56,15 @@ import {
   import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
   import { PlaceHolderImages } from '@/lib/placeholder-images';
   import { LeaderboardEntryForm } from '@/components/forms/leaderboard-entry-form';
+  import { LeaderboardUploadForm } from '@/components/forms/leaderboard-upload-form';
 
 export default function AdminLeaderboardPage() {
     const firestore = useFirestore();
     const leaderboardQuery = firestore ? query(collection(firestore, 'leaderboard'), orderBy('totalPoints', 'desc')) : null;
-    const { data: leaderboardData, loading, error } = useCollection<Omit<LeaderboardEntry, 'rank'>>(leaderboardQuery);
+    const { data: leaderboardData, loading, error, refetch } = useCollection<Omit<LeaderboardEntry, 'rank'>>(leaderboardQuery);
 
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isEntryDialogOpen, setIsEntryDialogOpen] = useState(false);
+    const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
     const [selectedEntry, setSelectedEntry] = useState<LeaderboardEntry | null>(null);
     const { toast } = useToast();
 
@@ -70,7 +74,7 @@ export default function AdminLeaderboardPage() {
         if (!firestore) return;
         try {
             await addDoc(collection(firestore, 'leaderboard'), data);
-            setIsDialogOpen(false);
+            setIsEntryDialogOpen(false);
             toast({
                 title: 'Entry Added!',
                 description: `${data.student.name} has been added to the leaderboard.`,
@@ -89,7 +93,7 @@ export default function AdminLeaderboardPage() {
         if (!firestore) return;
         try {
             await updateDoc(doc(firestore, 'leaderboard', id), data);
-            setIsDialogOpen(false);
+            setIsEntryDialogOpen(false);
             setSelectedEntry(null);
             toast({
                 title: 'Entry Updated!',
@@ -133,29 +137,86 @@ export default function AdminLeaderboardPage() {
 
     const handleEditClick = (entry: LeaderboardEntry) => {
         setSelectedEntry(entry);
-        setIsDialogOpen(true);
+        setIsEntryDialogOpen(true);
     };
 
     const handleAddClick = () => {
         setSelectedEntry(null);
-        setIsDialogOpen(true);
+        setIsEntryDialogOpen(true);
     }
     
+    const handleUploadSuccess = async (scrapedData: Omit<LeaderboardEntry, 'id'|'rank'>[]) => {
+      if (!firestore) return;
+    
+      const batch = writeBatch(firestore);
+    
+      // 1. Delete all existing documents
+      if(leaderboardData){
+        leaderboardData.forEach(doc => {
+            batch.delete(doc(firestore, 'leaderboard', doc.id));
+        });
+      }
+    
+      // 2. Add all new documents
+      scrapedData.forEach(entry => {
+        const newDocRef = doc(collection(firestore, 'leaderboard'));
+        batch.set(newDocRef, entry);
+      });
+    
+      try {
+        await batch.commit();
+        toast({
+          title: 'Leaderboard Updated Successfully!',
+          description: `${scrapedData.length} entries have been synced.`,
+        });
+        setIsUploadDialogOpen(false);
+        // We don't need to call refetch() here as onSnapshot will automatically update the UI.
+      } catch (e: any) {
+        console.error("Error during batch write: ", e);
+        toast({
+          variant: 'destructive',
+          title: 'Failed to Update Leaderboard',
+          description: e.message,
+        });
+      }
+    };
+
     return (
       <>
         <Card>
             <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-4">
                 <div>
                 <CardTitle>Leaderboard Management</CardTitle>
-                <CardDescription>Add, edit, or delete leaderboard entries.</CardDescription>
+                <CardDescription>Add, edit, delete, or bulk upload leaderboard entries.</CardDescription>
                 </div>
-                <Button size="sm" className="gap-1" onClick={handleAddClick}>
-                    <PlusCircle className="h-3.5 w-3.5" />
-                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Add Entry
-                    </span>
-                </Button>
+                <div className="flex gap-2">
+                    <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button size="sm" variant="outline" className="gap-1">
+                                <Upload className="h-3.5 w-3.5" />
+                                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                                Bulk Upload
+                                </span>
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-2xl w-[95vw] max-h-[90vh] flex flex-col">
+                            <DialogHeader>
+                                <DialogTitle className="font-headline text-2xl">Bulk Upload Leaderboard</DialogTitle>
+                                <DialogDescription>
+                                    Upload a CSV file with `studentName` and `profileId` to scrape and update the entire leaderboard.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <LeaderboardUploadForm onSuccess={handleUploadSuccess} />
+                        </DialogContent>
+                    </Dialog>
+                    <Button size="sm" className="gap-1" onClick={handleAddClick}>
+                        <PlusCircle className="h-3.5 w-3.5" />
+                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                        Add Entry
+                        </span>
+                    </Button>
+                </div>
             </div>
             </CardHeader>
             <CardContent>
@@ -270,9 +331,9 @@ export default function AdminLeaderboardPage() {
             </div>
             </CardFooter>
         </Card>
-        <Dialog open={isDialogOpen} onOpenChange={(isOpen) => {
+        <Dialog open={isEntryDialogOpen} onOpenChange={(isOpen) => {
             if(!isOpen) setSelectedEntry(null);
-            setIsDialogOpen(isOpen);
+            setIsEntryDialogOpen(isOpen);
             }}>
             <DialogContent className="sm:max-w-[480px]">
             <DialogHeader>
@@ -287,5 +348,3 @@ export default function AdminLeaderboardPage() {
       </>
     );
 }
-
-    
