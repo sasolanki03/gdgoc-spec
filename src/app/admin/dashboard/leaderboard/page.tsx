@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useState } from 'react';
-import { collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy, writeBatch } from 'firebase/firestore';
+import { useState, useMemo } from 'react';
+import { collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy, writeBatch, getDocs } from 'firebase/firestore';
 import { useCollection, useFirestore } from '@/firebase';
 import { PlusCircle, MoreHorizontal, Trash, Upload } from 'lucide-react';
 
@@ -60,8 +60,13 @@ import {
 
 export default function AdminLeaderboardPage() {
     const firestore = useFirestore();
-    const leaderboardQuery = firestore ? query(collection(firestore, 'leaderboard'), orderBy('totalPoints', 'desc')) : null;
-    const { data: leaderboardData, loading, error, refetch } = useCollection<Omit<LeaderboardEntry, 'rank'>>(leaderboardQuery);
+    
+    const leaderboardQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, 'leaderboard'), orderBy('totalPoints', 'desc'));
+    }, [firestore]);
+
+    const { data: leaderboardData, loading, error } = useCollection<Omit<LeaderboardEntry, 'rank'>>(leaderboardQuery);
 
     const [isEntryDialogOpen, setIsEntryDialogOpen] = useState(false);
     const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
@@ -151,14 +156,15 @@ export default function AdminLeaderboardPage() {
       const batch = writeBatch(firestore);
     
       // 1. Find existing documents to delete them
-      const snapshot = await collection(firestore, 'leaderboard').get();
+      const leaderboardCollection = collection(firestore, 'leaderboard');
+      const snapshot = await getDocs(leaderboardCollection);
       snapshot.docs.forEach(doc => {
           batch.delete(doc.ref);
       });
     
       // 2. Add all new documents
       scrapedData.forEach(entry => {
-        const newDocRef = doc(collection(firestore, 'leaderboard'));
+        const newDocRef = doc(leaderboardCollection);
         batch.set(newDocRef, entry);
       });
     
