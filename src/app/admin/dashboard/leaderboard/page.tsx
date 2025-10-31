@@ -57,6 +57,7 @@ import {
   import { PlaceHolderImages } from '@/lib/placeholder-images';
   import { LeaderboardEntryForm } from '@/components/forms/leaderboard-entry-form';
   import { LeaderboardUploadForm } from '@/components/forms/leaderboard-upload-form';
+  import { EditLeaderboardEntryForm } from '@/components/forms/edit-leaderboard-entry-form';
 
 export default function AdminLeaderboardPage() {
     const firestore = useFirestore();
@@ -68,18 +69,19 @@ export default function AdminLeaderboardPage() {
 
     const { data: leaderboardData, loading, error } = useCollection<Omit<LeaderboardEntry, 'rank'>>(leaderboardQuery);
 
-    const [isEntryDialogOpen, setIsEntryDialogOpen] = useState(false);
+    const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
     const [selectedEntry, setSelectedEntry] = useState<LeaderboardEntry | null>(null);
     const { toast } = useToast();
 
-    const rankedData = leaderboardData?.map((entry, index) => ({ ...entry, rank: index + 1 })) || [];
+    const rankedData = useMemo(() => leaderboardData?.map((entry, index) => ({ ...entry, rank: index + 1 })) || [], [leaderboardData]);
 
     const handleAddEntry = async (data: Omit<LeaderboardEntry, 'id' | 'rank'>) => {
         if (!firestore) return;
         try {
             await addDoc(collection(firestore, 'leaderboard'), data);
-            setIsEntryDialogOpen(false);
+            setIsAddDialogOpen(false);
             toast({
                 title: 'Entry Added!',
                 description: `${data.student.name} has been added to the leaderboard.`,
@@ -98,7 +100,7 @@ export default function AdminLeaderboardPage() {
         if (!firestore) return;
         try {
             await updateDoc(doc(firestore, 'leaderboard', id), data);
-            setIsEntryDialogOpen(false);
+            setIsEditDialogOpen(false);
             setSelectedEntry(null);
             toast({
                 title: 'Entry Updated!',
@@ -131,38 +133,23 @@ export default function AdminLeaderboardPage() {
             });
         }
     };
-    
-    const handleFormSuccess = (data: Omit<LeaderboardEntry, 'id'|'rank'>) => {
-        if (selectedEntry) {
-            handleUpdateEntry(selectedEntry.id, data);
-        } else {
-            handleAddEntry(data);
-        }
-    };
 
     const handleEditClick = (entry: LeaderboardEntry) => {
         setSelectedEntry(entry);
-        setIsEntryDialogOpen(true);
+        setIsEditDialogOpen(true);
     };
-
-    const handleAddClick = () => {
-        setSelectedEntry(null);
-        setIsEntryDialogOpen(true);
-    }
     
     const handleUploadSuccess = async (scrapedData: Omit<LeaderboardEntry, 'id'|'rank'>[]) => {
       if (!firestore) return;
     
       const batch = writeBatch(firestore);
     
-      // 1. Find existing documents to delete them
       const leaderboardCollection = collection(firestore, 'leaderboard');
       const snapshot = await getDocs(leaderboardCollection);
       snapshot.docs.forEach(doc => {
           batch.delete(doc.ref);
       });
     
-      // 2. Add all new documents
       scrapedData.forEach(entry => {
         const newDocRef = doc(leaderboardCollection);
         batch.set(newDocRef, entry);
@@ -175,7 +162,6 @@ export default function AdminLeaderboardPage() {
           description: `${scrapedData.length} entries have been synced.`,
         });
         setIsUploadDialogOpen(false);
-        // We don't need to call refetch() here as onSnapshot will automatically update the UI.
       } catch (e: any) {
         console.error("Error during batch write: ", e);
         toast({
@@ -215,12 +201,25 @@ export default function AdminLeaderboardPage() {
                             <LeaderboardUploadForm onSuccess={handleUploadSuccess} />
                         </DialogContent>
                     </Dialog>
-                    <Button size="sm" className="gap-1" onClick={handleAddClick}>
-                        <PlusCircle className="h-3.5 w-3.5" />
-                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Add Entry
-                        </span>
-                    </Button>
+                    <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                        <DialogTrigger asChild>
+                             <Button size="sm" className="gap-1">
+                                <PlusCircle className="h-3.5 w-3.5" />
+                                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                                Add Entry
+                                </span>
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[480px]">
+                            <DialogHeader>
+                                <DialogTitle className="font-headline text-2xl">Add New Entry</DialogTitle>
+                                <DialogDescription>
+                                    Enter the student name and profile URL to scrape their data and add them to the leaderboard.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <LeaderboardEntryForm onSuccess={handleAddEntry} />
+                        </DialogContent>
+                    </Dialog>
                 </div>
             </div>
             </CardHeader>
@@ -290,7 +289,7 @@ export default function AdminLeaderboardPage() {
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                 <DropdownMenuItem onSelect={() => handleEditClick(entry)}>
-                                                    Edit & Rescrape
+                                                    Edit
                                                 </DropdownMenuItem>
                                                 <DropdownMenuSeparator />
                                                 <AlertDialogTrigger asChild>
@@ -336,23 +335,25 @@ export default function AdminLeaderboardPage() {
             </div>
             </CardFooter>
         </Card>
-        <Dialog open={isEntryDialogOpen} onOpenChange={(isOpen) => {
-            if(!isOpen) setSelectedEntry(null);
-            setIsEntryDialogOpen(isOpen);
-            }}>
-            <DialogContent className="sm:max-w-[480px]">
-            <DialogHeader>
-                <DialogTitle className="font-headline text-2xl">{selectedEntry ? 'Edit and Rescrape Entry' : 'Add New Entry'}</DialogTitle>
-                <DialogDescription>
-                    {selectedEntry ? 'Update the name or URL, and the system will re-fetch the data.' : 'Enter the student name and profile URL to scrape their data.'}
-                </DialogDescription>
-            </DialogHeader>
-            <LeaderboardEntryForm
-                entry={selectedEntry} 
-                onSuccess={handleFormSuccess}
-            />
-            </DialogContent>
-        </Dialog>
+        {selectedEntry && (
+            <Dialog open={isEditDialogOpen} onOpenChange={(isOpen) => {
+                if(!isOpen) setSelectedEntry(null);
+                setIsEditDialogOpen(isOpen);
+                }}>
+                <DialogContent className="sm:max-w-[480px]">
+                <DialogHeader>
+                    <DialogTitle className="font-headline text-2xl">Edit Entry for {selectedEntry.student.name}</DialogTitle>
+                    <DialogDescription>
+                        Manually update the details for this leaderboard entry.
+                    </DialogDescription>
+                </DialogHeader>
+                <EditLeaderboardEntryForm
+                    entry={selectedEntry} 
+                    onSuccess={handleUpdateEntry}
+                />
+                </DialogContent>
+            </Dialog>
+        )}
       </>
     );
 }

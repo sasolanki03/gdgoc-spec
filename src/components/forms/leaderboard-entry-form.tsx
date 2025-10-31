@@ -29,23 +29,20 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 interface LeaderboardEntryFormProps {
-  entry?: LeaderboardEntry | null;
   onSuccess: (data: Omit<LeaderboardEntry, 'id' | 'rank'>) => void;
 }
 
-export function LeaderboardEntryForm({ entry, onSuccess }: LeaderboardEntryFormProps) {
+export function LeaderboardEntryForm({ onSuccess }: LeaderboardEntryFormProps) {
   const { toast } = useToast();
   const [isScraping, setIsScraping] = useState(false);
-
-  const defaultValues = {
-    studentName: entry?.student.name || '',
-    profileId: entry?.profileId || '',
-  };
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     mode: 'onChange',
-    defaultValues,
+    defaultValues: {
+        studentName: '',
+        profileId: '',
+    },
   });
 
   const onSubmit = async (values: FormValues) => {
@@ -116,7 +113,7 @@ export function LeaderboardEntryForm({ entry, onSuccess }: LeaderboardEntryFormP
         
         <Button type="submit" className="w-full" disabled={isScraping || !form.formState.isValid}>
           {isScraping && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {isScraping ? 'Fetching Data...' : (entry ? 'Update and Rescrape' : 'Scrape and Add Entry')}
+          {isScraping ? 'Fetching Data...' : 'Scrape and Add Entry'}
         </Button>
       </form>
     </Form>
