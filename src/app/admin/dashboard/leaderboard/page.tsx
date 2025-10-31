@@ -65,6 +65,7 @@ export default function AdminLeaderboardPage() {
     const { data: leaderboardData, loading, error } = useCollection<Omit<LeaderboardEntry, 'rank'>>(leaderboardQuery);
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
     const [selectedEntry, setSelectedEntry] = useState<LeaderboardEntry | null>(null);
     const { toast } = useToast();
 
@@ -144,25 +145,29 @@ export default function AdminLeaderboardPage() {
         setSelectedEntry(null);
         setIsDialogOpen(true);
     }
+    
+    const onUploadSuccess = () => {
+        setIsUploadDialogOpen(false);
+    }
 
     return (
       <>
         <div className="space-y-8">
-            <Dialog>
+            <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
                 <DialogTrigger asChild>
                     <Button>
                         <Upload className="mr-2 h-4 w-4" />
                         Bulk Upload & Scrape
                     </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-4xl">
+                <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col">
                     <DialogHeader>
                         <DialogTitle className="font-headline text-2xl">Scrape Profiles from CSV</DialogTitle>
                         <DialogDescription>
                             Upload a CSV with `studentName` and `profileId` (URL). The system will scrape each profile for points and badges, then update the leaderboard.
                         </DialogDescription>
                     </DialogHeader>
-                    <LeaderboardUploadForm />
+                    <LeaderboardUploadForm onSuccess={onUploadSuccess} />
                 </DialogContent>
             </Dialog>
             
@@ -313,3 +318,5 @@ export default function AdminLeaderboardPage() {
       </>
     );
 }
+
+    

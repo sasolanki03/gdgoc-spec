@@ -11,13 +11,18 @@ import { useToast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { updateLeaderboard } from '@/app/actions/leaderboard';
+import { ScrollArea } from '../ui/scroll-area';
 
 type ParsedData = {
     studentName: string;
     profileId: string;
 };
 
-export function LeaderboardUploadForm() {
+interface LeaderboardUploadFormProps {
+    onSuccess: () => void;
+}
+
+export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps) {
   const [file, setFile] = useState<File | null>(null);
   const [parsedData, setParsedData] = useState<ParsedData[]>([]);
   const [isParsing, setIsParsing] = useState(false);
@@ -123,6 +128,7 @@ export function LeaderboardUploadForm() {
         setFile(null);
         setParsedData([]);
         reset();
+        onSuccess();
     } else {
         toast({
             variant: 'destructive',
@@ -135,7 +141,7 @@ export function LeaderboardUploadForm() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="flex-1 flex flex-col space-y-4 overflow-hidden">
       <form onSubmit={handleSubmit(onParse)} className="space-y-4">
         <div className="p-6 border-dashed border-2 rounded-lg text-center bg-background">
           <label htmlFor="csv-upload" className="cursor-pointer">
@@ -161,15 +167,15 @@ export function LeaderboardUploadForm() {
       </form>
 
       {parsedData.length > 0 && (
-        <Card>
+        <Card className="flex-1 flex flex-col overflow-hidden">
           <CardHeader>
             <CardTitle>Data Preview</CardTitle>
             <CardDescription>
               Review the parsed profile URLs before scraping. Only the first 10 rows are shown.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto rounded-md border max-h-64">
+          <CardContent className="flex-1 flex flex-col overflow-hidden">
+            <ScrollArea className="flex-1">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -188,7 +194,7 @@ export function LeaderboardUploadForm() {
                   ))}
                 </TableBody>
               </Table>
-            </div>
+            </ScrollArea>
             <Button onClick={onSubmit} disabled={isSubmitting} className="mt-6 w-full sm:w-auto">
               {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
               Fetch Data and Update Leaderboard
@@ -199,3 +205,5 @@ export function LeaderboardUploadForm() {
     </div>
   );
 }
+
+    
