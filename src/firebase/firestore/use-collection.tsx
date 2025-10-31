@@ -25,7 +25,11 @@ export function useCollection<T>(query: Query<DocumentData> | null) {
   const [error, setError] = useState<FirestoreError | null>(null);
 
   const fetchData = useCallback(() => {
-    if (!query) return;
+    if (!query) {
+        setLoading(false);
+        setData([]);
+        return;
+    }
     
     setLoading(true);
     const converter = getConverter<T>();
