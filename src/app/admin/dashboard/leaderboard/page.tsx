@@ -127,7 +127,7 @@ export default function AdminLeaderboardPage() {
         }
     };
     
-    const handleFormSuccess = (data: any) => {
+    const handleFormSuccess = (data: Omit<LeaderboardEntry, 'id'|'rank'>) => {
         if (selectedEntry) {
             handleUpdateEntry(selectedEntry.id, data);
         } else {
@@ -150,12 +150,11 @@ export default function AdminLeaderboardPage() {
     
       const batch = writeBatch(firestore);
     
-      // 1. Delete all existing documents
-      if(leaderboardData){
-        leaderboardData.forEach(doc => {
-            batch.delete(doc(firestore, 'leaderboard', doc.id));
-        });
-      }
+      // 1. Find existing documents to delete them
+      const snapshot = await collection(firestore, 'leaderboard').get();
+      snapshot.docs.forEach(doc => {
+          batch.delete(doc.ref);
+      });
     
       // 2. Add all new documents
       scrapedData.forEach(entry => {
@@ -285,7 +284,7 @@ export default function AdminLeaderboardPage() {
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                 <DropdownMenuItem onSelect={() => handleEditClick(entry)}>
-                                                    Edit
+                                                    Edit & Rescrape
                                                 </DropdownMenuItem>
                                                 <DropdownMenuSeparator />
                                                 <AlertDialogTrigger asChild>
@@ -337,7 +336,10 @@ export default function AdminLeaderboardPage() {
             }}>
             <DialogContent className="sm:max-w-[480px]">
             <DialogHeader>
-                <DialogTitle className="font-headline text-2xl">{selectedEntry ? 'Edit Entry' : 'Add New Entry'}</DialogTitle>
+                <DialogTitle className="font-headline text-2xl">{selectedEntry ? 'Edit and Rescrape Entry' : 'Add New Entry'}</DialogTitle>
+                <DialogDescription>
+                    {selectedEntry ? 'Update the name or URL, and the system will re-fetch the data.' : 'Enter the student name and profile URL to scrape their data.'}
+                </DialogDescription>
             </DialogHeader>
             <LeaderboardEntryForm
                 entry={selectedEntry} 
