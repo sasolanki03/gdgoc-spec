@@ -74,11 +74,16 @@ async function scrapeProfile(url: string, name: string): Promise<Omit<Leaderboar
     if (profileData && profileData.badges) {
         profileData.badges.forEach((badge: any) => {
             const badgeTitle = badge.title || '';
-            if (badge.badge_type === 'SKILL_BADGE') {
+            const badgeType = badge.badge_type || '';
+
+            if (badgeType === 'SKILL') {
                 skillBadges++;
-            } else if (badge.badge_type === 'QUEST') {
+            } else if (badgeType === 'QUEST') {
                 quests++;
-            } else if (badgeTitle.toLowerCase().includes('genai arcade')) {
+            }
+            
+            // GenAI games can sometimes be quests, so we check the title separately.
+            if (badgeTitle.toLowerCase().includes('genai arcade')) {
                 genAIGames++;
             }
         });
