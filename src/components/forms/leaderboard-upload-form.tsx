@@ -185,13 +185,13 @@ export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps)
           <CardHeader>
             <CardTitle>Data Preview</CardTitle>
             <CardDescription>
-              Review the parsed profile URLs before scraping. Only the first 10 rows are shown.
+              Review the parsed profile URLs before scraping.
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex-1 overflow-auto">
+          <CardContent className="flex-1 overflow-hidden p-0">
             <ScrollArea className="h-full">
               <Table>
-                <TableHeader>
+                <TableHeader className="sticky top-0 bg-card z-10">
                   <TableRow>
                     {Object.keys(parsedData[0]).map((key) => (
                       <TableHead key={key}>{key}</TableHead>
@@ -199,10 +199,10 @@ export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps)
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {parsedData.slice(0, 10).map((row, index) => (
+                  {parsedData.map((row, index) => (
                     <TableRow key={index}>
                       {Object.values(row).map((value, i) => (
-                        <TableCell key={i} className="max-w-xs truncate">{String(value)}</TableCell>
+                        <TableCell key={i} className="max-w-[200px] truncate">{String(value)}</TableCell>
                       ))}
                     </TableRow>
                   ))}
