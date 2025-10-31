@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from 'firebase/firestore';
 import { useCollection, useFirestore } from '@/firebase';
-import { PlusCircle, MoreHorizontal, Trash, Upload } from 'lucide-react';
+import { PlusCircle, MoreHorizontal, Trash } from 'lucide-react';
 
 import {
     Table,
@@ -25,10 +25,8 @@ import {
   import {
     Dialog,
     DialogContent,
-    DialogDescription,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
   } from "@/components/ui/dialog"
   import {
     AlertDialog,
@@ -56,8 +54,6 @@ import {
   import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
   import { PlaceHolderImages } from '@/lib/placeholder-images';
   import { LeaderboardEntryForm } from '@/components/forms/leaderboard-entry-form';
-  import { Separator } from '@/components/ui/separator';
-  import { LeaderboardUploadForm } from '@/components/forms/leaderboard-upload-form';
 
 export default function AdminLeaderboardPage() {
     const firestore = useFirestore();
@@ -65,7 +61,6 @@ export default function AdminLeaderboardPage() {
     const { data: leaderboardData, loading, error } = useCollection<Omit<LeaderboardEntry, 'rank'>>(leaderboardQuery);
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
     const [selectedEntry, setSelectedEntry] = useState<LeaderboardEntry | null>(null);
     const { toast } = useToast();
 
@@ -146,161 +141,135 @@ export default function AdminLeaderboardPage() {
         setIsDialogOpen(true);
     }
     
-    const onUploadSuccess = () => {
-        setIsUploadDialogOpen(false);
-    }
-
     return (
       <>
-        <div className="space-y-8">
-            <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
-                <DialogTrigger asChild>
-                    <Button>
-                        <Upload className="mr-2 h-4 w-4" />
-                        Bulk Upload & Scrape
-                    </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col">
-                    <DialogHeader>
-                        <DialogTitle className="font-headline text-2xl">Scrape Profiles from CSV</DialogTitle>
-                        <DialogDescription>
-                            Upload a CSV with `studentName` and `profileId` (URL). The system will scrape each profile for points and badges, then update the leaderboard.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <LeaderboardUploadForm onSuccess={onUploadSuccess} />
-                </DialogContent>
-            </Dialog>
-            
-            <Separator />
-
-            <Card>
-                <CardHeader>
-                <div className="flex items-center justify-between">
-                    <div>
-                    <CardTitle>Manual Leaderboard Management</CardTitle>
-                    <CardDescription>Add, edit, or delete leaderboard entries one by one.</CardDescription>
-                    </div>
-                    <Button size="sm" className="gap-1" onClick={handleAddClick}>
-                        <PlusCircle className="h-3.5 w-3.5" />
-                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Add Entry
-                        </span>
-                    </Button>
+        <Card>
+            <CardHeader>
+            <div className="flex items-center justify-between">
+                <div>
+                <CardTitle>Leaderboard Management</CardTitle>
+                <CardDescription>Add, edit, or delete leaderboard entries.</CardDescription>
                 </div>
-                </CardHeader>
-                <CardContent>
-                <Table>
-                    <TableHeader>
-                    <TableRow>
-                        <TableHead className="w-16 text-center">Rank</TableHead>
-                        <TableHead>Student</TableHead>
-                        <TableHead className="text-center">Skill Badges</TableHead>
-                        <TableHead className="text-center">Quests</TableHead>
-                        <TableHead className="text-center">GenAI Games</TableHead>
-                        <TableHead className="text-right">Total Points</TableHead>
-                        <TableHead>
-                        <span className="sr-only">Actions</span>
-                        </TableHead>
-                    </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                    {loading ? (
-                        [...Array(5)].map((_, i) => (
-                            <TableRow key={i}>
-                                <TableCell className="text-center"><Skeleton className="h-5 w-5 mx-auto" /></TableCell>
-                                <TableCell>
-                                    <div className='flex items-center gap-2'>
-                                        <Skeleton className="h-10 w-10 rounded-full" />
-                                        <Skeleton className="h-5 w-24" />
-                                    </div>
-                                </TableCell>
-                                <TableCell className="text-center"><Skeleton className="h-5 w-10 mx-auto" /></TableCell>
-                                <TableCell className="text-center"><Skeleton className="h-5 w-10 mx-auto" /></TableCell>
-                                <TableCell className="text-center"><Skeleton className="h-5 w-10 mx-auto" /></TableCell>
-                                <TableCell className="text-right"><Skeleton className="h-5 w-12 ml-auto" /></TableCell>
-                                <TableCell>
-                                    <Skeleton className="h-8 w-8 ml-auto" />
-                                </TableCell>
-                            </TableRow>
-                        ))
-                    ) : rankedData.map((entry) => {
-                        const avatarImage = PlaceHolderImages.find(img => img.id === entry.student.avatar);
-                        return (
-                            <TableRow key={entry.id}>
-                                <TableCell className="font-medium text-center">{entry.rank}</TableCell>
-                                <TableCell>
-                                    <div className="flex items-center gap-3">
-                                    <Avatar className="hidden h-9 w-9 sm:flex">
-                                        {avatarImage && <AvatarImage src={avatarImage.imageUrl} alt={entry.student.name} />}
-                                        <AvatarFallback>{entry.student.name.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                    <div className="font-medium">{entry.student.name}</div>
-                                    </div>
-                                </TableCell>
-                                <TableCell className="text-center">{entry.skillBadges}</TableCell>
-                                <TableCell className="text-center">{entry.quests}</TableCell>
-                                <TableCell className="text-center">{entry.genAIGames}</TableCell>
-                                <TableCell className="text-right font-semibold">{entry.totalPoints}</TableCell>
-                                <TableCell>
-                                    <div className="flex items-center justify-end">
-                                        <AlertDialog>
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button aria-haspopup="true" size="icon" variant="ghost">
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                    <span className="sr-only">Toggle menu</span>
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                    <DropdownMenuItem onSelect={() => handleEditClick(entry)}>
-                                                        Edit
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    <AlertDialogTrigger asChild>
-                                                    <DropdownMenuItem className="text-destructive" onSelect={(e) => e.preventDefault()}>
-                                                        <Trash className="mr-2 h-4 w-4" />
-                                                        Delete
-                                                    </DropdownMenuItem>
-                                                    </AlertDialogTrigger>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                            <AlertDialogContent>
-                                                <AlertDialogHeader>
-                                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                                <AlertDialogDescription>
-                                                    This action cannot be undone. This will permanently delete {entry.student.name}'s entry.
-                                                </AlertDialogDescription>
-                                                </AlertDialogHeader>
-                                                <AlertDialogFooter>
-                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                <AlertDialogAction onClick={() => handleDeleteEntry(entry.id, entry.student.name)} className="bg-destructive hover:bg-destructive/90">
+                <Button size="sm" className="gap-1" onClick={handleAddClick}>
+                    <PlusCircle className="h-3.5 w-3.5" />
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    Add Entry
+                    </span>
+                </Button>
+            </div>
+            </CardHeader>
+            <CardContent>
+            <Table>
+                <TableHeader>
+                <TableRow>
+                    <TableHead className="w-16 text-center">Rank</TableHead>
+                    <TableHead>Student</TableHead>
+                    <TableHead className="text-center">Skill Badges</TableHead>
+                    <TableHead className="text-center">Quests</TableHead>
+                    <TableHead className="text-center">GenAI Games</TableHead>
+                    <TableHead className="text-right">Total Points</TableHead>
+                    <TableHead>
+                    <span className="sr-only">Actions</span>
+                    </TableHead>
+                </TableRow>
+                </TableHeader>
+                <TableBody>
+                {loading ? (
+                    [...Array(5)].map((_, i) => (
+                        <TableRow key={i}>
+                            <TableCell className="text-center"><Skeleton className="h-5 w-5 mx-auto" /></TableCell>
+                            <TableCell>
+                                <div className='flex items-center gap-2'>
+                                    <Skeleton className="h-10 w-10 rounded-full" />
+                                    <Skeleton className="h-5 w-24" />
+                                </div>
+                            </TableCell>
+                            <TableCell className="text-center"><Skeleton className="h-5 w-10 mx-auto" /></TableCell>
+                            <TableCell className="text-center"><Skeleton className="h-5 w-10 mx-auto" /></TableCell>
+                            <TableCell className="text-center"><Skeleton className="h-5 w-10 mx-auto" /></TableCell>
+                            <TableCell className="text-right"><Skeleton className="h-5 w-12 ml-auto" /></TableCell>
+                            <TableCell>
+                                <Skeleton className="h-8 w-8 ml-auto" />
+                            </TableCell>
+                        </TableRow>
+                    ))
+                ) : rankedData.map((entry) => {
+                    const avatarImage = PlaceHolderImages.find(img => img.id === entry.student.avatar);
+                    return (
+                        <TableRow key={entry.id}>
+                            <TableCell className="font-medium text-center">{entry.rank}</TableCell>
+                            <TableCell>
+                                <div className="flex items-center gap-3">
+                                <Avatar className="hidden h-9 w-9 sm:flex">
+                                    {avatarImage && <AvatarImage src={avatarImage.imageUrl} alt={entry.student.name} />}
+                                    <AvatarFallback>{entry.student.name.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <div className="font-medium">{entry.student.name}</div>
+                                </div>
+                            </TableCell>
+                            <TableCell className="text-center">{entry.skillBadges}</TableCell>
+                            <TableCell className="text-center">{entry.quests}</TableCell>
+                            <TableCell className="text-center">{entry.genAIGames}</TableCell>
+                            <TableCell className="text-right font-semibold">{entry.totalPoints}</TableCell>
+                            <TableCell>
+                                <div className="flex items-center justify-end">
+                                    <AlertDialog>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button aria-haspopup="true" size="icon" variant="ghost">
+                                                <MoreHorizontal className="h-4 w-4" />
+                                                <span className="sr-only">Toggle menu</span>
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                <DropdownMenuItem onSelect={() => handleEditClick(entry)}>
+                                                    Edit
+                                                </DropdownMenuItem>
+                                                <DropdownMenuSeparator />
+                                                <AlertDialogTrigger asChild>
+                                                <DropdownMenuItem className="text-destructive" onSelect={(e) => e.preventDefault()}>
+                                                    <Trash className="mr-2 h-4 w-4" />
                                                     Delete
-                                                </AlertDialogAction>
-                                                </AlertDialogFooter>
-                                            </AlertDialogContent>
-                                        </AlertDialog>
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        )
-                    })}
-                    </TableBody>
-                </Table>
-                    {error && <p className='text-destructive text-center p-4'>Error: {error.message}</p>}
-                    {!loading && rankedData.length === 0 && (
-                        <div className="text-center py-16">
-                            <p className="text-muted-foreground">No leaderboard entries yet.</p>
-                        </div>
-                    )}
-                </CardContent>
-                <CardFooter>
-                <div className="text-xs text-muted-foreground">
-                    Showing <strong>{rankedData.length}</strong> of <strong>{rankedData.length}</strong> entries
-                </div>
-                </CardFooter>
-            </Card>
-        </div>
+                                                </DropdownMenuItem>
+                                                </AlertDialogTrigger>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This action cannot be undone. This will permanently delete {entry.student.name}'s entry.
+                                            </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => handleDeleteEntry(entry.id, entry.student.name)} className="bg-destructive hover:bg-destructive/90">
+                                                Delete
+                                            </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
+                            </TableCell>
+                        </TableRow>
+                    )
+                })}
+                </TableBody>
+            </Table>
+                {error && <p className='text-destructive text-center p-4'>Error: {error.message}</p>}
+                {!loading && rankedData.length === 0 && (
+                    <div className="text-center py-16">
+                        <p className="text-muted-foreground">No leaderboard entries yet.</p>
+                    </div>
+                )}
+            </CardContent>
+            <CardFooter>
+            <div className="text-xs text-muted-foreground">
+                Showing <strong>{rankedData.length}</strong> of <strong>{rankedData.length}</strong> entries
+            </div>
+            </CardFooter>
+        </Card>
         <Dialog open={isDialogOpen} onOpenChange={(isOpen) => {
             if(!isOpen) setSelectedEntry(null);
             setIsDialogOpen(isOpen);
