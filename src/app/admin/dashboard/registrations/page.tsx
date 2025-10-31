@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useMemo } from 'react';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { useCollection, useFirestore } from '@/firebase';
 import type { EventRegistration } from '@/lib/types';
@@ -27,9 +28,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminRegistrationsPage() {
     const firestore = useFirestore();
-    const { data: registrations, loading } = useCollection<EventRegistration>(
-        firestore ? query(collection(firestore, 'registrations'), orderBy('registeredAt', 'desc')) : null
-    );
+    const registrationsQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, 'registrations'), orderBy('registeredAt', 'desc'));
+    }, [firestore]);
+
+    const { data: registrations, loading } = useCollection<EventRegistration>(registrationsQuery);
 
     return (
         <Card>
@@ -75,7 +79,7 @@ export default function AdminRegistrationsPage() {
                             <TableRow>
                                 <TableCell colSpan={5} className="text-center py-16">
                                     No registrations yet.
-                                </TableCell>
+                                 </TableCell>
                             </TableRow>
                         )}
                     </TableBody>

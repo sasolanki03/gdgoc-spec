@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useMemo } from 'react';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { useCollection, useFirestore } from '@/firebase';
 import type { ContactMessage } from '@/lib/types';
@@ -25,9 +26,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminContactsPage() {
     const firestore = useFirestore();
-    const { data: messages, loading } = useCollection<ContactMessage>(
-        firestore ? query(collection(firestore, 'contacts'), orderBy('createdAt', 'desc')) : null
-    );
+    const messagesQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, 'contacts'), orderBy('createdAt', 'desc'));
+    }, [firestore]);
+
+    const { data: messages, loading } = useCollection<ContactMessage>(messagesQuery);
 
     return (
         <Card>

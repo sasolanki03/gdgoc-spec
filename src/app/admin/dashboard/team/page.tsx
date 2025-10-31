@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import { PlusCircle, MoreHorizontal, Trash } from 'lucide-react';
 import { collection, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
@@ -58,9 +58,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminTeamPage() {
     const firestore = useFirestore();
-    const { data: teamMembers, loading, error } = useCollection<TeamMember>(
-        firestore ? collection(firestore, 'team') : null
-    );
+    const teamQuery = useMemo(() => {
+        if (!firestore) return null;
+        return collection(firestore, 'team');
+    }, [firestore]);
+
+    const { data: teamMembers, loading, error } = useCollection<TeamMember>(teamQuery);
 
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
