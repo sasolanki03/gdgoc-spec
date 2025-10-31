@@ -57,16 +57,22 @@ async function scrapeProfile(url: string, name: string): Promise<Omit<Leaderboar
 
     // This is highly dependent on the current structure of the skills boost profile page.
     // It's very likely to break if Google changes the page layout.
-    $('span.ql-body-medium.ng-star-inserted').each((i, elem) => {
-        const text = $(elem).text().trim();
-        const count = parseInt($(elem).prev().text().trim(), 10) || 0;
+    // Updated selector to target the 'stat-and-label' component structure.
+    $('ql-stat-and-label').each((i, elem) => {
+        const statElem = $(elem).find('h3.ql-headline-2');
+        const labelElem = $(elem).find('p.ql-body-medium');
 
-        if (text.includes('Skill Badges')) {
-            skillBadges = count;
-        } else if (text.includes('Quests')) {
-            quests = count;
-        } else if (text.includes('GenAI Arcade Games')) {
-            genAIGames = count;
+        if (statElem.length && labelElem.length) {
+            const count = parseInt(statElem.text().trim(), 10) || 0;
+            const text = labelElem.text().trim();
+
+            if (text.includes('Skill Badge')) { // "Skill Badges" or "Skill Badge"
+                skillBadges = count;
+            } else if (text.includes('Quest')) { // "Quests" or "Quest"
+                quests = count;
+            } else if (text.includes('GenAI Arcade Game')) { // "GenAI Arcade Games" or "Game"
+                genAIGames = count;
+            }
         }
     });
 
