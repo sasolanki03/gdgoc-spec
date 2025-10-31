@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import Papa, { ParseResult } from 'papaparse';
-import { Upload, FileText, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { Upload, FileText, CheckCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -14,9 +14,8 @@ import { updateLeaderboard } from '@/app/actions/leaderboard';
 import type { LeaderboardEntry } from '@/lib/types';
 
 
-type ParsedData = Omit<LeaderboardEntry, 'rank' | 'student' | 'profileId'> & {
+type ParsedData = Omit<LeaderboardEntry, 'rank' | 'student'> & {
     studentName: string;
-    profileId: string;
 };
 
 export function LeaderboardUploadForm() {
@@ -98,8 +97,9 @@ export function LeaderboardUploadForm() {
     }
     
     setIsSubmitting(true);
-    try {
-        await updateLeaderboard(parsedData);
+    const result = await updateLeaderboard(parsedData);
+
+    if (result.success) {
         toast({
             title: 'Leaderboard Updated!',
             description: 'The new student progress data has been saved.',
@@ -108,16 +108,15 @@ export function LeaderboardUploadForm() {
         setFile(null);
         setParsedData([]);
         reset();
-    } catch (error) {
-        console.error('Submission error:', error);
+    } else {
         toast({
             variant: 'destructive',
             title: 'Uh oh! Something went wrong.',
-            description: 'Could not update the leaderboard. Please try again.',
+            description: result.error || 'Could not update the leaderboard. Please try again.',
         });
-    } finally {
-        setIsSubmitting(false);
     }
+    
+    setIsSubmitting(false);
   };
 
   return (
@@ -155,7 +154,7 @@ export function LeaderboardUploadForm() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto rounded-md border">
+            <div className="overflow-x-auto rounded-md border max-h-64">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -177,7 +176,7 @@ export function LeaderboardUploadForm() {
             </div>
             <Button onClick={onSubmit} disabled={isSubmitting} className="mt-6 w-full sm:w-auto">
               {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
-              Save Changes
+              Save Changes to Leaderboard
             </Button>
           </CardContent>
         </Card>
