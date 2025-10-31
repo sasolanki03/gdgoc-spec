@@ -11,11 +11,10 @@ import { useToast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { updateLeaderboard } from '@/app/actions/leaderboard';
-import type { LeaderboardEntry } from '@/lib/types';
 
-
-type ParsedData = Omit<LeaderboardEntry, 'rank' | 'student'> & {
+type ParsedData = {
     studentName: string;
+    profileId: string;
 };
 
 export function LeaderboardUploadForm() {
@@ -56,9 +55,21 @@ export function LeaderboardUploadForm() {
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
-      dynamicTyping: true,
+      dynamicTyping: false, // Keep all as strings
       complete: (results: ParseResult<ParsedData>) => {
         setIsParsing(false);
+        const requiredHeaders = ['studentName', 'profileId'];
+        const actualHeaders = results.meta.fields || [];
+
+        if (!requiredHeaders.every(h => actualHeaders.includes(h))) {
+            toast({
+                variant: 'destructive',
+                title: 'Invalid CSV Headers',
+                description: `File must contain the following headers: ${requiredHeaders.join(', ')}`,
+            });
+            return;
+        }
+
         if (results.errors.length > 0) {
           toast({
             variant: 'destructive',
@@ -97,6 +108,10 @@ export function LeaderboardUploadForm() {
     }
     
     setIsSubmitting(true);
+    toast({
+        title: 'Scraping in Progress...',
+        description: 'Fetching data from profiles. This may take a while, please do not close this window.',
+    });
     const result = await updateLeaderboard(parsedData);
 
     if (result.success) {
@@ -127,7 +142,7 @@ export function LeaderboardUploadForm() {
             <div className="flex flex-col items-center gap-2 text-muted-foreground">
               <Upload className="h-10 w-10" />
               <p className="font-semibold">{file ? file.name : 'Click to upload or drag and drop'}</p>
-              <p className="text-xs">CSV file up to 10MB</p>
+              <p className="text-xs">CSV with `studentName` and `profileId` headers</p>
             </div>
           </label>
           <Input 
@@ -150,7 +165,7 @@ export function LeaderboardUploadForm() {
           <CardHeader>
             <CardTitle>Data Preview</CardTitle>
             <CardDescription>
-              Review the parsed data before saving. Only the first 10 rows are shown.
+              Review the parsed profile URLs before scraping. Only the first 10 rows are shown.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -167,7 +182,7 @@ export function LeaderboardUploadForm() {
                   {parsedData.slice(0, 10).map((row, index) => (
                     <TableRow key={index}>
                       {Object.values(row).map((value, i) => (
-                        <TableCell key={i}>{String(value)}</TableCell>
+                        <TableCell key={i} className="max-w-xs truncate">{String(value)}</TableCell>
                       ))}
                     </TableRow>
                   ))}
@@ -176,7 +191,7 @@ export function LeaderboardUploadForm() {
             </div>
             <Button onClick={onSubmit} disabled={isSubmitting} className="mt-6 w-full sm:w-auto">
               {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
-              Save Changes to Leaderboard
+              Fetch Data and Update Leaderboard
             </Button>
           </CardContent>
         </Card>

@@ -152,15 +152,14 @@ export default function AdminLeaderboardPage() {
                 <DialogTrigger asChild>
                     <Button>
                         <Upload className="mr-2 h-4 w-4" />
-                        Bulk Upload via CSV
+                        Bulk Upload & Scrape
                     </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-4xl">
                     <DialogHeader>
-                        <DialogTitle className="font-headline text-2xl">Bulk Upload Leaderboard</DialogTitle>
+                        <DialogTitle className="font-headline text-2xl">Scrape Profiles from CSV</DialogTitle>
                         <DialogDescription>
-                            Upload a CSV file to replace all existing leaderboard data.
-                            The file must contain the following headers: studentName, profileId, totalPoints, skillBadges, quests, genAIGames.
+                            Upload a CSV with `studentName` and `profileId` (URL). The system will scrape each profile for points and badges, then update the leaderboard.
                         </DialogDescription>
                     </DialogHeader>
                     <LeaderboardUploadForm />
