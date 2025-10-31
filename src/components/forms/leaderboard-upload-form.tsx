@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '../ui/scroll-area';
 import { scrapeAndProcessProfiles } from '@/ai/flows/scrape-leaderboard-flow';
 import type { LeaderboardEntry } from '@/lib/types';
@@ -188,8 +188,8 @@ export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps)
               Review the parsed profile URLs before scraping. Only the first 10 rows are shown.
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex-1 flex flex-col overflow-hidden">
-            <ScrollArea className="flex-1">
+          <CardContent className="flex-1 overflow-auto">
+            <ScrollArea className="h-full">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -209,11 +209,13 @@ export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps)
                 </TableBody>
               </Table>
             </ScrollArea>
-            <Button onClick={onSubmit} disabled={isSubmitting} className="mt-6 w-full sm:w-auto">
+          </CardContent>
+           <CardFooter>
+            <Button onClick={onSubmit} disabled={isSubmitting} className="w-full sm:w-auto">
               {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
               Fetch Data and Update Leaderboard
             </Button>
-          </CardContent>
+          </CardFooter>
         </Card>
       )}
     </div>
