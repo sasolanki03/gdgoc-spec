@@ -55,26 +55,38 @@ async function scrapeProfile(url: string, name: string): Promise<Omit<Leaderboar
     let quests = 0;
     let genAIGames = 0;
 
-    // This is highly dependent on the current structure of the skills boost profile page.
-    // It's very likely to break if Google changes the page layout.
-    // Updated selector to target the 'stat-and-label' component structure.
-    $('ql-stat-and-label').each((i, elem) => {
-        const statElem = $(elem).find('h3.ql-headline-2');
-        const labelElem = $(elem).find('p.ql-body-medium');
-
-        if (statElem.length && labelElem.length) {
-            const count = parseInt(statElem.text().trim(), 10) || 0;
-            const text = labelElem.text().trim();
-
-            if (text.includes('Skill Badge')) { // "Skill Badges" or "Skill Badge"
-                skillBadges = count;
-            } else if (text.includes('Quest')) { // "Quests" or "Quest"
-                quests = count;
-            } else if (text.includes('GenAI Arcade Game')) { // "GenAI Arcade Games" or "Game"
-                genAIGames = count;
+    // The reliable way: find the script tag with the data.
+    let profileData: any = null;
+    $('script').each((i, el) => {
+        const scriptContent = $(el).html();
+        if (scriptContent && scriptContent.includes('PROJECT_APP_STATE')) {
+            // Extract the JSON part from the script content
+            const jsonString = scriptContent.substring(scriptContent.indexOf('{'));
+            try {
+                profileData = JSON.parse(jsonString);
+                return false; // Break the loop
+            } catch (e) {
+                console.error('Failed to parse profile data JSON from script tag', e);
             }
         }
     });
+
+    if (profileData && profileData.badges) {
+        profileData.badges.forEach((badge: any) => {
+            const badgeTitle = badge.title || '';
+            if (badge.badge_type === 'SKILL_BADGE') {
+                skillBadges++;
+            } else if (badge.badge_type === 'QUEST') {
+                quests++;
+            } else if (badgeTitle.toLowerCase().includes('genai arcade')) {
+                genAIGames++;
+            }
+        });
+    } else {
+        console.warn(`Could not find PROJECT_APP_STATE or badges array for ${url}. Scraping might be unreliable.`);
+        // Fallback to less reliable method if needed, but for now, we'll rely on the JSON.
+    }
+
 
     const totalPoints = skillBadges + quests + genAIGames;
     
