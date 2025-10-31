@@ -19,8 +19,20 @@ const ProfileScrapeInputSchema = z.array(z.object({
 }));
 export type ProfileScrapeInput = z.infer<typeof ProfileScrapeInputSchema>;
 
-// We use `any()` here because the output is complex and can have nulls for failed scrapes
-const LeaderboardScrapeOutputSchema = z.array(z.any());
+const LeaderboardEntryScrapeSchema = z.object({
+    student: z.object({
+        name: z.string(),
+        avatar: z.string(),
+    }),
+    profileId: z.string(),
+    totalPoints: z.number(),
+    skillBadges: z.number(),
+    quests: z.number(),
+    genAIGames: z.number(),
+});
+
+// We use `z.nullable()` to correctly handle cases where a scrape might fail.
+const LeaderboardScrapeOutputSchema = z.array(z.nullable(LeaderboardEntryScrapeSchema));
 export type LeaderboardScrapeOutput = (Omit<LeaderboardEntry, 'id' | 'rank'> | null)[];
 
 
