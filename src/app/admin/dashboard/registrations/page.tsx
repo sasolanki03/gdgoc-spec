@@ -36,7 +36,7 @@ export default function AdminRegistrationsPage() {
     const { data: registrations, loading } = useCollection<EventRegistration>(registrationsQuery);
 
     return (
-        <Card>
+        <Card className="max-w-5xl mx-auto">
             <CardHeader>
                 <CardTitle>Event Registrations</CardTitle>
                 <CardDescription>View and manage all event registrations.</CardDescription>
