@@ -76,7 +76,7 @@ export default function AdminLeaderboardPage() {
 
     const rankedData = useMemo(() => leaderboardData?.map((entry, index) => ({ ...entry, rank: index + 1 })) || [], [leaderboardData]);
 
-    const handleFormSuccess = async (data: Omit<LeaderboardEntry, 'id' | 'rank'>) => {
+    const handleFormSuccess = async (data: Omit<LeaderboardEntry, 'id' | 'rank' | 'avatar'>) => {
         if (!firestore) return;
         
         try {
@@ -338,5 +338,7 @@ export default function AdminLeaderboardPage() {
       </>
     );
 }
+
+    
 
     

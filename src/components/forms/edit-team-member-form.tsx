@@ -46,10 +46,9 @@ const formSchema = z.object({
 interface EditTeamMemberFormProps {
   member: TeamMember;
   onSuccess: (id: string, data: Partial<Omit<TeamMember, 'id' | 'socials'>>) => Promise<void>;
-  onCancel: () => void;
 }
 
-export function EditTeamMemberForm({ member, onSuccess, onCancel }: EditTeamMemberFormProps) {
+export function EditTeamMemberForm({ member, onSuccess }: EditTeamMemberFormProps) {
   const { toast } = useToast();
   const [photoPreview, setPhotoPreview] = useState<string | null>(member.photo);
 
@@ -265,13 +264,12 @@ export function EditTeamMemberForm({ member, onSuccess, onCancel }: EditTeamMemb
           )}
         />
         
-        <div className='flex gap-2 justify-end'>
-            <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>
-            <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting || !form.formState.isValid}>
             {form.formState.isSubmitting ? 'Saving...' : 'Save Changes'}
-            </Button>
-        </div>
+        </Button>
       </form>
     </Form>
   );
 }
+
+    

@@ -79,6 +79,7 @@ export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps)
 
                 if (missingColumns.length > 0) {
                     setError(`The CSV file is missing the following required columns: ${missingColumns.join(', ')}.`);
+                    form.reset(); // Reset the form to clear the invalid file
                     setIsParsing(false);
                     return;
                 }
@@ -88,6 +89,7 @@ export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps)
             },
             error: (err) => {
                 setError(`Error parsing CSV file: ${err.message}`);
+                form.reset();
                 setIsParsing(false);
             }
         });
@@ -103,7 +105,10 @@ export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps)
     return `data:text/csv;charset=utf-8,${encodeURIComponent(csvContent)}`;
   };
   
-  function onSubmit() {
+  function handleFormSubmit() {
+    if (isParsing || parsedData.length === 0 || !!error) {
+        return;
+    }
     try {
         const entriesToUpload = parsedData.map(item => {
             const dateParts = item.completionTime.split('-').map(Number);
@@ -138,10 +143,7 @@ export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps)
   return (
     <div className="flex flex-col gap-4">
         <Form {...form}>
-            <form onSubmit={(e) => {
-                e.preventDefault();
-                onSubmit();
-            }} className="space-y-4">
+            <form onSubmit={(e) => { e.preventDefault(); form.handleSubmit(handleFormSubmit)();}} className="space-y-4">
                 <FormField
                     control={form.control}
                     name="file"
@@ -220,5 +222,7 @@ export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps)
     </div>
   );
 }
+
+    
 
     
