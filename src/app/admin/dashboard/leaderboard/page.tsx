@@ -2,9 +2,9 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy, Timestamp, writeBatch } from 'firebase/firestore';
 import { useCollection, useFirestore } from '@/firebase';
-import { PlusCircle, MoreHorizontal, Trash, CheckCircle, XCircle } from 'lucide-react';
+import { PlusCircle, MoreHorizontal, Trash, CheckCircle, XCircle, Upload } from 'lucide-react';
 import { format } from 'date-fns';
 
 import {
@@ -57,6 +57,7 @@ import {
   import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
   import { PlaceHolderImages } from '@/lib/placeholder-images';
   import { LeaderboardEntryForm } from '@/components/forms/leaderboard-entry-form';
+  import { LeaderboardUploadForm } from '@/components/forms/leaderboard-upload-form';
 
 export default function AdminLeaderboardPage() {
     const firestore = useFirestore();
@@ -69,6 +70,7 @@ export default function AdminLeaderboardPage() {
     const { data: leaderboardData, loading, error } = useCollection<Omit<LeaderboardEntry, 'rank'>>(leaderboardQuery);
 
     const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
+    const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
     const [selectedEntry, setSelectedEntry] = useState<LeaderboardEntry | null>(null);
     const { toast } = useToast();
 
@@ -123,6 +125,34 @@ export default function AdminLeaderboardPage() {
             });
         }
     };
+    
+    const handleBulkUpload = async (entries: Omit<LeaderboardEntry, 'id' | 'rank'>[]) => {
+        if (!firestore) return;
+        
+        const batch = writeBatch(firestore);
+        
+        entries.forEach(entry => {
+            const docRef = doc(collection(firestore, 'leaderboard'));
+            const avatarId = `leader-${Math.abs(entry.studentName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % 15 + 1}`;
+            batch.set(docRef, {...entry, avatar: avatarId });
+        });
+
+        try {
+            await batch.commit();
+            toast({
+                title: 'Bulk Upload Successful!',
+                description: `${entries.length} entries have been added to the leaderboard.`,
+            });
+            setIsUploadDialogOpen(false);
+        } catch (e: any) {
+            console.error("Error committing batch: ", e);
+            toast({
+                variant: 'destructive',
+                title: 'Error during Bulk Upload',
+                description: e.message,
+            });
+        }
+    };
 
     const handleEditClick = (entry: LeaderboardEntry) => {
         setSelectedEntry(entry);
@@ -143,12 +173,33 @@ export default function AdminLeaderboardPage() {
                 <CardTitle>Leaderboard Management</CardTitle>
                 <CardDescription>Manually add, edit, or delete leaderboard entries.</CardDescription>
                 </div>
-                <Button size="sm" className="gap-1" onClick={handleAddClick}>
-                    <PlusCircle className="h-3.5 w-3.5" />
-                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Add Entry
-                    </span>
-                </Button>
+                <div className="flex gap-2">
+                    <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button size="sm" variant="outline" className="gap-1">
+                                <Upload className="h-3.5 w-3.5" />
+                                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                                Bulk Upload
+                                </span>
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-3xl">
+                            <DialogHeader>
+                                <DialogTitle className="font-headline text-2xl">Bulk Upload Entries</DialogTitle>
+                                <DialogDescription>
+                                    Upload a CSV file with student data. The file must contain the following columns: `studentName`, `profileUrl`, `campaignCompleted`, `completionTime`.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <LeaderboardUploadForm onSuccess={handleBulkUpload} />
+                        </DialogContent>
+                    </Dialog>
+                    <Button size="sm" className="gap-1" onClick={handleAddClick}>
+                        <PlusCircle className="h-3.5 w-3.5" />
+                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                        Add Entry
+                        </span>
+                    </Button>
+                </div>
             </div>
             </CardHeader>
             <CardContent>
