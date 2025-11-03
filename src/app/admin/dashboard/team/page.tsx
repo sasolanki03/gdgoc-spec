@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -59,7 +60,7 @@ export default function AdminTeamPage() {
     const firestore = useFirestore();
     const teamQuery = useMemo(() => {
         if (!firestore) return null;
-        return query(collection(firestore, 'team'), orderBy('name', 'asc'));
+        return query(collection(firestore, 'teamMembers'), orderBy('name', 'asc'));
     }, [firestore]);
 
     const { data: teamMembers, loading, error } = useCollection<TeamMember>(teamQuery);
@@ -72,7 +73,7 @@ export default function AdminTeamPage() {
     const handleUpdateMember = async (id: string, data: Partial<TeamMember>) => {
         if (!firestore) return;
         try {
-            await updateDoc(doc(firestore, 'team', id), data);
+            await updateDoc(doc(firestore, 'teamMembers', id), data);
             setIsEditDialogOpen(false);
             setSelectedMember(null);
             toast({
@@ -92,7 +93,7 @@ export default function AdminTeamPage() {
     const handleDeleteMember = async (memberId: string, memberName: string) => {
         if (!firestore) return;
         try {
-            await deleteDoc(doc(firestore, 'team', memberId));
+            await deleteDoc(doc(firestore, 'teamMembers', memberId));
             toast({
                 title: 'Member Deleted',
                 description: `${memberName} has been removed from the team.`,

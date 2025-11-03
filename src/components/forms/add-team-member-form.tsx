@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -115,7 +116,7 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
           photo: photoDataUrl,
       };
 
-      await addDoc(collection(firestore, 'team'), newMemberData);
+      await addDoc(collection(firestore, 'teamMembers'), newMemberData);
       
       toast({
         title: 'Member Added Successfully!',

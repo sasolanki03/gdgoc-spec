@@ -36,7 +36,7 @@ export default function TeamPage() {
 
   const teamQuery = useMemo(() => {
     if (!firestore) return null;
-    return collection(firestore, 'team');
+    return collection(firestore, 'teamMembers');
   }, [firestore]);
 
   const { data: teamMembers, loading } = useCollection<TeamMember>(teamQuery);

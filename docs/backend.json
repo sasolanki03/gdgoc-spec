@@ -175,7 +175,7 @@
       },
       "description": "Stores the leaderboard entries for the Google Cloud Career Practitioner campaign."
     },
-    "/team/{member}": {
+    "/teamMembers/{member}": {
       "schema": {
         "$ref": "#/entities/team_member"
       },
