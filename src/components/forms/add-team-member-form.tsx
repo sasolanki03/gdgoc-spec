@@ -102,7 +102,6 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
     };
 
     try {
-      console.log('Attempting to add new team member...');
       const photoDataUrl = await readFileAsDataURL(file);
       
       const newMemberData: Omit<TeamMember, 'id'> = {
@@ -112,7 +111,6 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
       };
 
       const docRef = await addDoc(collection(firestore, 'team'), newMemberData);
-      console.log("Document written with ID: ", docRef.id);
       
       toast({
         title: 'Member Added Successfully!',
