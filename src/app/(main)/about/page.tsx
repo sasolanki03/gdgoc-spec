@@ -34,9 +34,9 @@ export default function AboutPage() {
       />
 
       <section className="py-16 md:py-24">
-        <div className="container">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
+        <div className="container px-10 md:px-20">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-12">
+            <div className="md:w-1/2 space-y-6 max-w-xl text-center md:text-left">
               <h2 className="text-3xl font-bold font-headline">What is GDG on Campus?</h2>
               <p className="text-muted-foreground text-lg">
                 Google Developer Groups (GDGs) are for developers who are interested in Google's developer technology; everything from the Android, Chrome, Drive, and Google Cloud platforms, to product APIs like the Cast API, Maps API, and YouTube API.
@@ -45,15 +45,17 @@ export default function AboutPage() {
                 A GDG can take many forms -- from just a few people getting together to watch our latest video, to large gatherings with demos and tech talks, to events like code sprints and hackathons.
               </p>
             </div>
-            <div className="relative h-80 rounded-lg overflow-hidden">
+            <div className="md:w-1/2 mt-8 md:mt-0 flex justify-center">
                 {missionImage && (
-                    <Image
-                        src={missionImage.imageUrl}
-                        alt="Our mission"
-                        fill
-                        className="object-cover"
-                        data-ai-hint={missionImage.imageHint}
-                    />
+                    <div className="relative h-80 w-full max-w-lg rounded-lg overflow-hidden">
+                        <Image
+                            src={missionImage.imageUrl}
+                            alt="Our mission"
+                            fill
+                            className="object-cover"
+                            data-ai-hint={missionImage.imageHint}
+                        />
+                    </div>
                 )}
             </div>
           </div>
