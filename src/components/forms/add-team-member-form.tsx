@@ -115,7 +115,7 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
           photo: photoDataUrl,
       };
 
-      const docRef = await addDoc(collection(firestore, 'team'), newMemberData);
+      await addDoc(collection(firestore, 'team'), newMemberData);
       
       toast({
         title: 'Member Added Successfully!',
@@ -260,7 +260,7 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
                     <FormControl>
                         <SelectTrigger>
                             <SelectValue placeholder="Select a year" />
-                        </Trigger>
+                        </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                         <SelectItem value="First Year">1st Year</SelectItem>
