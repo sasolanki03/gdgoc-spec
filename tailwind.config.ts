@@ -14,6 +14,9 @@ export default {
         headline: ['Poppins', 'sans-serif'],
         code: ['monospace'],
       },
+      maxWidth: {
+        'screen-2xl': '1536px',
+      },
       colors: {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
