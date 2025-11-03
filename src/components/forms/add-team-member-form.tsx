@@ -52,6 +52,7 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
   const { toast } = useToast();
   const firestore = useFirestore();
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -87,6 +88,8 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
         toast({ variant: "destructive", title: "Error", description: "Firestore is not initialized." });
         return;
     }
+    setIsSubmitting(true);
+    
     const file = values.photo[0];
     
     const readFileAsDataURL = (file: File): Promise<string> => {
@@ -99,6 +102,7 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
     };
 
     try {
+      console.log('Attempting to add new team member...');
       const photoDataUrl = await readFileAsDataURL(file);
       
       const newMemberData: Omit<TeamMember, 'id'> = {
@@ -107,10 +111,11 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
           socials: [], // Initialize with empty socials
       };
 
-      await addDoc(collection(firestore, 'team'), newMemberData);
+      const docRef = await addDoc(collection(firestore, 'team'), newMemberData);
+      console.log("Document written with ID: ", docRef.id);
       
       toast({
-        title: 'Member Added!',
+        title: 'Member Added Successfully!',
         description: `${values.name} has been added to the team.`,
       });
       onSuccess();
@@ -122,8 +127,10 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
       toast({
         variant: "destructive",
         title: "Error Adding Member",
-        description: error.message,
+        description: error.message || 'An unexpected error occurred.',
       })
+    } finally {
+        setIsSubmitting(false);
     }
   };
 
@@ -250,7 +257,7 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
                     <FormControl>
                         <SelectTrigger>
                             <SelectValue placeholder="Select a year" />
-                        </SelectTrigger>
+                        </Trigger>
                     </FormControl>
                     <SelectContent>
                         <SelectItem value="First Year">1st Year</SelectItem>
@@ -279,8 +286,8 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
           )}
         />
         
-        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting || !form.formState.isValid}>
-            {form.formState.isSubmitting ? 'Adding...' : 'Add Member'}
+        <Button type="submit" className="w-full" disabled={isSubmitting || !form.formState.isValid}>
+            {isSubmitting ? 'Adding...' : 'Add Member'}
         </Button>
 
       </form>
