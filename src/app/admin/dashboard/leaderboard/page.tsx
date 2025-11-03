@@ -126,7 +126,7 @@ export default function AdminLeaderboardPage() {
         }
     };
     
-    const handleBulkUpload = async (entries: Omit<LeaderboardEntry, 'id' | 'rank'>[]) => {
+    const handleBulkUpload = async (entries: Omit<LeaderboardEntry, 'id' | 'rank' | 'avatar'>[]) => {
         if (!firestore) return;
         
         const batch = writeBatch(firestore);
