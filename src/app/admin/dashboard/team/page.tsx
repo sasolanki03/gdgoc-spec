@@ -134,7 +134,7 @@ export default function AdminTeamPage() {
 
     return (
       <>
-        <Card>
+        <Card className="w-full max-w-6xl mx-auto">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>

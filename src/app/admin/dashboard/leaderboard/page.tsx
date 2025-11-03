@@ -166,7 +166,7 @@ export default function AdminLeaderboardPage() {
     
     return (
       <>
-        <Card>
+        <Card className="w-full max-w-6xl mx-auto">
             <CardHeader>
             <div className="flex items-center justify-between gap-4">
                 <div>

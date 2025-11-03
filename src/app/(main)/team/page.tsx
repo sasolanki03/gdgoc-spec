@@ -61,7 +61,7 @@ export default function TeamPage() {
         description="We're a group of passionate students dedicated to building a strong tech community at our college."
       />
       <div className="py-16 md:py-24">
-        <div className="container max-w-screen-2xl">
+        <div className="container">
             {loading ? (
                 <TeamSkeleton />
             ) : (

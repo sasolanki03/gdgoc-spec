@@ -34,7 +34,7 @@ export default function AdminContactsPage() {
     const { data: messages, loading } = useCollection<ContactMessage>(messagesQuery);
 
     return (
-        <Card>
+        <Card className="w-full max-w-6xl mx-auto">
             <CardHeader>
                 <CardTitle>Contact Messages</CardTitle>
                 <CardDescription>View messages submitted through the contact form.</CardDescription>

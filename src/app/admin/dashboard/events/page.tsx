@@ -118,7 +118,7 @@ export default function AdminEventsPage() {
 
     return (
       <>
-        <Card>
+        <Card className="w-full max-w-6xl mx-auto">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
@@ -247,8 +247,8 @@ export default function AdminEventsPage() {
           </Card>
           {selectedEvent && (
             <Dialog open={isEditDialogOpen} onOpenChange={(isOpen) => {
-                setIsEditDialogOpen(isOpen);
                 if (!isOpen) setSelectedEvent(null);
+                setIsEditDialogOpen(isOpen);
             }}>
                 <DialogContent className="sm:max-w-xl">
                     <DialogHeader>

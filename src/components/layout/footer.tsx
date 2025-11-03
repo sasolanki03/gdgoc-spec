@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import { Github, Twitter, Linkedin, Instagram } from 'lucide-react';
 import { GoogleLogo } from '@/components/icons/google-logo';
@@ -34,7 +35,7 @@ const iconComponents = {
 export function Footer() {
   return (
     <footer className="border-t py-10">
-      <div className="container max-w-7xl">
+      <div className="container">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           <div className="flex flex-col items-start gap-4">
             <Link href="/" className="flex items-center space-x-2">

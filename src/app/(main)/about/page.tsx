@@ -1,3 +1,4 @@
+
 import Image from 'next/image';
 import { Metadata } from 'next';
 import { Target, Eye, Activity, Globe, Cloud, BrainCircuit, Bot } from 'lucide-react';
@@ -33,7 +34,7 @@ export default function AboutPage() {
       />
 
       <section className="py-16 md:py-24">
-        <div className="container max-w-screen-2xl">
+        <div className="container">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
               <h2 className="text-3xl font-bold font-headline">What is GDG on Campus?</h2>
@@ -81,7 +82,7 @@ export default function AboutPage() {
       </section>
 
       <section className="py-16 md:py-24">
-        <div className="container max-w-screen-2xl">
+        <div className="container">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold font-headline">What We Do</h2>
             <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
@@ -114,7 +115,7 @@ export default function AboutPage() {
       </section>
 
       <section className="py-16 md:py-24 bg-card border-y">
-        <div className="container max-w-screen-2xl">
+        <div className="container">
             <div className="text-center mb-12">
                 <h2 className="text-3xl md:text-4xl font-bold font-headline">Technologies We Focus On</h2>
                 <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
