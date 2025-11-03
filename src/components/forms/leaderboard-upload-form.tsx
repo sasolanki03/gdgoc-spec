@@ -138,7 +138,10 @@ export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps)
   return (
     <div className="flex flex-col gap-4">
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={(e) => {
+                e.preventDefault();
+                onSubmit();
+            }} className="space-y-4">
                 <FormField
                     control={form.control}
                     name="file"
@@ -217,3 +220,5 @@ export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps)
     </div>
   );
 }
+
+    
