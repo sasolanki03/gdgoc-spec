@@ -48,7 +48,7 @@ export default function HomePage() {
     <div className="flex flex-col">
       {/* Hero Section */}
       <section className="relative py-20 md:py-32 bg-card">
-        <div className="container max-w-screen-xl px-4 md:px-8 text-center">
+        <div className="container mx-auto px-5 md:px-20 text-center">
             
             <h1 className="text-4xl md:text-6xl font-extrabold font-headline tracking-tight">
                 Google developer Group
@@ -73,7 +73,7 @@ export default function HomePage() {
 
       {/* Stats Section */}
       <section className="border-y">
-        <div className="container max-w-screen-xl px-4 md:px-8 py-12">
+        <div className="container mx-auto px-5 md:px-20 py-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div className="p-4">
               <Users className="h-12 w-12 mx-auto mb-4 text-google-blue" />
@@ -101,8 +101,8 @@ export default function HomePage() {
       </section>
 
       {/* Featured Upcoming Events */}
-      <section className="py-16 md:py-24">
-        <div className="container max-w-screen-xl px-4 md:px-8">
+      <section className="py-10 md:py-12">
+        <div className="container mx-auto px-5 md:px-20">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold font-headline">Upcoming Events</h2>
             <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
@@ -125,8 +125,8 @@ export default function HomePage() {
       </section>
 
       {/* Why Join Section */}
-      <section className="py-16 md:py-24 bg-card border-y">
-        <div className="container max-w-screen-xl px-4 md:px-8">
+      <section className="py-10 md:py-12 bg-card border-y">
+        <div className="container mx-auto px-5 md:px-20">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold font-headline">Why Join GDG SPEC?</h2>
             <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
@@ -148,8 +148,8 @@ export default function HomePage() {
       </section>
 
       {/* Gallery Section */}
-      <section className="py-16 md:py-24">
-        <div className="container max-w-screen-xl px-4 md:px-8">
+      <section className="py-10 md:py-12">
+        <div className="container mx-auto px-5 md:px-20">
             <div className="text-center mb-12">
                 <h2 className="text-3xl md:text-4xl font-bold font-headline">From Our Past Events</h2>
                 <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
@@ -174,8 +174,8 @@ export default function HomePage() {
       </section>
 
       {/* Newsletter Section */}
-      <section id="newsletter" className="py-16 md:py-24 bg-card border-t">
-        <div className="container max-w-4xl text-center">
+      <section id="newsletter" className="py-10 md:py-12 bg-card border-t">
+        <div className="container max-w-4xl text-center mx-auto px-5">
           <div className="space-y-6">
             <h2 className="text-3xl md:text-4xl font-bold font-headline">Stay in the Loop!</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -190,3 +190,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    

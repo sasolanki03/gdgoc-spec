@@ -33,8 +33,8 @@ export default function AboutPage() {
         description="We are a community of student developers at Shree Parekh Engineering College, passionate about Google technologies and building impactful solutions."
       />
 
-      <section className="py-16 md:py-24">
-        <div className="container px-10 md:px-20">
+      <section className="py-10 md:py-12">
+        <div className="container mx-auto px-5 md:px-20">
           <div className="flex flex-col md:flex-row items-center justify-center gap-12">
             <div className="md:w-1/2 space-y-6 max-w-xl text-center md:text-left">
               <h2 className="text-3xl font-bold font-headline">What is GDG on Campus?</h2>
@@ -62,8 +62,8 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="py-16 md:py-24 bg-card border-y">
-        <div className="container max-w-5xl">
+      <section className="py-10 md:py-12 bg-card border-y">
+        <div className="container max-w-5xl mx-auto px-5">
             <div className="grid md:grid-cols-2 gap-12">
                 <div className="flex flex-col items-center text-center p-6">
                     <div className="flex items-center justify-center h-16 w-16 rounded-full bg-primary/10 mb-4">
@@ -83,8 +83,8 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="py-16 md:py-24">
-        <div className="container">
+      <section className="py-10 md:py-12">
+        <div className="container mx-auto px-5">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold font-headline">What We Do</h2>
             <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
@@ -116,8 +116,8 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="py-16 md:py-24 bg-card border-y">
-        <div className="container">
+      <section className="py-10 md:py-12 bg-card border-y">
+        <div className="container mx-auto px-5">
             <div className="text-center mb-12">
                 <h2 className="text-3xl md:text-4xl font-bold font-headline">Technologies We Focus On</h2>
                 <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
@@ -138,3 +138,5 @@ export default function AboutPage() {
     </div>
   );
 }
+
+    

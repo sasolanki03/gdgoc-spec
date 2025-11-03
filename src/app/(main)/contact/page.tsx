@@ -24,8 +24,8 @@ export default function ContactPage() {
         title="Get In Touch"
         description="Have a question, a suggestion, or want to collaborate? Drop us a line!"
       />
-      <div className="py-16 md:py-24">
-        <div className="container max-w-screen-xl px-4 md:px-8">
+      <div className="py-10 md:py-12">
+        <div className="container mx-auto px-5 md:px-20">
           <div className="grid lg:grid-cols-5 gap-16">
             <div className="lg:col-span-3">
               <h2 className="text-3xl font-bold font-headline mb-6">Send us a Message</h2>
@@ -80,3 +80,5 @@ export default function ContactPage() {
     </div>
   );
 }
+
+    

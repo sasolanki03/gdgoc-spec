@@ -60,8 +60,8 @@ export default function TeamPage() {
         title="Meet the Team"
         description="We're a group of passionate students dedicated to building a strong tech community at our college."
       />
-      <div className="py-16 md:py-24">
-        <div className="container max-w-screen-xl px-4 md:px-8">
+      <div className="py-10 md:py-12">
+        <div className="container mx-auto px-5 md:px-20">
             {loading ? (
                 <TeamSkeleton />
             ) : (
@@ -87,3 +87,5 @@ export default function TeamPage() {
     </div>
   );
 }
+
+    

@@ -35,7 +35,7 @@ const iconComponents = {
 export function Footer() {
   return (
     <footer className="border-t py-10">
-      <div className="container max-w-screen-xl px-4 md:px-8">
+      <div className="container mx-auto px-5 md:px-20">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           <div className="flex flex-col items-start gap-4">
             <Link href="/" className="flex items-center space-x-2">
@@ -79,3 +79,5 @@ export function Footer() {
     </footer>
   );
 }
+
+    

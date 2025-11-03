@@ -55,7 +55,7 @@ export default function LeaderboardPage() {
           title="Student Leaderboard"
           description="Track your progress and see how you stack up against your peers in the Google Cloud Career Practitioner campaign."
         />
-        <div className="container max-w-screen-xl px-4 md:px-8 py-16">
+        <div className="container mx-auto px-5 md:px-20 py-10">
           <div className="mb-8 flex flex-col md:flex-row gap-4 items-center">
             <div className="relative w-full md:flex-grow">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -172,3 +172,5 @@ export default function LeaderboardPage() {
     </TooltipProvider>
   );
 }
+
+    
