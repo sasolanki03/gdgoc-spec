@@ -43,11 +43,11 @@ type CsvData = {
   studentName: string;
   profileUrl: string;
   campaignCompleted: string; // 'Yes' or 'No'
-  completionTime: string;
+  completionTime: string; // YYYY-MM-DD
 };
 
 interface LeaderboardUploadFormProps {
-    onSuccess: (data: Omit<LeaderboardEntry, 'id'|'rank'>[]) => void;
+    onSuccess: (data: Omit<LeaderboardEntry, 'id'|'rank'|'avatar'>[]) => void;
 }
 
 export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps) {
@@ -104,30 +104,35 @@ export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps)
   };
   
   const handleSubmit = () => {
-    const entriesToUpload = parsedData.map(item => {
-        const completionTime = new Date(item.completionTime);
-        if (isNaN(completionTime.getTime())) {
-            toast({
-                variant: 'destructive',
-                title: 'Invalid Date',
-                description: `Could not parse date for ${item.studentName}: ${item.completionTime}`
-            })
-            throw new Error('Invalid date format found');
-        }
-        return {
-            studentName: item.studentName,
-            profileUrl: item.profileUrl,
-            campaignCompleted: item.campaignCompleted.toLowerCase() === 'yes',
-            completionTime: Timestamp.fromDate(completionTime),
-            avatar: '' // will be generated on the server
-        }
-    }).filter(Boolean);
+    try {
+        const entriesToUpload = parsedData.map(item => {
+            const dateParts = item.completionTime.split('-').map(Number);
+            // new Date(year, monthIndex, day) - month is 0-indexed
+            const completionTime = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
 
-    if (entriesToUpload.length !== parsedData.length) {
-        return; // An error was toasted
+            if (isNaN(completionTime.getTime())) {
+                toast({
+                    variant: 'destructive',
+                    title: 'Invalid Date',
+                    description: `Could not parse date for ${item.studentName}: ${item.completionTime}. Please use YYYY-MM-DD format.`
+                })
+                throw new Error('Invalid date format found');
+            }
+            return {
+                studentName: item.studentName,
+                profileUrl: item.profileUrl,
+                campaignCompleted: item.campaignCompleted.toLowerCase() === 'yes',
+                completionTime: Timestamp.fromDate(completionTime),
+                avatar: '' // will be generated on the server
+            }
+        });
+
+        onSuccess(entriesToUpload);
+
+    } catch (e: any) {
+        // Errors are toasted inside the map, so just need to stop execution.
+        console.error(e.message);
     }
-
-    onSuccess(entriesToUpload);
   };
 
   return (
