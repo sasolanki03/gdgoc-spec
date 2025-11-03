@@ -44,6 +44,7 @@ const formSchema = z.object({
     ),
 });
 
+
 interface AddTeamMemberFormProps {
   onSuccess: () => void;
 }
@@ -104,10 +105,14 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
     try {
       const photoDataUrl = await readFileAsDataURL(file);
       
-      const newMemberData: Omit<TeamMember, 'id'> = {
-          ...values,
+      const newMemberData: Omit<TeamMember, 'id' | 'socials'> = {
+          name: values.name,
+          position: values.position,
+          role: values.role,
+          branch: values.branch,
+          year: values.year,
+          bio: values.bio,
           photo: photoDataUrl,
-          socials: [], // Initialize with empty socials
       };
 
       const docRef = await addDoc(collection(firestore, 'team'), newMemberData);
