@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -131,7 +130,7 @@ export default function AdminTeamPage() {
                         </span>
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-[480px]">
+                  <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle className="font-headline text-2xl">Add New Team Member</DialogTitle>
                     </DialogHeader>
@@ -250,7 +249,7 @@ export default function AdminTeamPage() {
                 if(!isOpen) setSelectedMember(null);
                 setIsEditDialogOpen(isOpen);
              }}>
-                <DialogContent className="sm:max-w-[480px]">
+                <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle className="font-headline text-2xl">Edit {selectedMember.name}</DialogTitle>
                 </DialogHeader>
