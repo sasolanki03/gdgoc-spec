@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -46,6 +45,8 @@ export function EventRegistrationForm({ event, onSuccess }: EventRegistrationFor
       email: '',
       phone: '',
       rollNo: '',
+      branch: undefined,
+      year: undefined,
     },
   });
 
@@ -156,11 +157,11 @@ export function EventRegistrationForm({ event, onSuccess }: EventRegistrationFor
                         </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                        <SelectItem value="Computer">Computer</SelectItem>
-                        <SelectItem value="IT">Information Technology</SelectItem>
-                        <SelectItem value="Mechanical">Mechanical</SelectItem>
-                        <SelectItem value="Civil">Civil</SelectItem>
-                        <SelectItem value="Electrical">Electrical</SelectItem>
+                        <SelectItem value="Computer Engineering">Computer Engineering</SelectItem>
+                        <SelectItem value="Information Technology">Information Technology</SelectItem>
+                        <SelectItem value="Mechanical Engineering">Mechanical Engineering</SelectItem>
+                        <SelectItem value="Civil Engineering">Civil Engineering</SelectItem>
+                        <SelectItem value="Electrical Engineering">Electrical Engineering</SelectItem>
                     </SelectContent>
                 </Select>
                 <FormMessage />
@@ -180,10 +181,10 @@ export function EventRegistrationForm({ event, onSuccess }: EventRegistrationFor
                         </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                        <SelectItem value="1st">1st Year</SelectItem>
-                        <SelectItem value="2nd">2nd Year</SelectItem>
-                        <SelectItem value="3rd">3rd Year</SelectItem>
-                        <SelectItem value="4th">Final Year</SelectItem>
+                        <SelectItem value="First Year">1st Year</SelectItem>
+                        <SelectItem value="Second Year">2nd Year</SelectItem>
+                        <SelectItem value="Third Year">3rd Year</SelectItem>
+                        <SelectItem value="Final Year">Final Year</SelectItem>
                     </SelectContent>
                 </Select>
                 <FormMessage />

@@ -1,10 +1,11 @@
-
 'use client';
 
 import React, { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { addDoc, collection } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -44,11 +45,12 @@ const formSchema = z.object({
 });
 
 interface AddTeamMemberFormProps {
-  onSuccess: (data: Omit<TeamMember, 'id'>) => Promise<void>;
+  onSuccess: () => void;
 }
 
 export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
   const { toast } = useToast();
+  const firestore = useFirestore();
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -58,8 +60,8 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
       name: '',
       position: '',
       role: 'Core Team',
-      branch: '',
-      year: '',
+      branch: undefined,
+      year: undefined,
       bio: '',
       photo: undefined,
     },
@@ -81,6 +83,10 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
 
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (!firestore) {
+        toast({ variant: "destructive", title: "Error", description: "Firestore is not initialized." });
+        return;
+    }
     const file = values.photo[0];
     
     const readFileAsDataURL = (file: File): Promise<string> => {
@@ -101,16 +107,22 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
           socials: [], // Initialize with empty socials
       };
 
-      await onSuccess(newMemberData);
+      await addDoc(collection(firestore, 'team'), newMemberData);
+      
+      toast({
+        title: 'Member Added!',
+        description: `${values.name} has been added to the team.`,
+      });
+      onSuccess();
       form.reset();
       setPhotoPreview(null);
 
-    } catch (error) {
-      console.error("Error processing form:", error);
+    } catch (error: any) {
+      console.error("Error adding document: ", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Could not process the form."
+        title: "Error Adding Member",
+        description: error.message,
       })
     }
   };
@@ -275,5 +287,3 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
     </Form>
   );
 }
-
-    

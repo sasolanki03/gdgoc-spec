@@ -1,10 +1,9 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import { PlusCircle, MoreHorizontal, Trash } from 'lucide-react';
-import { collection, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { collection, updateDoc, deleteDoc, doc, query, orderBy } from 'firebase/firestore';
 import { useCollection, useFirestore } from '@/firebase';
 
 import {
@@ -60,7 +59,7 @@ export default function AdminTeamPage() {
     const firestore = useFirestore();
     const teamQuery = useMemo(() => {
         if (!firestore) return null;
-        return collection(firestore, 'team');
+        return query(collection(firestore, 'team'), orderBy('name', 'asc'));
     }, [firestore]);
 
     const { data: teamMembers, loading, error } = useCollection<TeamMember>(teamQuery);
@@ -69,25 +68,6 @@ export default function AdminTeamPage() {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
     const { toast } = useToast();
-
-    const handleAddMember = async (data: Omit<TeamMember, 'id'>) => {
-        if (!firestore) return;
-        try {
-            await addDoc(collection(firestore, 'team'), data);
-            setIsAddDialogOpen(false);
-            toast({
-                title: 'Member Added!',
-                description: `${data.name} has been added to the team.`,
-            });
-        } catch (e: any) {
-            console.error("Error adding document: ", e);
-            toast({
-                variant: 'destructive',
-                title: 'Error Adding Member',
-                description: e.message,
-            });
-        }
-    };
 
     const handleUpdateMember = async (id: string, data: Partial<TeamMember>) => {
         if (!firestore) return;
@@ -155,7 +135,7 @@ export default function AdminTeamPage() {
                         <DialogTitle className="font-headline text-2xl">Add New Team Member</DialogTitle>
                     </DialogHeader>
                     <AddTeamMemberForm 
-                        onSuccess={handleAddMember}
+                        onSuccess={() => setIsAddDialogOpen(false)}
                     />
                   </DialogContent>
                 </Dialog>
@@ -193,7 +173,7 @@ export default function AdminTeamPage() {
                             <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-28" /></TableCell>
                             <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-32" /></TableCell>
                             <TableCell>
-                                <Skeleton className="h-8 w-8" />
+                                <Skeleton className="h-8 w-8 ml-auto" />
                             </TableCell>
                         </TableRow>
                     ))
@@ -256,6 +236,7 @@ export default function AdminTeamPage() {
                 </TableBody>
               </Table>
                 {error && <p className='text-destructive text-center p-4'>Error: {error.message}</p>}
+                {!loading && teamMembers?.length === 0 && <p className="text-center py-16 text-muted-foreground">No team members found.</p>}
             </CardContent>
             <CardFooter>
               <div className="text-xs text-muted-foreground">
