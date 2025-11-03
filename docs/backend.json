@@ -39,7 +39,7 @@
         },
         "completionTime": {
           "type": "string",
-          "format": "date-time"
+          "format": "date"
         },
         "avatar": {
           "type": "string"

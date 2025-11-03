@@ -209,7 +209,7 @@ export default function AdminLeaderboardPage() {
                     <TableHead className="w-16 text-center">Rank</TableHead>
                     <TableHead>Student</TableHead>
                     <TableHead className="text-center">Campaign Completed</TableHead>
-                    <TableHead className="text-center">Completion Time</TableHead>
+                    <TableHead className="text-center">Completion Date</TableHead>
                     <TableHead>
                     <span className="sr-only">Actions</span>
                     </TableHead>
@@ -255,7 +255,7 @@ export default function AdminLeaderboardPage() {
                                 )}
                             </TableCell>
                             <TableCell className="text-center">
-                                {entry.completionTime ? format(entry.completionTime.toDate(), 'dd MMM yyyy, hh:mm a') : 'N/A'}
+                                {entry.completionTime ? format(entry.completionTime.toDate(), 'dd MMM yyyy') : 'N/A'}
                             </TableCell>
                             <TableCell>
                                 <div className="flex items-center justify-end">

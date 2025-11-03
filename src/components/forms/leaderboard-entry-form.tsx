@@ -101,7 +101,7 @@ export function LeaderboardEntryForm({ entry, onSuccess }: LeaderboardEntryFormP
             name="completionTime"
             render={({ field }) => (
                 <FormItem className="flex flex-col">
-                <FormLabel>Time of Last Badge Completion</FormLabel>
+                <FormLabel>Date of Last Badge Completion</FormLabel>
                 <Popover>
                     <PopoverTrigger asChild>
                     <FormControl>
@@ -113,9 +113,9 @@ export function LeaderboardEntryForm({ entry, onSuccess }: LeaderboardEntryFormP
                         )}
                         >
                         {field.value ? (
-                            format(field.value, "PPPpp")
+                            format(field.value, "PPP")
                         ) : (
-                            <span>Pick a date and time</span>
+                            <span>Pick a date</span>
                         )}
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>

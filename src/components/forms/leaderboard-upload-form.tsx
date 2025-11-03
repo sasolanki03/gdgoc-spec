@@ -97,8 +97,8 @@ export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps)
   const createSampleCsv = () => {
     const csvContent = [
         ['studentName', 'profileUrl', 'campaignCompleted', 'completionTime'].join(','),
-        ['John Doe', 'https://www.cloudskillsboost.google/public_profiles/12345', 'Yes', '2024-05-20T14:30:00Z'],
-        ['Jane Smith', 'https://www.cloudskillsboost.google/public_profiles/67890', 'No', '2024-05-21T10:00:00Z'],
+        ['John Doe', 'https://www.cloudskillsboost.google/public_profiles/12345', 'Yes', '2024-05-20'],
+        ['Jane Smith', 'https://www.cloudskillsboost.google/public_profiles/67890', 'No', '2024-05-21'],
     ].join('\n');
     return `data:text/csv;charset=utf-8,${encodeURIComponent(csvContent)}`;
   };
@@ -183,7 +183,7 @@ export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps)
                                 <TableHead>Name</TableHead>
                                 <TableHead>Profile URL</TableHead>
                                 <TableHead>Completed</TableHead>
-                                <TableHead>Completion Time</TableHead>
+                                <TableHead>Completion Date</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>

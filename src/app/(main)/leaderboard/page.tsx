@@ -78,7 +78,7 @@ export default function LeaderboardPage() {
                       <TableHead className="w-20 text-center">Rank</TableHead>
                       <TableHead>Student</TableHead>
                       <TableHead className="text-center">Campaign Completed</TableHead>
-                      <TableHead className="text-center">Completion Time</TableHead>
+                      <TableHead className="text-center">Completion Date</TableHead>
                       <TableHead className="text-center">Profile</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -132,7 +132,7 @@ export default function LeaderboardPage() {
                             </Tooltip>
                           </TableCell>
                           <TableCell className="text-center text-muted-foreground">
-                            {entry.completionTime ? format(entry.completionTime.toDate(), 'PPpp') : 'N/A'}
+                            {entry.completionTime ? format(entry.completionTime.toDate(), 'PP') : 'N/A'}
                           </TableCell>
                           <TableCell className="text-center">
                              <Tooltip>
