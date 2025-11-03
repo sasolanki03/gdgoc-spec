@@ -9,13 +9,13 @@ import { collection, query, orderBy, where, limit } from 'firebase/firestore';
 import { useCollection, useFirestore } from '@/firebase';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { StatCounter } from '@/components/shared/stat-counter';
-import { events } from '@/lib/placeholder-data';
 import { EventCard } from '@/components/shared/event-card';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { NewsletterForm } from '@/components/forms/newsletter-form';
 import type { Event as EventType } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const whyJoinPoints = [
   {
@@ -46,6 +46,20 @@ const whyJoinPoints = [
 
 const galleryImageIds = ['gallery-1', 'gallery-2', 'gallery-3', 'gallery-4'];
 const galleryImages = PlaceHolderImages.filter(img => galleryImageIds.includes(img.id));
+
+const EventSkeleton = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {[...Array(3)].map((_, i) => (
+            <div key={i} className="space-y-2">
+                <Skeleton className="h-48 w-full" />
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-2/3" />
+                <Skeleton className="h-10 w-full mt-2" />
+            </div>
+        ))}
+    </div>
+)
 
 export default function HomePage() {
   const firestore = useFirestore();
@@ -129,7 +143,7 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {loading ? (
-                [...Array(3)].map((_, i) => <div key={i}><Card><CardContent className="p-4 h-96"></CardContent></Card></div>)
+                <EventSkeleton />
             ) : upcomingEvents && upcomingEvents.length > 0 ? (
                 upcomingEvents.map(event => (
                     <EventCard key={event.id} event={event} />
@@ -184,7 +198,7 @@ export default function HomePage() {
                 </p>
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {galleryImages.map((image, index) => (
+                {galleryImages.map((image) => (
                     <div key={image.id} className="relative aspect-square rounded-lg overflow-hidden group">
                         <Image
                             src={image.imageUrl}
@@ -217,7 +231,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    
-
-    

@@ -45,10 +45,11 @@ const formSchema = z.object({
 
 interface EditTeamMemberFormProps {
   member: TeamMember;
-  onSuccess: (id: string, data: Partial<TeamMember>) => void;
+  onSuccess: (id: string, data: Partial<Omit<TeamMember, 'id' | 'socials'>>) => Promise<void>;
+  onCancel: () => void;
 }
 
-export function EditTeamMemberForm({ member, onSuccess }: EditTeamMemberFormProps) {
+export function EditTeamMemberForm({ member, onSuccess, onCancel }: EditTeamMemberFormProps) {
   const { toast } = useToast();
   const [photoPreview, setPhotoPreview] = useState<string | null>(member.photo);
 
@@ -91,17 +92,17 @@ export function EditTeamMemberForm({ member, onSuccess }: EditTeamMemberFormProp
     };
 
     try {
-      let photoDataUrl = member.photo;
+      let photoDataUrl: string | undefined = undefined;
       if (file) {
         photoDataUrl = await readFileAsDataURL(file);
       }
 
-      const updatedMemberData: Partial<TeamMember> = {
+      const updatedMemberData: Partial<Omit<TeamMember, 'id' | 'socials'>> = {
         ...values,
-        photo: photoDataUrl,
+        photo: photoDataUrl || member.photo,
       };
 
-      onSuccess(member.id, updatedMemberData);
+      await onSuccess(member.id, updatedMemberData);
 
     } catch (error) {
       console.error("Error processing form:", error);
@@ -124,7 +125,7 @@ export function EditTeamMemberForm({ member, onSuccess }: EditTeamMemberFormProp
                 <FormLabel>Photo</FormLabel>
                 <div className='flex items-center gap-4'>
                     <Avatar className='h-20 w-20'>
-                        <AvatarImage src={photoPreview} alt={member.name} />
+                        <AvatarImage src={photoPreview || undefined} alt={member.name} />
                         <AvatarFallback>
                             <User className='h-10 w-10 text-muted-foreground' />
                         </AvatarFallback>
@@ -264,9 +265,12 @@ export function EditTeamMemberForm({ member, onSuccess }: EditTeamMemberFormProp
           )}
         />
         
-        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-          {form.formState.isSubmitting ? 'Saving...' : 'Save Changes'}
-        </Button>
+        <div className='flex gap-2 justify-end'>
+            <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>
+            <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+            {form.formState.isSubmitting ? 'Saving...' : 'Save Changes'}
+            </Button>
+        </div>
       </form>
     </Form>
   );

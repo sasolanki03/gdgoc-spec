@@ -43,15 +43,12 @@ const formSchema = z.object({
     ),
 });
 
-type FormValues = Omit<z.infer<typeof formSchema>, 'photo'> & {
-    photo: string;
-};
-
 interface AddTeamMemberFormProps {
-  onSuccess: (data: Omit<TeamMember, 'id'>) => void;
+  onSuccess: (data: Omit<TeamMember, 'id'>) => Promise<void>;
+  onCancel: () => void;
 }
 
-export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
+export function AddTeamMemberForm({ onSuccess, onCancel }: AddTeamMemberFormProps) {
   const { toast } = useToast();
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
@@ -105,7 +102,7 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
           socials: [], // Initialize with empty socials
       };
 
-      onSuccess(newMemberData);
+      await onSuccess(newMemberData);
       form.reset();
       setPhotoPreview(null);
 
@@ -131,7 +128,7 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
                 <FormLabel>Photo</FormLabel>
                 <div className='flex items-center gap-4'>
                     <Avatar className='h-20 w-20'>
-                        <AvatarImage src={photoPreview} alt="Photo preview" />
+                        <AvatarImage src={photoPreview || undefined} alt="Photo preview" />
                         <AvatarFallback>
                             <User className='h-10 w-10 text-muted-foreground' />
                         </AvatarFallback>
@@ -271,9 +268,12 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
           )}
         />
         
-        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting || !form.formState.isValid}>
-          {form.formState.isSubmitting ? 'Adding...' : 'Add Member'}
-        </Button>
+        <div className='flex gap-2 justify-end'>
+            <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>
+            <Button type="submit" disabled={form.formState.isSubmitting || !form.formState.isValid}>
+            {form.formState.isSubmitting ? 'Adding...' : 'Add Member'}
+            </Button>
+        </div>
       </form>
     </Form>
   );
