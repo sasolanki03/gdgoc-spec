@@ -26,7 +26,6 @@ export function FirebaseProvider({ children }: { children: ReactNode }) {
   const services = useMemo(() => {
     const auth = getAuth(firebaseApp);
     const firestore = getFirestore(firebaseApp);
-
     return { app: firebaseApp, auth, firestore };
   }, []);
 
