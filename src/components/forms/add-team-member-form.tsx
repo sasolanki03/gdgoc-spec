@@ -293,7 +293,6 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
         <Button type="submit" className="w-full" disabled={isSubmitting || !form.formState.isValid}>
             {isSubmitting ? 'Adding...' : 'Add Member'}
         </Button>
-
       </form>
     </Form>
   );
