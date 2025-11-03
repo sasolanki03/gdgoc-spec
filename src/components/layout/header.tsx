@@ -31,22 +31,24 @@ export function Header() {
           <span className="font-bold sm:inline-block font-headline">GDG SPEC</span>
         </Link>
 
-        <nav className="hidden gap-6 md:flex">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'flex items-center text-lg font-medium transition-colors hover:text-foreground/80 sm:text-sm',
-                pathname === item.href ? 'text-foreground' : 'text-foreground/60'
-              )}
-            >
-              {item.title}
-            </Link>
-          ))}
-        </nav>
+        <div className="flex flex-1 items-center justify-center">
+          <nav className="hidden gap-6 md:flex">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  'flex items-center text-lg font-medium transition-colors hover:text-foreground/80 sm:text-sm',
+                  pathname === item.href ? 'text-foreground' : 'text-foreground/60'
+                )}
+              >
+                {item.title}
+              </Link>
+            ))}
+          </nav>
+        </div>
 
-        <div className="flex flex-1 items-center justify-end gap-4">
+        <div className="flex items-center justify-end gap-4">
           <Button asChild variant="default" className="hidden sm:flex bg-google-blue hover:bg-google-blue/90">
             <Link href="/#newsletter">Join Community</Link>
           </Button>
