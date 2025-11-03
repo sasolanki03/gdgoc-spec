@@ -36,7 +36,7 @@ import { GoogleLogo } from '@/components/icons/google-logo';
 const adminNavItems = [
     { href: '/admin/dashboard', label: 'Dashboard', icon: Home },
     { href: '/admin/dashboard/events', label: 'Events', icon: Calendar },
-    { href: '/admin/dashboard/team', label: 'Team Members', icon: Users },
+    { href: '/admin/dashboard/team', label: 'Team', icon: Users },
     { href: '/admin/dashboard/leaderboard', label: 'Leaderboard', icon: Trophy },
     { href: '/admin/dashboard/registrations', label: 'Registrations', icon: FileText },
     { href: '/admin/dashboard/contacts', label: 'Contact Messages', icon: Mail },

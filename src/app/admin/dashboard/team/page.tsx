@@ -119,7 +119,7 @@ export default function AdminTeamPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Team Members</CardTitle>
+                  <CardTitle>Team</CardTitle>
                   <CardDescription>Manage your GDG core team.</CardDescription>
                 </div>
                 <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
