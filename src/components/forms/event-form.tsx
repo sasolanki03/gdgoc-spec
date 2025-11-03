@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon, Upload } from 'lucide-react';
 import Image from 'next/image';
+import { Timestamp } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -58,10 +59,6 @@ const formSchema = z.object({
     }, ".jpg, .jpeg, .png and .webp files are accepted.")
 });
 
-type FormValues = Omit<z.infer<typeof formSchema>, 'imageUrl'> & {
-    imageUrl: string;
-};
-
 interface EventFormProps {
   event?: Event;
   onSuccess: (data: Omit<Event, 'id'>) => void;
@@ -85,7 +82,7 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
     defaultValues: {
       title: event?.title || '',
       description: event?.description || '',
-      date: event ? new Date(event.date) : undefined,
+      date: event ? event.date.toDate() : undefined,
       time: event?.time || '',
       venue: event?.venue || '',
       status: event?.status || 'Upcoming',
@@ -127,7 +124,7 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
 
         const eventData = {
             ...values,
-            date: format(values.date, 'yyyy-MM-dd'),
+            date: Timestamp.fromDate(values.date),
             imageUrl: imageDataUrl,
         };
 

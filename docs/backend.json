@@ -115,6 +115,22 @@
         "bio"
       ]
     },
+    "event": {
+      "title": "Event",
+      "description": "Represents a community event.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "time": { "type": "string" },
+        "venue": { "type": "string" },
+        "imageUrl": { "type": "string", "format": "uri" },
+        "type": { "type": "string" },
+        "status": { "type": "string", "enum": ["Upcoming", "Past", "Continue"] }
+      },
+      "required": ["title", "description", "date", "time", "venue", "status"]
+    },
     "event_registration": {
       "title": "Event Registration",
       "description": "Represents a user's registration for an event.",
@@ -164,6 +180,10 @@
         "$ref": "#/entities/team_member"
       },
       "description": "Stores the information for each core team member."
+    },
+    "/events/{event}": {
+        "schema": { "$ref": "#/entities/event" },
+        "description": "Stores all event data."
     },
     "/registrations/{registration}": {
         "schema": { "$ref": "#/entities/event_registration" },

@@ -1,4 +1,3 @@
-
 import type { Timestamp } from 'firebase/firestore';
 
 export type NavItem = {
@@ -28,7 +27,7 @@ export type Event = {
   id: string;
   title: string;
   description: string;
-  date: string;
+  date: Timestamp;
   time: string;
   venue: string;
   imageUrl: string;

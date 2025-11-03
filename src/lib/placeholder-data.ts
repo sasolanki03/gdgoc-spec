@@ -1,6 +1,7 @@
 
 import type { TeamMember, Event, FaqItem, LeaderboardEntry } from '@/lib/types';
 import { PlaceHolderImages } from './placeholder-images';
+import { Timestamp } from 'firebase/firestore';
 
 // Function to get image URL from placeholder ID
 const getImageUrl = (id: string) => {
@@ -130,12 +131,16 @@ export const teamMembers: TeamMember[] = [
   },
 ];
 
+const createMockTimestamp = (dateString: string): Timestamp => {
+  return Timestamp.fromDate(new Date(dateString));
+};
+
 export const events: Event[] = [
   {
     id: '1',
     title: 'Android Study Jam 2025',
     description: 'Join us for a hands-on study jam to learn the fundamentals of modern Android development with Kotlin and Jetpack Compose.',
-    date: '2025-08-15',
+    date: createMockTimestamp('2025-08-15'),
     time: '10:00 AM',
     venue: 'Auditorium, Main Building',
     imageUrl: 'event-android-study-jam',
@@ -146,7 +151,7 @@ export const events: Event[] = [
     id: '2',
     title: 'Cloud Study Jam',
     description: 'Dive into Google Cloud Platform with our interactive study session. Get hands-on experience with core cloud services.',
-    date: '2025-09-05',
+    date: createMockTimestamp('2025-09-05'),
     time: '11:00 AM',
     venue: 'Seminar Hall 1',
     imageUrl: 'event-cloud-study-jam',
@@ -157,7 +162,7 @@ export const events: Event[] = [
     id: '3',
     title: 'Web Development Workshop',
     description: 'A comprehensive workshop on building modern, responsive web applications using React and Firebase.',
-    date: '2025-09-20',
+    date: createMockTimestamp('2025-09-20'),
     time: '09:30 AM',
     venue: 'Computer Lab 3',
     imageUrl: 'event-web-workshop',
@@ -168,7 +173,7 @@ export const events: Event[] = [
     id: '4',
     title: 'Hackathon 2025',
     description: 'The annual 24-hour hackathon is back! Form a team, build a project, and win exciting prizes.',
-    date: '2024-04-10',
+    date: createMockTimestamp('2024-04-10'),
     time: '06:00 PM',
     venue: 'Main Campus',
     imageUrl: 'event-hackathon',
@@ -179,7 +184,7 @@ export const events: Event[] = [
     id: '5',
     title: 'Flutter Forward',
     description: 'Explore the latest updates in Flutter and learn how to build beautiful, natively compiled applications for mobile, web, and desktop.',
-    date: '2024-03-22',
+    date: createMockTimestamp('2024-03-22'),
     time: '02:00 PM',
     venue: 'Auditorium',
     imageUrl: 'event-flutter-forward',
@@ -190,7 +195,7 @@ export const events: Event[] = [
     id: '6',
     title: 'Tech Talk Series: AI Ethics',
     description: 'A thought-provoking discussion on the ethical implications of artificial intelligence with industry experts.',
-    date: '2024-02-18',
+    date: createMockTimestamp('2024-02-18'),
     time: '04:00 PM',
     venue: 'Online',
     imageUrl: 'event-tech-talk',
@@ -224,19 +229,21 @@ export const faqs: FaqItem[] = [
 ];
 
 export const leaderboardData: LeaderboardEntry[] = [
-  { rank: 1, student: { name: 'Priya Sharma', avatar: 'leader-1' }, totalPoints: 1250, skillBadges: 15, quests: 5, genAIGames: 2, profileId: '#' },
-  { rank: 2, student: { name: 'Rohan Gupta', avatar: 'leader-2' }, totalPoints: 1180, skillBadges: 14, quests: 5, genAIGames: 1, profileId: '#' },
-  { rank: 3, student: { name: 'Anjali Mehta', avatar: 'leader-3' }, totalPoints: 1150, skillBadges: 13, quests: 4, genAIGames: 2, profileId: '#' },
-  { rank: 4, student: { name: 'Vikram Singh', avatar: 'leader-4' }, totalPoints: 1100, skillBadges: 12, quests: 5, genAIGames: 1, profileId: '#' },
-  { rank: 5, student: { name: 'Sameer Khan', avatar: 'leader-5' }, totalPoints: 1050, skillBadges: 11, quests: 4, genAIGames: 1, profileId: '#' },
-  { rank: 6, student: { name: 'Neha Reddy', avatar: 'leader-6' }, totalPoints: 1020, skillBadges: 10, quests: 4, genAIGames: 1, profileId: '#' },
-  { rank: 7, student: { name: 'Arjun Desai', avatar: 'leader-7' }, totalPoints: 980, skillBadges: 9, quests: 3, genAIGames: 2, profileId: '#' },
-  { rank: 8, student: { name: 'Kavita Patel', avatar: 'leader-8' }, totalPoints: 950, skillBadges: 9, quests: 3, genAIGames: 1, profileId: '#' },
-  { rank: 9, student: { name: 'Rajesh Kumar', avatar: 'leader-9' }, totalPoints: 910, skillBadges: 8, quests: 3, genAIGames: 1, profileId: '#' },
-  { rank: 10, student: { name: 'Sunita Rao', avatar: 'leader-10' }, totalPoints: 880, skillBadges: 8, quests: 2, genAIGames: 1, profileId: '#' },
-  { rank: 11, student: { name: 'Amit Verma', avatar: 'leader-11' }, totalPoints: 850, skillBadges: 7, quests: 2, genAIGames: 1, profileId: '#' },
-  { rank: 12, student: { name: 'Deepika Iyer', avatar: 'leader-12' }, totalPoints: 820, skillBadges: 7, quests: 2, genAIGames: 0, profileId: '#' },
-  { rank: 13, student: { name: 'Manoj Tiwari', avatar: 'leader-13' }, totalPoints: 790, skillBadges: 6, quests: 2, genAIGames: 1, profileId: '#' },
-  { rank: 14, student: { name: 'Pooja Agarwal', avatar: 'leader-14' }, totalPoints: 760, skillBadges: 6, quests: 1, genAIGames: 1, profileId: '#' },
-  { rank: 15, student: { name: 'Harish Nair', avatar: 'leader-15' }, totalPoints: 730, skillBadges: 5, quests: 1, genAIGames: 1, profileId: '#' },
+  { id: '1', rank: 1, studentName: 'Priya Sharma', avatar: 'leader-1', campaignCompleted: true, completionTime: createMockTimestamp('2024-05-20'), profileUrl: '#' },
+  { id: '2', rank: 2, studentName: 'Rohan Gupta', avatar: 'leader-2', campaignCompleted: true, completionTime: createMockTimestamp('2024-05-21'), profileUrl: '#' },
+  { id: '3', rank: 3, studentName: 'Anjali Mehta', avatar: 'leader-3', campaignCompleted: true, completionTime: createMockTimestamp('2024-05-22'), profileUrl: '#' },
+  { id: '4', rank: 4, studentName: 'Vikram Singh', avatar: 'leader-4', campaignCompleted: true, completionTime: createMockTimestamp('2024-05-23'), profileUrl: '#' },
+  { id: '5', rank: 5, studentName: 'Sameer Khan', avatar: 'leader-5', campaignCompleted: true, completionTime: createMockTimestamp('2024-05-24'), profileUrl: '#' },
+  { id: '6', rank: 6, studentName: 'Neha Reddy', avatar: 'leader-6', campaignCompleted: true, completionTime: createMockTimestamp('2024-05-25'), profileUrl: '#' },
+  { id: '7', rank: 7, studentName: 'Arjun Desai', avatar: 'leader-7', campaignCompleted: true, completionTime: createMockTimestamp('2024-05-26'), profileUrl: '#' },
+  { id: '8', rank: 8, studentName: 'Kavita Patel', avatar: 'leader-8', campaignCompleted: true, completionTime: createMockTimestamp('2024-05-27'), profileUrl: '#' },
+  { id: '9', rank: 9, studentName: 'Rajesh Kumar', avatar: 'leader-9', campaignCompleted: false, completionTime: createMockTimestamp('2024-05-28'), profileUrl: '#' },
+  { id: '10', rank: 10, studentName: 'Sunita Rao', avatar: 'leader-10', campaignCompleted: false, completionTime: createMockTimestamp('2024-05-29'), profileUrl: '#' },
+  { id: '11', rank: 11, studentName: 'Amit Verma', avatar: 'leader-11', campaignCompleted: false, completionTime: createMockTimestamp('2024-05-30'), profileUrl: '#' },
+  { id: '12', rank: 12, studentName: 'Deepika Iyer', avatar: 'leader-12', campaignCompleted: false, completionTime: createMockTimestamp('2024-06-01'), profileUrl: '#' },
+  { id: '13', rank: 13, studentName: 'Manoj Tiwari', avatar: 'leader-13', campaignCompleted: false, completionTime: createMockTimestamp('2024-06-02'), profileUrl: '#' },
+  { id: '14', rank: 14, studentName: 'Pooja Agarwal', avatar: 'leader-14', campaignCompleted: false, completionTime: createMockTimestamp('2024-06-03'), profileUrl: '#' },
+  { id: '15', rank: 15, studentName: 'Harish Nair', avatar: 'leader-15', campaignCompleted: false, completionTime: createMockTimestamp('2024-06-04'), profileUrl: '#' },
 ];
+
+    

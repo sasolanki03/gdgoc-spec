@@ -1,9 +1,12 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import { PlusCircle, MoreHorizontal, Trash } from 'lucide-react';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy, Timestamp } from 'firebase/firestore';
+
 import {
     Table,
     TableBody,
@@ -48,15 +51,23 @@ import {
   } from "@/components/ui/dropdown-menu"
   import { Button } from '@/components/ui/button';
   import { Badge } from '@/components/ui/badge';
-  import { events as initialEvents } from '@/lib/placeholder-data';
   import { PlaceHolderImages } from '@/lib/placeholder-images';
   import type { Event } from '@/lib/types';
   import { useToast } from '@/hooks/use-toast';
   import { EventForm } from '@/components/forms/event-form';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
+import { format } from 'date-fns';
 
 export default function AdminEventsPage() {
-    const [events, setEvents] = useState<Event[]>(initialEvents);
+    const firestore = useFirestore();
+    const eventsQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, 'events'), orderBy('date', 'desc'));
+    }, [firestore]);
+
+    const { data: events, loading, error } = useCollection<Event>(eventsQuery);
+
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -73,32 +84,37 @@ export default function AdminEventsPage() {
           default:
             return 'secondary';
         }
-      };
-
-    const handleAddEvent = (newEventData: Omit<Event, 'id'>) => {
-      const newEvent: Event = {
-        id: (events.length + 1).toString(),
-        ...newEventData,
-      };
-
-      setEvents((prevEvents) => [newEvent, ...prevEvents]);
-      setIsAddDialogOpen(false);
-      toast({
-        title: 'Event Added!',
-        description: `${newEvent.title} has been created.`,
-      });
     };
 
-    const handleEditEvent = (updatedEventData: Omit<Event, 'id'>) => {
-        setEvents((prevEvents) => 
-            prevEvents.map(event => event.id === selectedEvent!.id ? { ...selectedEvent!, ...updatedEventData } : event)
-        );
-        setIsEditDialogOpen(false);
-        setSelectedEvent(null);
-        toast({
-            title: 'Event Updated!',
-            description: `${updatedEventData.title}'s details have been saved.`,
-        });
+    const handleAddEvent = async (newEventData: Omit<Event, 'id'>) => {
+        if (!firestore) return;
+        try {
+            await addDoc(collection(firestore, 'events'), newEventData);
+            setIsAddDialogOpen(false);
+            toast({
+                title: 'Event Added!',
+                description: `${newEventData.title} has been created.`,
+            });
+        } catch (e: any) {
+            console.error("Error adding event:", e);
+            toast({ variant: 'destructive', title: 'Error', description: e.message });
+        }
+    };
+
+    const handleEditEvent = async (updatedEventData: Omit<Event, 'id'>) => {
+        if (!firestore || !selectedEvent) return;
+        try {
+            await updateDoc(doc(firestore, 'events', selectedEvent.id), updatedEventData);
+            setIsEditDialogOpen(false);
+            setSelectedEvent(null);
+            toast({
+                title: 'Event Updated!',
+                description: `${updatedEventData.title}'s details have been saved.`,
+            });
+        } catch (e: any) {
+            console.error("Error updating event:", e);
+            toast({ variant: 'destructive', title: 'Error', description: e.message });
+        }
     }
 
     const handleEditClick = (event: Event) => {
@@ -106,14 +122,19 @@ export default function AdminEventsPage() {
         setIsEditDialogOpen(true);
     };
 
-    const handleDeleteEvent = (eventId: string) => {
-      const eventToDelete = events.find(e => e.id === eventId);
-      setEvents((prevEvents) => prevEvents.filter(event => event.id !== eventId));
-
-      toast({
-        title: 'Event Deleted',
-        description: `${eventToDelete?.title} has been removed.`,
-      });
+    const handleDeleteEvent = async (eventId: string) => {
+        if (!firestore) return;
+        const eventToDelete = events?.find(e => e.id === eventId);
+        try {
+            await deleteDoc(doc(firestore, 'events', eventId));
+            toast({
+                title: 'Event Deleted',
+                description: `${eventToDelete?.title} has been removed.`,
+            });
+        } catch (e: any) {
+            console.error("Error deleting event:", e);
+            toast({ variant: 'destructive', title: 'Error', description: e.message });
+        }
     };
 
     return (
@@ -164,7 +185,18 @@ export default function AdminEventsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {events.map((event) => {
+                {loading ? (
+                    [...Array(5)].map((_, i) => (
+                        <TableRow key={i}>
+                            <TableCell className="hidden sm:table-cell"><Skeleton className="h-16 w-16 rounded-md" /></TableCell>
+                            <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                            <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+                            <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-24" /></TableCell>
+                            <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-28" /></TableCell>
+                            <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
+                        </TableRow>
+                    ))
+                ) : events?.map((event) => {
                      const isPlaceholder = !event.imageUrl.startsWith('data:');
                      const image = isPlaceholder ? PlaceHolderImages.find(img => img.id === event.imageUrl) : null;
                      const imageUrl = image ? image.imageUrl : (event.imageUrl || 'https://picsum.photos/seed/placeholder/64/64');
@@ -193,7 +225,7 @@ export default function AdminEventsPage() {
                                 </Badge>
                             </TableCell>
                             <TableCell className="hidden md:table-cell">{event.venue}</TableCell>
-                            <TableCell className="hidden md:table-cell">{event.date}</TableCell>
+                            <TableCell className="hidden md:table-cell">{format(event.date.toDate(), 'PPP')}</TableCell>
                             <TableCell>
                                 <AlertDialog>
                                     <DropdownMenu>
@@ -238,10 +270,12 @@ export default function AdminEventsPage() {
                   })}
                 </TableBody>
               </Table>
+              {error && <p className="text-sm text-destructive text-center p-4">Error loading events: {error.message}</p>}
+              {!loading && events?.length === 0 && <p className="text-sm text-muted-foreground text-center p-4">No events found.</p>}
             </CardContent>
             <CardFooter>
               <div className="text-xs text-muted-foreground">
-                Showing <strong>1-{events.length}</strong> of <strong>{events.length}</strong> events
+                Showing <strong>{events?.length || 0}</strong> of <strong>{events?.length || 0}</strong> events
               </div>
             </CardFooter>
           </Card>

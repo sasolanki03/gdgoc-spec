@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -17,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { format } from 'date-fns';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const getRankColor = (rank: number) => {
   if (rank === 1) return 'text-yellow-400';
@@ -84,11 +86,20 @@ export default function LeaderboardPage() {
                   </TableHeader>
                   <TableBody>
                     {loading ? (
-                        <TableRow>
-                            <TableCell colSpan={5} className="text-center py-16">
-                                Loading leaderboard...
+                        [...Array(10)].map((_, i) => (
+                          <TableRow key={i}>
+                            <TableCell className="text-center"><Skeleton className="h-5 w-5 mx-auto" /></TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-4">
+                                <Skeleton className="h-10 w-10 rounded-full" />
+                                <Skeleton className="h-5 w-32" />
+                              </div>
                             </TableCell>
-                        </TableRow>
+                            <TableCell className="text-center"><Skeleton className="h-6 w-6 mx-auto rounded-full" /></TableCell>
+                            <TableCell className="text-center"><Skeleton className="h-5 w-24 mx-auto" /></TableCell>
+                            <TableCell className="text-center"><Skeleton className="h-8 w-8 mx-auto" /></TableCell>
+                          </TableRow>
+                        ))
                     ) : filteredData.length > 0 ? (
                       filteredData.map((entry) => {
                       const avatarImage = PlaceHolderImages.find(img => img.id === entry.avatar);
@@ -172,5 +183,7 @@ export default function LeaderboardPage() {
     </TooltipProvider>
   );
 }
+
+    
 
     

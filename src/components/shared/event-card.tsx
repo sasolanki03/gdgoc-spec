@@ -1,6 +1,7 @@
 
 import Image from 'next/image';
 import { Calendar, MapPin } from 'lucide-react';
+import { format } from 'date-fns';
 
 import type { Event as EventType } from '@/lib/types';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -64,7 +65,7 @@ export function EventCard({ event }: EventCardProps) {
         <div className="space-y-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            <span>{new Date(event.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} at {event.time}</span>
+            <span>{event.date ? format(event.date.toDate(), 'PP') : ''} at {event.time}</span>
           </div>
           <div className="flex items-center gap-2">
             <MapPin className="h-4 w-4" />

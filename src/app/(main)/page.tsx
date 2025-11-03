@@ -1,7 +1,12 @@
 
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { Users, Calendar, Lightbulb, Code, ArrowRight, Mic, Group, Award } from 'lucide-react';
+import { useMemo } from 'react';
+import { collection, query, orderBy, where, limit } from 'firebase/firestore';
+import { useCollection, useFirestore } from '@/firebase';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +15,7 @@ import { events } from '@/lib/placeholder-data';
 import { EventCard } from '@/components/shared/event-card';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { NewsletterForm } from '@/components/forms/newsletter-form';
+import type { Event as EventType } from '@/lib/types';
 
 const whyJoinPoints = [
   {
@@ -42,7 +48,19 @@ const galleryImageIds = ['gallery-1', 'gallery-2', 'gallery-3', 'gallery-4'];
 const galleryImages = PlaceHolderImages.filter(img => galleryImageIds.includes(img.id));
 
 export default function HomePage() {
-  const upcomingEvents = events.filter(e => e.status === 'Upcoming').slice(0, 3);
+  const firestore = useFirestore();
+
+  const eventsQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(
+      collection(firestore, 'events'),
+      where('status', 'in', ['Upcoming', 'Continue']),
+      orderBy('date', 'asc'),
+      limit(3)
+    );
+  }, [firestore]);
+
+  const { data: upcomingEvents, loading } = useCollection<EventType>(eventsQuery);
   
   return (
     <div className="flex flex-col">
@@ -110,9 +128,18 @@ export default function HomePage() {
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {upcomingEvents.map(event => (
-              <EventCard key={event.id} event={event} />
-            ))}
+            {loading ? (
+                [...Array(3)].map((_, i) => <div key={i}><Card><CardContent className="p-4 h-96"></CardContent></Card></div>)
+            ) : upcomingEvents && upcomingEvents.length > 0 ? (
+                upcomingEvents.map(event => (
+                    <EventCard key={event.id} event={event} />
+                ))
+            ) : (
+                <div className="col-span-full text-center py-16 border rounded-lg bg-card">
+                    <h3 className="text-2xl font-bold font-headline">No Upcoming Events</h3>
+                    <p className="text-muted-foreground mt-2">Check back soon for new events!</p>
+                </div>
+            )}
           </div>
           <div className="text-center mt-12">
             <Button asChild variant="link" className="text-lg">
@@ -190,5 +217,7 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
 
     
