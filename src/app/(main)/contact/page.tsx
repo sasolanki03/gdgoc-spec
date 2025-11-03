@@ -25,7 +25,7 @@ export default function ContactPage() {
         description="Have a question, a suggestion, or want to collaborate? Drop us a line!"
       />
       <div className="py-16 md:py-24">
-        <div className="container">
+        <div className="container max-w-screen-xl px-4 md:px-8">
           <div className="grid lg:grid-cols-5 gap-16">
             <div className="lg:col-span-3">
               <h2 className="text-3xl font-bold font-headline mb-6">Send us a Message</h2>

@@ -23,7 +23,7 @@ export default function EventsPage() {
         title="Events"
         description="Join our workshops, hackathons, and tech talks. Learn new skills, build cool projects, and connect with the community."
       />
-      <div className="container py-16">
+      <div className="container max-w-screen-xl px-4 md:px-8 py-16">
         <Tabs defaultValue="upcoming" className="w-full">
           <TabsList className="grid w-full grid-cols-2 md:w-96 md:mx-auto">
             <TabsTrigger value="upcoming">Upcoming & Ongoing</TabsTrigger>
