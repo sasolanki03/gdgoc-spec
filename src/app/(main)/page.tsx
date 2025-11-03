@@ -9,7 +9,6 @@ import { collection, query, orderBy, where, limit } from 'firebase/firestore';
 import { useCollection, useFirestore } from '@/firebase';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { StatCounter } from '@/components/shared/stat-counter';
 import { EventCard } from '@/components/shared/event-card';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
