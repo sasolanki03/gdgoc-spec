@@ -44,15 +44,11 @@ export type FaqItem = {
 export type LeaderboardEntry = {
   id: string;
   rank: number;
-  student: {
-    name: string;
-    avatar: string;
-  };
-  totalPoints: number;
-  skillBadges: number;
-  quests: number;
-  genAIGames: number;
-  profileId: string;
+  studentName: string;
+  avatar: string;
+  campaignCompleted: boolean;
+  completionTime: Timestamp;
+  profileUrl: string;
 };
 
 export type EventRegistration = {

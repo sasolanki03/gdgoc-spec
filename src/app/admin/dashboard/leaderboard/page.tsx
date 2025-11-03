@@ -2,9 +2,10 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy, writeBatch, getDocs } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy, Timestamp } from 'firebase/firestore';
 import { useCollection, useFirestore } from '@/firebase';
-import { PlusCircle, MoreHorizontal, Trash, Upload } from 'lucide-react';
+import { PlusCircle, MoreHorizontal, Trash, CheckCircle, XCircle } from 'lucide-react';
+import { format } from 'date-fns';
 
 import {
     Table,
@@ -56,61 +57,50 @@ import {
   import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
   import { PlaceHolderImages } from '@/lib/placeholder-images';
   import { LeaderboardEntryForm } from '@/components/forms/leaderboard-entry-form';
-  import { LeaderboardUploadForm } from '@/components/forms/leaderboard-upload-form';
-  import { EditLeaderboardEntryForm } from '@/components/forms/edit-leaderboard-entry-form';
 
 export default function AdminLeaderboardPage() {
     const firestore = useFirestore();
     
     const leaderboardQuery = useMemo(() => {
         if (!firestore) return null;
-        return query(collection(firestore, 'leaderboard'), orderBy('totalPoints', 'desc'));
+        return query(collection(firestore, 'leaderboard'), orderBy('completionTime', 'asc'));
     }, [firestore]);
 
     const { data: leaderboardData, loading, error } = useCollection<Omit<LeaderboardEntry, 'rank'>>(leaderboardQuery);
 
-    const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-    const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+    const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
     const [selectedEntry, setSelectedEntry] = useState<LeaderboardEntry | null>(null);
     const { toast } = useToast();
 
     const rankedData = useMemo(() => leaderboardData?.map((entry, index) => ({ ...entry, rank: index + 1 })) || [], [leaderboardData]);
 
-    const handleAddEntry = async (data: Omit<LeaderboardEntry, 'id' | 'rank'>) => {
+    const handleFormSuccess = async (data: Omit<LeaderboardEntry, 'id' | 'rank'>) => {
         if (!firestore) return;
+        
         try {
-            await addDoc(collection(firestore, 'leaderboard'), data);
-            setIsAddDialogOpen(false);
-            toast({
-                title: 'Entry Added!',
-                description: `${data.student.name} has been added to the leaderboard.`,
-            });
-        } catch (e: any) {
-            console.error("Error adding document: ", e);
-            toast({
-                variant: 'destructive',
-                title: 'Error Adding Entry',
-                description: e.message,
-            });
-        }
-    };
-
-    const handleUpdateEntry = async (id: string, data: Partial<Omit<LeaderboardEntry, 'id' | 'rank'>>) => {
-        if (!firestore) return;
-        try {
-            await updateDoc(doc(firestore, 'leaderboard', id), data);
-            setIsEditDialogOpen(false);
+            if (selectedEntry) {
+                // Update existing entry
+                await updateDoc(doc(firestore, 'leaderboard', selectedEntry.id), data);
+                toast({
+                    title: 'Entry Updated!',
+                    description: `${data.studentName}'s details have been saved.`,
+                });
+            } else {
+                // Add new entry
+                const avatarId = `leader-${Math.abs(data.studentName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % 15 + 1}`;
+                await addDoc(collection(firestore, 'leaderboard'), { ...data, avatar: avatarId });
+                toast({
+                    title: 'Entry Added!',
+                    description: `${data.studentName} has been added to the leaderboard.`,
+                });
+            }
+            setIsFormDialogOpen(false);
             setSelectedEntry(null);
-            toast({
-                title: 'Entry Updated!',
-                description: "The entry's details have been saved.",
-            });
         } catch (e: any) {
-            console.error("Error updating document: ", e);
+            console.error("Error saving document: ", e);
             toast({
                 variant: 'destructive',
-                title: 'Error Updating Entry',
+                title: 'Error Saving Entry',
                 description: e.message,
             });
         }
@@ -136,42 +126,14 @@ export default function AdminLeaderboardPage() {
 
     const handleEditClick = (entry: LeaderboardEntry) => {
         setSelectedEntry(entry);
-        setIsEditDialogOpen(true);
-    };
-    
-    const handleUploadSuccess = async (scrapedData: Omit<LeaderboardEntry, 'id'|'rank'>[]) => {
-      if (!firestore) return;
-    
-      const batch = writeBatch(firestore);
-    
-      const leaderboardCollection = collection(firestore, 'leaderboard');
-      const snapshot = await getDocs(leaderboardCollection);
-      snapshot.docs.forEach(doc => {
-          batch.delete(doc.ref);
-      });
-    
-      scrapedData.forEach(entry => {
-        const newDocRef = doc(leaderboardCollection);
-        batch.set(newDocRef, entry);
-      });
-    
-      try {
-        await batch.commit();
-        toast({
-          title: 'Leaderboard Updated Successfully!',
-          description: `${scrapedData.length} entries have been synced.`,
-        });
-        setIsUploadDialogOpen(false);
-      } catch (e: any) {
-        console.error("Error during batch write: ", e);
-        toast({
-          variant: 'destructive',
-          title: 'Failed to Update Leaderboard',
-          description: e.message,
-        });
-      }
+        setIsFormDialogOpen(true);
     };
 
+    const handleAddClick = () => {
+        setSelectedEntry(null);
+        setIsFormDialogOpen(true);
+    }
+    
     return (
       <>
         <Card>
@@ -179,48 +141,14 @@ export default function AdminLeaderboardPage() {
             <div className="flex items-center justify-between gap-4">
                 <div>
                 <CardTitle>Leaderboard Management</CardTitle>
-                <CardDescription>Add, edit, delete, or bulk upload leaderboard entries.</CardDescription>
+                <CardDescription>Manually add, edit, or delete leaderboard entries.</CardDescription>
                 </div>
-                <div className="flex gap-2">
-                    <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
-                        <DialogTrigger asChild>
-                            <Button size="sm" variant="outline" className="gap-1">
-                                <Upload className="h-3.5 w-3.5" />
-                                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                                Bulk Upload
-                                </span>
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-2xl w-[95vw] max-h-[90vh] flex flex-col">
-                            <DialogHeader>
-                                <DialogTitle className="font-headline text-2xl">Bulk Upload Leaderboard</DialogTitle>
-                                <DialogDescription>
-                                    Upload a CSV file with `studentName` and `profileId` to scrape and update the entire leaderboard.
-                                </DialogDescription>
-                            </DialogHeader>
-                            <LeaderboardUploadForm onSuccess={handleUploadSuccess} />
-                        </DialogContent>
-                    </Dialog>
-                    <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                        <DialogTrigger asChild>
-                             <Button size="sm" className="gap-1">
-                                <PlusCircle className="h-3.5 w-3.5" />
-                                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                                Add Entry
-                                </span>
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[480px]">
-                            <DialogHeader>
-                                <DialogTitle className="font-headline text-2xl">Add New Entry</DialogTitle>
-                                <DialogDescription>
-                                    Enter the student name and profile URL to scrape their data and add them to the leaderboard.
-                                </DialogDescription>
-                            </DialogHeader>
-                            <LeaderboardEntryForm onSuccess={handleAddEntry} />
-                        </DialogContent>
-                    </Dialog>
-                </div>
+                <Button size="sm" className="gap-1" onClick={handleAddClick}>
+                    <PlusCircle className="h-3.5 w-3.5" />
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    Add Entry
+                    </span>
+                </Button>
             </div>
             </CardHeader>
             <CardContent>
@@ -229,10 +157,8 @@ export default function AdminLeaderboardPage() {
                 <TableRow>
                     <TableHead className="w-16 text-center">Rank</TableHead>
                     <TableHead>Student</TableHead>
-                    <TableHead className="text-center">Skill Badges</TableHead>
-                    <TableHead className="text-center">Quests</TableHead>
-                    <TableHead className="text-center">GenAI Games</TableHead>
-                    <TableHead className="text-right">Total Points</TableHead>
+                    <TableHead className="text-center">Campaign Completed</TableHead>
+                    <TableHead className="text-center">Completion Time</TableHead>
                     <TableHead>
                     <span className="sr-only">Actions</span>
                     </TableHead>
@@ -249,33 +175,37 @@ export default function AdminLeaderboardPage() {
                                     <Skeleton className="h-5 w-24" />
                                 </div>
                             </TableCell>
-                            <TableCell className="text-center"><Skeleton className="h-5 w-10 mx-auto" /></TableCell>
-                            <TableCell className="text-center"><Skeleton className="h-5 w-10 mx-auto" /></TableCell>
-                            <TableCell className="text-center"><Skeleton className="h-5 w-10 mx-auto" /></TableCell>
-                            <TableCell className="text-right"><Skeleton className="h-5 w-12 ml-auto" /></TableCell>
+                            <TableCell className="text-center"><Skeleton className="h-6 w-6 rounded-full mx-auto" /></TableCell>
+                            <TableCell className="text-center"><Skeleton className="h-5 w-40 mx-auto" /></TableCell>
                             <TableCell>
                                 <Skeleton className="h-8 w-8 ml-auto" />
                             </TableCell>
                         </TableRow>
                     ))
                 ) : rankedData.map((entry) => {
-                    const avatarImage = PlaceHolderImages.find(img => img.id === entry.student.avatar);
+                    const avatarImage = PlaceHolderImages.find(img => img.id === entry.avatar);
                     return (
                         <TableRow key={entry.id}>
                             <TableCell className="font-medium text-center">{entry.rank}</TableCell>
                             <TableCell>
                                 <div className="flex items-center gap-3">
                                 <Avatar className="hidden h-9 w-9 sm:flex">
-                                    {avatarImage && <AvatarImage src={avatarImage.imageUrl} alt={entry.student.name} />}
-                                    <AvatarFallback>{entry.student.name.charAt(0)}</AvatarFallback>
+                                    {avatarImage && <AvatarImage src={avatarImage.imageUrl} alt={entry.studentName} />}
+                                    <AvatarFallback>{entry.studentName.charAt(0)}</AvatarFallback>
                                 </Avatar>
-                                <div className="font-medium">{entry.student.name}</div>
+                                <div className="font-medium">{entry.studentName}</div>
                                 </div>
                             </TableCell>
-                            <TableCell className="text-center">{entry.skillBadges}</TableCell>
-                            <TableCell className="text-center">{entry.quests}</TableCell>
-                            <TableCell className="text-center">{entry.genAIGames}</TableCell>
-                            <TableCell className="text-right font-semibold">{entry.totalPoints}</TableCell>
+                            <TableCell className="text-center">
+                                {entry.campaignCompleted ? (
+                                    <CheckCircle className="h-5 w-5 text-green-500 mx-auto" />
+                                ) : (
+                                    <XCircle className="h-5 w-5 text-red-500 mx-auto" />
+                                )}
+                            </TableCell>
+                            <TableCell className="text-center">
+                                {entry.completionTime ? format(entry.completionTime.toDate(), 'dd MMM yyyy, hh:mm a') : 'N/A'}
+                            </TableCell>
                             <TableCell>
                                 <div className="flex items-center justify-end">
                                     <AlertDialog>
@@ -304,12 +234,12 @@ export default function AdminLeaderboardPage() {
                                             <AlertDialogHeader>
                                             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                             <AlertDialogDescription>
-                                                This action cannot be undone. This will permanently delete {entry.student.name}'s entry.
+                                                This action cannot be undone. This will permanently delete {entry.studentName}'s entry.
                                             </AlertDialogDescription>
                                             </AlertDialogHeader>
                                             <AlertDialogFooter>
                                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction onClick={() => handleDeleteEntry(entry.id, entry.student.name)} className="bg-destructive hover:bg-destructive/90">
+                                            <AlertDialogAction onClick={() => handleDeleteEntry(entry.id, entry.studentName)} className="bg-destructive hover:bg-destructive/90">
                                                 Delete
                                             </AlertDialogAction>
                                             </AlertDialogFooter>
@@ -335,25 +265,25 @@ export default function AdminLeaderboardPage() {
             </div>
             </CardFooter>
         </Card>
-        {selectedEntry && (
-            <Dialog open={isEditDialogOpen} onOpenChange={(isOpen) => {
-                if(!isOpen) setSelectedEntry(null);
-                setIsEditDialogOpen(isOpen);
-                }}>
-                <DialogContent className="sm:max-w-[480px]">
-                <DialogHeader>
-                    <DialogTitle className="font-headline text-2xl">Edit Entry for {selectedEntry.student.name}</DialogTitle>
-                    <DialogDescription>
-                        Manually update the details for this leaderboard entry.
-                    </DialogDescription>
-                </DialogHeader>
-                <EditLeaderboardEntryForm
-                    entry={selectedEntry} 
-                    onSuccess={handleUpdateEntry}
-                />
-                </DialogContent>
-            </Dialog>
-        )}
+        
+        <Dialog open={isFormDialogOpen} onOpenChange={(isOpen) => {
+            if(!isOpen) setSelectedEntry(null);
+            setIsFormDialogOpen(isOpen);
+            }}>
+            <DialogContent className="sm:max-w-[480px]">
+            <DialogHeader>
+                <DialogTitle className="font-headline text-2xl">{selectedEntry ? 'Edit' : 'Add'} Leaderboard Entry</DialogTitle>
+                <DialogDescription>
+                    {selectedEntry ? 'Manually update the details for this entry.' : 'Add a new student to the leaderboard.'}
+                </DialogDescription>
+            </DialogHeader>
+            <LeaderboardEntryForm
+                key={selectedEntry?.id || 'new'}
+                entry={selectedEntry} 
+                onSuccess={handleFormSuccess}
+            />
+            </DialogContent>
+        </Dialog>
       </>
     );
 }

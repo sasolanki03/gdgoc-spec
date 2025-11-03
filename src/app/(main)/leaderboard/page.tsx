@@ -3,7 +3,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { Search, Trophy, Shield, ExternalLink, Crown, Star } from 'lucide-react';
+import { Search, Trophy, ExternalLink, CheckCircle, XCircle } from 'lucide-react';
 import { PageHeader } from '@/components/shared/page-header';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,6 +16,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Button } from '@/components/ui/button';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
+import { format } from 'date-fns';
 
 const getRankColor = (rank: number) => {
   if (rank === 1) return 'text-yellow-400';
@@ -30,7 +31,7 @@ export default function LeaderboardPage() {
   
   const leaderboardQuery = useMemo(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'leaderboard'), orderBy('totalPoints', 'desc'));
+    return query(collection(firestore, 'leaderboard'), orderBy('completionTime', 'asc'));
   }, [firestore]);
 
   const { data: leaderboardData, loading } = useCollection<Omit<LeaderboardEntry, 'rank'>>(leaderboardQuery);
@@ -43,7 +44,7 @@ export default function LeaderboardPage() {
 
   const filteredData = useMemo(() => {
     return sortedData.filter(entry =>
-      entry.student.name.toLowerCase().includes(searchTerm.toLowerCase())
+      entry.studentName.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [sortedData, searchTerm]);
 
@@ -76,23 +77,21 @@ export default function LeaderboardPage() {
                     <TableRow>
                       <TableHead className="w-20 text-center">Rank</TableHead>
                       <TableHead>Student</TableHead>
-                      <TableHead className="text-center">Skill Badges</TableHead>
-                      <TableHead className="text-center">Quests</TableHead>
-                      <TableHead className="text-center">GenAI Games</TableHead>
-                      <TableHead className="text-right">Total Points</TableHead>
+                      <TableHead className="text-center">Campaign Completed</TableHead>
+                      <TableHead className="text-center">Completion Time</TableHead>
                       <TableHead className="text-center">Profile</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {loading ? (
                         <TableRow>
-                            <TableCell colSpan={7} className="text-center py-16">
+                            <TableCell colSpan={5} className="text-center py-16">
                                 Loading leaderboard...
                             </TableCell>
                         </TableRow>
                     ) : filteredData.length > 0 ? (
                       filteredData.map((entry) => {
-                      const avatarImage = PlaceHolderImages.find(img => img.id === entry.student.avatar);
+                      const avatarImage = PlaceHolderImages.find(img => img.id === entry.avatar);
                       return (
                         <TableRow key={entry.id} className={cn(
                           'transition-colors',
@@ -112,57 +111,34 @@ export default function LeaderboardPage() {
                           <TableCell>
                             <div className="flex items-center gap-4">
                               <Avatar>
-                                {avatarImage && <AvatarImage src={avatarImage.imageUrl} alt={entry.student.name} data-ai-hint={avatarImage.imageHint} />}
-                                <AvatarFallback>{entry.student.name.charAt(0)}</AvatarFallback>
+                                {avatarImage && <AvatarImage src={avatarImage.imageUrl} alt={entry.studentName} data-ai-hint={avatarImage.imageHint} />}
+                                <AvatarFallback>{entry.studentName.charAt(0)}</AvatarFallback>
                               </Avatar>
-                              <span className="font-medium">{entry.student.name}</span>
+                              <span className="font-medium">{entry.studentName}</span>
                             </div>
                           </TableCell>
-                           <TableCell className="text-center">
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                                  <Shield className="h-5 w-5 text-google-blue" />
-                                  <span className="font-semibold">{entry.skillBadges}</span>
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>{entry.skillBadges} Skill Badges Completed</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TableCell>
-                          <TableCell className="text-center">
-                             <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                                  <Star className="h-5 w-5 text-google-yellow" />
-                                  <span className="font-semibold">{entry.quests}</span>
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>{entry.quests} Quests Completed</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TableCell>
                           <TableCell className="text-center">
                             <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                                  <Crown className="h-5 w-5 text-google-green" />
-                                  <span className="font-semibold">{entry.genAIGames}</span>
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>{entry.genAIGames} GenAI Arcade Games Completed</p>
-                              </TooltipContent>
+                                <TooltipTrigger>
+                                {entry.campaignCompleted ? (
+                                    <CheckCircle className="h-6 w-6 text-google-green mx-auto" />
+                                ) : (
+                                    <XCircle className="h-6 w-6 text-google-red mx-auto" />
+                                )}
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>{entry.campaignCompleted ? "Completed" : "Not Completed"}</p>
+                                </TooltipContent>
                             </Tooltip>
                           </TableCell>
-                          <TableCell className="text-right font-bold text-lg text-primary">{entry.totalPoints}</TableCell>
+                          <TableCell className="text-center text-muted-foreground">
+                            {entry.completionTime ? format(entry.completionTime.toDate(), 'PPpp') : 'N/A'}
+                          </TableCell>
                           <TableCell className="text-center">
                              <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button variant="ghost" size="icon" asChild>
-                                  <Link href={entry.profileId} target="_blank" rel="noopener noreferrer">
+                                  <Link href={entry.profileUrl} target="_blank" rel="noopener noreferrer">
                                     <ExternalLink className="h-5 w-5 text-muted-foreground" />
                                     <span className="sr-only">View Profile</span>
                                   </Link>
@@ -178,7 +154,7 @@ export default function LeaderboardPage() {
                     })
                     ) : (
                       <TableRow>
-                          <TableCell colSpan={7} className="text-center py-16">
+                          <TableCell colSpan={5} className="text-center py-16">
                             <h3 className="text-2xl font-bold font-headline">No Students Found</h3>
                             <p className="text-muted-foreground mt-2">
                                 {searchTerm ? "Try adjusting your search." : "The leaderboard is currently empty."}

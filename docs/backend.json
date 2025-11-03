@@ -27,43 +27,29 @@
       "description": "Represents a single entry in the leaderboard.",
       "type": "object",
       "properties": {
-        "student": {
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "string"
-            },
-            "avatar": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "name"
-          ]
+        "studentName": {
+          "type": "string"
         },
-        "totalPoints": {
-          "type": "number"
+        "profileUrl": {
+          "type": "string",
+          "format": "uri"
         },
-        "skillBadges": {
-          "type": "number"
+        "campaignCompleted": {
+          "type": "boolean"
         },
-        "quests": {
-          "type": "number"
+        "completionTime": {
+          "type": "string",
+          "format": "date-time"
         },
-        "genAIGames": {
-          "type": "number"
-        },
-        "profileId": {
+        "avatar": {
           "type": "string"
         }
       },
       "required": [
-        "student",
-        "totalPoints",
-        "skillBadges",
-        "quests",
-        "genAIGames",
-        "profileId"
+        "studentName",
+        "profileUrl",
+        "campaignCompleted",
+        "completionTime"
       ]
     },
     "team_member": {

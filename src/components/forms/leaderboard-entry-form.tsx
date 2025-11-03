@@ -1,82 +1,67 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { format } from "date-fns"
+import { Calendar as CalendarIcon } from "lucide-react"
+import { Timestamp } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
 import type { LeaderboardEntry } from '@/lib/types';
-import { scrapeAndProcessProfiles } from '@/ai/flows/scrape-leaderboard-flow';
-import { Loader2 } from 'lucide-react';
+
 
 const formSchema = z.object({
   studentName: z.string().min(2, 'Name must be at least 2 characters.'),
-  profileId: z.string().url("Must be a valid Google Cloud Skills Boost profile URL."),
+  profileUrl: z.string().url("Must be a valid Google Cloud Skills Boost profile URL."),
+  campaignCompleted: z.boolean().default(false),
+  completionTime: z.date({
+    required_error: "A completion date is required.",
+  }),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
 interface LeaderboardEntryFormProps {
-  onSuccess: (data: Omit<LeaderboardEntry, 'id' | 'rank'>) => void;
+  entry: Omit<LeaderboardEntry, 'rank' | 'avatar'> | null;
+  onSuccess: (data: Omit<LeaderboardEntry, 'id' | 'rank' | 'avatar'>) => void;
 }
 
-export function LeaderboardEntryForm({ onSuccess }: LeaderboardEntryFormProps) {
-  const { toast } = useToast();
-  const [isScraping, setIsScraping] = useState(false);
-
+export function LeaderboardEntryForm({ entry, onSuccess }: LeaderboardEntryFormProps) {
+  
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     mode: 'onChange',
     defaultValues: {
-        studentName: '',
-        profileId: '',
+        studentName: entry?.studentName || '',
+        profileUrl: entry?.profileUrl || '',
+        campaignCompleted: entry?.campaignCompleted || false,
+        completionTime: entry?.completionTime ? entry.completionTime.toDate() : new Date(),
     },
   });
 
   const onSubmit = async (values: FormValues) => {
-    setIsScraping(true);
-    toast({
-        title: 'Scraping Profile...',
-        description: 'Fetching the latest data from the Skills Boost profile.',
-    });
-
-    try {
-      const results = await scrapeAndProcessProfiles([{
-        studentName: values.studentName,
-        profileId: values.profileId
-      }]);
-
-      const scrapedData = results[0];
-
-      if (!scrapedData) {
-        throw new Error("Could not scrape the profile. Please check the URL and try again.");
-      }
-
-      onSuccess(scrapedData);
-      form.reset();
-
-    } catch (error: any) {
-      console.error("Error processing form:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.message || "Could not process the form."
-      })
-    } finally {
-        setIsScraping(false);
-    }
+    const dataToSave = {
+        ...values,
+        completionTime: Timestamp.fromDate(values.completionTime),
+    };
+    onSuccess(dataToSave);
   };
 
   return (
@@ -99,7 +84,7 @@ export function LeaderboardEntryForm({ onSuccess }: LeaderboardEntryFormProps) {
         
         <FormField
             control={form.control}
-            name="profileId"
+            name="profileUrl"
             render={({ field }) => (
                 <FormItem>
                 <FormLabel>Skills Boost Profile URL</FormLabel>
@@ -111,9 +96,76 @@ export function LeaderboardEntryForm({ onSuccess }: LeaderboardEntryFormProps) {
             )}
         />
         
-        <Button type="submit" className="w-full" disabled={isScraping || !form.formState.isValid}>
-          {isScraping && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {isScraping ? 'Fetching Data...' : 'Scrape and Add Entry'}
+        <FormField
+            control={form.control}
+            name="completionTime"
+            render={({ field }) => (
+                <FormItem className="flex flex-col">
+                <FormLabel>Time of Last Badge Completion</FormLabel>
+                <Popover>
+                    <PopoverTrigger asChild>
+                    <FormControl>
+                        <Button
+                        variant={"outline"}
+                        className={cn(
+                            "w-full pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                        )}
+                        >
+                        {field.value ? (
+                            format(field.value, "PPPpp")
+                        ) : (
+                            <span>Pick a date and time</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                    </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) =>
+                        date > new Date() || date < new Date("1900-01-01")
+                        }
+                        initialFocus
+                    />
+                    </PopoverContent>
+                </Popover>
+                <FormDescription>
+                    This is used to determine the rank. Earlier is better.
+                </FormDescription>
+                <FormMessage />
+                </FormItem>
+            )}
+        />
+        
+        <FormField
+            control={form.control}
+            name="campaignCompleted"
+            render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                        <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                        <FormLabel>
+                        Campaign Completed?
+                        </FormLabel>
+                        <FormDescription>
+                        Check this if the student has completed all required activities.
+                        </FormDescription>
+                    </div>
+                </FormItem>
+            )}
+        />
+        
+        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting || !form.formState.isValid}>
+          {form.formState.isSubmitting ? 'Saving...' : 'Save Entry'}
         </Button>
       </form>
     </Form>
