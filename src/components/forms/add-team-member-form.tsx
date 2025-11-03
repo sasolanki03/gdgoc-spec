@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -290,7 +289,7 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
           )}
         />
         
-        <Button type="submit" className="w-full" disabled={isSubmitting || !form.formState.isValid}>
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? 'Adding...' : 'Add Member'}
         </Button>
       </form>
