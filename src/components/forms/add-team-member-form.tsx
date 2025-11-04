@@ -46,12 +46,11 @@ const formSchema = z.object({
 
 
 interface AddTeamMemberFormProps {
-  onSuccess: () => void;
+  onSuccess: (data: Omit<TeamMember, 'id'>) => void;
 }
 
 export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
   const { toast } = useToast();
-  const firestore = useFirestore();
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -85,10 +84,6 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
 
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!firestore) {
-        toast({ variant: "destructive", title: "Error", description: "Firestore is not initialized." });
-        return;
-    }
     setIsSubmitting(true);
     
     const file = values.photo[0];
@@ -115,21 +110,15 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
           photo: photoDataUrl,
       };
 
-      await addDoc(collection(firestore, 'teamMembers'), newMemberData);
-      
-      toast({
-        title: 'Member Added Successfully!',
-        description: `${values.name} has been added to the team.`,
-      });
-      onSuccess();
+      onSuccess(newMemberData as Omit<TeamMember, 'id'>);
       form.reset();
       setPhotoPreview(null);
 
     } catch (error: any) {
-      console.error("Error adding document: ", error);
+      console.error("Error processing file: ", error);
       toast({
         variant: "destructive",
-        title: "Error Adding Member",
+        title: "Error Processing Photo",
         description: error.message || 'An unexpected error occurred.',
       })
     } finally {
@@ -289,7 +278,7 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
           )}
         />
         
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
+        <Button type="submit" className="w-full" disabled={isSubmitting || !form.formState.isValid}>
             {isSubmitting ? 'Adding...' : 'Add Member'}
         </Button>
       </form>

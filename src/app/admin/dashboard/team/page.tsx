@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import { PlusCircle, MoreHorizontal, Trash } from 'lucide-react';
-import { collection, updateDoc, deleteDoc, doc, query, orderBy } from 'firebase/firestore';
+import { collection, updateDoc, deleteDoc, doc, query, orderBy, addDoc } from 'firebase/firestore';
 import { useCollection, useFirestore } from '@/firebase';
 
 import {
@@ -68,6 +68,21 @@ export default function AdminTeamPage() {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
     const { toast } = useToast();
+    
+    const handleAddMember = async (newMemberData: Omit<TeamMember, 'id'>) => {
+        if (!firestore) return;
+        try {
+            await addDoc(collection(firestore, 'teamMembers'), newMemberData);
+            setIsAddDialogOpen(false);
+            toast({
+                title: 'Member Added!',
+                description: `${newMemberData.name} has been added to the team.`,
+            });
+        } catch (e: any) {
+            console.error("Error adding member:", e);
+            toast({ variant: 'destructive', title: 'Error', description: e.message });
+        }
+    };
 
     const handleUpdateMember = async (id: string, data: Partial<TeamMember>) => {
         if (!firestore) return;
@@ -135,7 +150,7 @@ export default function AdminTeamPage() {
                         <DialogTitle className="font-headline text-2xl">Add New Team Member</DialogTitle>
                     </DialogHeader>
                     <AddTeamMemberForm 
-                        onSuccess={() => setIsAddDialogOpen(false)}
+                        onSuccess={(data) => handleAddMember(data as Omit<TeamMember, 'id'>)}
                     />
                   </DialogContent>
                 </Dialog>
