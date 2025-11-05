@@ -1,9 +1,16 @@
 
+'use client';
+
 import Link from 'next/link';
+import Image from 'next/image';
 import { Github, Twitter, Linkedin, Instagram } from 'lucide-react';
-import { GoogleLogo } from '@/components/icons/google-logo';
-import { Button } from '@/components/ui/button';
+import { doc } from 'firebase/firestore';
+
+import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import type { SocialLink } from '@/lib/types';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+
 
 const DiscordIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg
@@ -32,6 +39,30 @@ const iconComponents = {
     Discord: DiscordIcon,
 };
 
+function SiteLogo() {
+    const firestore = useFirestore();
+    const settingsRef = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'branding') : null, [firestore]);
+    const { data: settingsData, isLoading } = useDoc<{logoUrl: string}>(settingsRef);
+  
+    if (isLoading) {
+      return <Skeleton className="h-8 w-28" />;
+    }
+  
+    if (settingsData?.logoUrl) {
+      return (
+        <Image 
+          src={settingsData.logoUrl} 
+          alt="Site Logo"
+          width={120}
+          height={40}
+          className="object-contain h-10"
+        />
+      );
+    }
+  
+    return <span className="text-xl font-bold font-headline">GDGoC SPEC</span>;
+}
+
 export function Footer() {
   return (
     <footer className="border-t py-10">
@@ -39,8 +70,7 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           <div className="flex flex-col items-start gap-4">
             <Link href="/" className="flex items-center space-x-2">
-              
-              <span className="text-xl font-bold font-headline">GDGoC SPEC</span>
+                <SiteLogo />
             </Link>
             <p className="text-muted-foreground">
               Learn, Connect, Grow with the Google Developer Group on Campus at Shree Parekh Engineering College, Mahuva.
@@ -79,5 +109,3 @@ export function Footer() {
     </footer>
   );
 }
-
-    
