@@ -44,9 +44,10 @@ type FormValues = z.infer<typeof formSchema>;
 interface LeaderboardEntryFormProps {
   entry: Omit<LeaderboardEntry, 'rank' | 'avatar'> | null;
   onSuccess: (data: Omit<LeaderboardEntry, 'id' | 'rank' | 'avatar'>) => void;
+  defaultEventId?: string;
 }
 
-export function LeaderboardEntryForm({ entry, onSuccess }: LeaderboardEntryFormProps) {
+export function LeaderboardEntryForm({ entry, onSuccess, defaultEventId }: LeaderboardEntryFormProps) {
   const firestore = useFirestore();
   const eventsQuery = useMemo(() => {
     if (!firestore) return null;
@@ -62,7 +63,7 @@ export function LeaderboardEntryForm({ entry, onSuccess }: LeaderboardEntryFormP
         profileUrl: entry?.profileUrl || '',
         campaignCompleted: entry?.campaignCompleted || false,
         completionTime: entry?.completionTime ? entry.completionTime.toDate() : new Date(),
-        eventId: entry?.eventId || undefined,
+        eventId: entry?.eventId || defaultEventId || undefined,
     },
   });
 
@@ -87,7 +88,7 @@ export function LeaderboardEntryForm({ entry, onSuccess }: LeaderboardEntryFormP
             render={({ field }) => (
                 <FormItem>
                 <FormLabel>Event</FormLabel>
-                 <Select onValueChange={field.onChange} defaultValue={field.value} disabled={loadingEvents}>
+                 <Select onValueChange={field.onChange} defaultValue={field.value} disabled={loadingEvents || !!defaultEventId}>
                     <FormControl>
                         <SelectTrigger>
                             <SelectValue placeholder="Select an event for the leaderboard" />

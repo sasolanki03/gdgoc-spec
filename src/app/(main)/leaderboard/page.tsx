@@ -29,7 +29,7 @@ const getRankColor = (rank: number) => {
 
 export default function LeaderboardPage() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedEventId, setSelectedEventId] = useState<string>('all');
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const firestore = useFirestore();
   
   const eventsQuery = useMemo(() => {
@@ -40,7 +40,7 @@ export default function LeaderboardPage() {
   const { data: events, loading: loadingEvents } = useCollection<EventType>(eventsQuery);
 
   const leaderboardQuery = useMemo(() => {
-    if (!firestore) return null;
+    if (!firestore || !selectedEventId) return null;
     let q = query(collection(firestore, 'leaderboard'), orderBy('completionTime', 'asc'));
     if (selectedEventId !== 'all') {
       q = query(q, where('eventId', '==', selectedEventId));
@@ -61,6 +61,11 @@ export default function LeaderboardPage() {
     );
   }, [sortedData, searchTerm]);
 
+  const selectedEvent = useMemo(() => {
+    if (!selectedEventId || !events) return null;
+    return events.find(e => e.id === selectedEventId);
+  }, [selectedEventId, events]);
+
   return (
     <TooltipProvider>
       <div>
@@ -78,14 +83,14 @@ export default function LeaderboardPage() {
                 className="pl-10 text-base"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                disabled={!selectedEventId}
               />
             </div>
-             <Select onValueChange={setSelectedEventId} defaultValue="all">
+             <Select onValueChange={setSelectedEventId} value={selectedEventId || ''}>
               <SelectTrigger className="w-full md:w-[280px]">
                 <SelectValue placeholder="Select an event" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Events</SelectItem>
                 {loadingEvents ? (
                   <SelectItem value="loading" disabled>Loading events...</SelectItem>
                 ) : (
@@ -97,113 +102,125 @@ export default function LeaderboardPage() {
             </Select>
           </div>
 
-          <Card>
-            <CardContent className="pt-6">
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-20 text-center">Rank</TableHead>
-                      <TableHead>Student</TableHead>
-                      <TableHead className="text-center">Campaign Completed</TableHead>
-                      <TableHead className="text-center">Completion Date</TableHead>
-                      <TableHead className="text-center">Profile</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {loading ? (
-                        [...Array(10)].map((_, i) => (
-                          <TableRow key={i}>
-                            <TableCell className="text-center"><Skeleton className="h-5 w-5 mx-auto" /></TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-4">
-                                <Skeleton className="h-10 w-10 rounded-full" />
-                                <Skeleton className="h-5 w-32" />
-                              </div>
+          {!selectedEventId ? (
+            <Card>
+                <CardContent className="flex flex-col items-center justify-center text-center py-16">
+                     <Trophy className="h-16 w-16 text-muted-foreground mb-4"/>
+                    <h3 className="text-2xl font-bold font-headline">Select an Event</h3>
+                    <p className="text-muted-foreground mt-2">
+                        Please choose an event from the dropdown to view its leaderboard.
+                    </p>
+                </CardContent>
+            </Card>
+          ) : (
+            <Card>
+                <CardContent className="pt-6">
+                <div className="overflow-x-auto">
+                    <Table>
+                    <TableHeader>
+                        <TableRow>
+                        <TableHead className="w-20 text-center">Rank</TableHead>
+                        <TableHead>Student</TableHead>
+                        <TableHead className="text-center">Campaign Completed</TableHead>
+                        <TableHead className="text-center">Completion Date</TableHead>
+                        <TableHead className="text-center">Profile</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {loading ? (
+                            [...Array(5)].map((_, i) => (
+                            <TableRow key={i}>
+                                <TableCell className="text-center"><Skeleton className="h-5 w-5 mx-auto" /></TableCell>
+                                <TableCell>
+                                <div className="flex items-center gap-4">
+                                    <Skeleton className="h-10 w-10 rounded-full" />
+                                    <Skeleton className="h-5 w-32" />
+                                </div>
+                                </TableCell>
+                                <TableCell className="text-center"><Skeleton className="h-6 w-6 mx-auto rounded-full" /></TableCell>
+                                <TableCell className="text-center"><Skeleton className="h-5 w-24 mx-auto" /></TableCell>
+                                <TableCell className="text-center"><Skeleton className="h-8 w-8 mx-auto" /></TableCell>
+                            </TableRow>
+                            ))
+                        ) : filteredData.length > 0 ? (
+                        filteredData.map((entry) => {
+                        const avatarImage = PlaceHolderImages.find(img => img.id === entry.avatar);
+                        return (
+                            <TableRow key={entry.id} className={cn(
+                            'transition-colors',
+                            entry.rank <= 3 && 'bg-card',
+                            {'bg-yellow-400/10 hover:bg-yellow-400/20': entry.rank === 1},
+                            {'bg-slate-400/10 hover:bg-slate-400/20': entry.rank === 2},
+                            {'bg-yellow-600/10 hover:bg-yellow-600/20': entry.rank === 3},
+                            )}>
+                            <TableCell className="text-center">
+                                <div className="flex items-center justify-center gap-2">
+                                <span className={cn('text-xl font-bold', getRankColor(entry.rank))}>
+                                    {entry.rank}
+                                </span>
+                                {entry.rank <= 3 && <Trophy className={cn('h-5 w-5', getRankColor(entry.rank))} />}
+                                </div>
                             </TableCell>
-                            <TableCell className="text-center"><Skeleton className="h-6 w-6 mx-auto rounded-full" /></TableCell>
-                            <TableCell className="text-center"><Skeleton className="h-5 w-24 mx-auto" /></TableCell>
-                            <TableCell className="text-center"><Skeleton className="h-8 w-8 mx-auto" /></TableCell>
-                          </TableRow>
-                        ))
-                    ) : filteredData.length > 0 ? (
-                      filteredData.map((entry) => {
-                      const avatarImage = PlaceHolderImages.find(img => img.id === entry.avatar);
-                      return (
-                        <TableRow key={entry.id} className={cn(
-                          'transition-colors',
-                          entry.rank <= 3 && 'bg-card',
-                          {'bg-yellow-400/10 hover:bg-yellow-400/20': entry.rank === 1},
-                          {'bg-slate-400/10 hover:bg-slate-400/20': entry.rank === 2},
-                          {'bg-yellow-600/10 hover:bg-yellow-600/20': entry.rank === 3},
-                        )}>
-                          <TableCell className="text-center">
-                            <div className="flex items-center justify-center gap-2">
-                              <span className={cn('text-xl font-bold', getRankColor(entry.rank))}>
-                                {entry.rank}
-                              </span>
-                              {entry.rank <= 3 && <Trophy className={cn('h-5 w-5', getRankColor(entry.rank))} />}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-4">
-                              <Avatar>
-                                {avatarImage && <AvatarImage src={avatarImage.imageUrl} alt={entry.studentName} data-ai-hint={avatarImage.imageHint} />}
-                                <AvatarFallback>{entry.studentName.charAt(0)}</AvatarFallback>
-                              </Avatar>
-                              <span className="font-medium">{entry.studentName}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Tooltip>
-                                <TooltipTrigger>
-                                {entry.campaignCompleted ? (
-                                    <CheckCircle className="h-6 w-6 text-google-green mx-auto" />
-                                ) : (
-                                    <XCircle className="h-6 w-6 text-google-red mx-auto" />
-                                )}
+                            <TableCell>
+                                <div className="flex items-center gap-4">
+                                <Avatar>
+                                    {avatarImage && <AvatarImage src={avatarImage.imageUrl} alt={entry.studentName} data-ai-hint={avatarImage.imageHint} />}
+                                    <AvatarFallback>{entry.studentName.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <span className="font-medium">{entry.studentName}</span>
+                                </div>
+                            </TableCell>
+                            <TableCell className="text-center">
+                                <Tooltip>
+                                    <TooltipTrigger>
+                                    {entry.campaignCompleted ? (
+                                        <CheckCircle className="h-6 w-6 text-google-green mx-auto" />
+                                    ) : (
+                                        <XCircle className="h-6 w-6 text-google-red mx-auto" />
+                                    )}
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>{entry.campaignCompleted ? "Completed" : "Not Completed"}</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TableCell>
+                            <TableCell className="text-center text-muted-foreground">
+                                {entry.completionTime ? format(entry.completionTime.toDate(), 'PP') : 'N/A'}
+                            </TableCell>
+                            <TableCell className="text-center">
+                                <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon" asChild>
+                                    <Link href={entry.profileUrl} target="_blank" rel="noopener noreferrer">
+                                        <ExternalLink className="h-5 w-5 text-muted-foreground" />
+                                        <span className="sr-only">View Profile</span>
+                                    </Link>
+                                    </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                    <p>{entry.campaignCompleted ? "Completed" : "Not Completed"}</p>
+                                    <p>View Google Cloud Skills Boost Profile</p>
                                 </TooltipContent>
-                            </Tooltip>
-                          </TableCell>
-                          <TableCell className="text-center text-muted-foreground">
-                            {entry.completionTime ? format(entry.completionTime.toDate(), 'PP') : 'N/A'}
-                          </TableCell>
-                          <TableCell className="text-center">
-                             <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" asChild>
-                                  <Link href={entry.profileUrl} target="_blank" rel="noopener noreferrer">
-                                    <ExternalLink className="h-5 w-5 text-muted-foreground" />
-                                    <span className="sr-only">View Profile</span>
-                                  </Link>
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>View Google Cloud Skills Boost Profile</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TableCell>
+                                </Tooltip>
+                            </TableCell>
+                            </TableRow>
+                        );
+                        })
+                        ) : (
+                        <TableRow>
+                            <TableCell colSpan={5} className="text-center py-16">
+                                <h3 className="text-2xl font-bold font-headline">No Students Found</h3>
+                                <p className="text-muted-foreground mt-2">
+                                    {searchTerm ? "Try adjusting your search." : "The leaderboard is currently empty for this event."}
+                                </p>
+                            </TableCell>
                         </TableRow>
-                      );
-                    })
-                    ) : (
-                      <TableRow>
-                          <TableCell colSpan={5} className="text-center py-16">
-                            <h3 className="text-2xl font-bold font-headline">No Students Found</h3>
-                            <p className="text-muted-foreground mt-2">
-                                {searchTerm ? "Try adjusting your search." : "The leaderboard is currently empty for this event."}
-                            </p>
-                          </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
+                        )}
+                    </TableBody>
+                    </Table>
+                </div>
+                </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </TooltipProvider>

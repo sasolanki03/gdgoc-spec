@@ -39,7 +39,6 @@ const formSchema = z.object({
       (files) => ACCEPTED_FILE_TYPES.includes(files?.[0]?.type),
       ".csv files are accepted."
     ),
-  eventId: z.string().min(1, "Please select an event."),
 });
 
 type CsvData = {
@@ -51,9 +50,10 @@ type CsvData = {
 
 interface LeaderboardUploadFormProps {
     onSuccess: (data: Omit<LeaderboardEntry, 'id'|'rank'|'avatar'>[]) => void;
+    eventId: string;
 }
 
-export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps) {
+export function LeaderboardUploadForm({ onSuccess, eventId }: LeaderboardUploadFormProps) {
   const { toast } = useToast();
   const [parsedData, setParsedData] = useState<CsvData[]>([]);
   const [isParsing, setIsParsing] = useState(false);
@@ -119,7 +119,7 @@ export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps)
     if (isParsing || parsedData.length === 0 || !!error) {
         return;
     }
-    const selectedEvent = events?.find(e => e.id === values.eventId);
+    const selectedEvent = events?.find(e => e.id === eventId);
     if (!selectedEvent) {
         toast({
             variant: 'destructive',
@@ -164,29 +164,7 @@ export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps)
     <div className="flex flex-col gap-4">
         <Form {...form}>
             <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
-                <FormField
-                    control={form.control}
-                    name="eventId"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Target Event</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={loadingEvents}>
-                            <FormControl>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select an event for the leaderboard" />
-                                </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                {loadingEvents && <SelectItem value="loading" disabled>Loading events...</SelectItem>}
-                                {events?.map(event => (
-                                    <SelectItem key={event.id} value={event.id}>{event.title}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                
                 <FormField
                     control={form.control}
                     name="file"
