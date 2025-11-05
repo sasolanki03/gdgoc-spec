@@ -33,7 +33,7 @@ import {
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu"
 import { GoogleLogo } from '@/components/icons/google-logo';
-import { SheetTitle, Sheet, SheetContent } from '@/components/ui/sheet';
+import { SheetTitle } from '@/components/ui/sheet';
 
 const adminNavItems = [
     { href: '/admin/dashboard', label: 'Dashboard', icon: Home },
@@ -52,13 +52,11 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
         <Sidebar>
-            {/* The SheetTitle is now part of the Sidebar's children and will be correctly placed in the mobile Sheet */}
             <SheetTitle className="sr-only">Admin Menu</SheetTitle>
             <SidebarHeader className="flex items-center justify-between p-2">
                 <Link href="/admin/dashboard" className="flex items-center gap-2">
                     <span className="font-semibold text-lg font-headline">GDGoC SPEC Admin</span>
                 </Link>
-                {/* The desktop trigger is part of the header for desktop view */}
                 <SidebarTrigger className="hidden md:flex" />
             </SidebarHeader>
             <SidebarContent>
@@ -90,7 +88,6 @@ export default function DashboardLayout({
         </Sidebar>
         <SidebarInset>
             <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-                {/* The mobile trigger is part of the main page header */}
                 <SidebarTrigger className="md:hidden" />
                 <div className="ml-auto flex items-center gap-4">
                     <DropdownMenu>
