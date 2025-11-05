@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection, query, orderBy, where } from 'firebase/firestore';
+import { collection, query, orderBy } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -40,20 +40,28 @@ export default function LeaderboardPage() {
   const { data: events, loading: loadingEvents } = useCollection<EventType>(eventsQuery);
 
   const leaderboardQuery = useMemo(() => {
-    if (!firestore || !selectedEventId) return null;
-    let q = query(collection(firestore, 'leaderboard'), orderBy('completionTime', 'asc'));
-    if (selectedEventId !== 'all') {
-      q = query(q, where('eventId', '==', selectedEventId));
-    }
-    return q;
-  }, [firestore, selectedEventId]);
+    if (!firestore) return null;
+    return query(collection(firestore, 'leaderboard'));
+  }, [firestore]);
 
-  const { data: leaderboardData, loading } = useCollection<Omit<LeaderboardEntry, 'rank'>>(leaderboardQuery);
+  const { data: allLeaderboardData, loading } = useCollection<Omit<LeaderboardEntry, 'rank'>>(leaderboardQuery);
+
+  const eventLeaderboardData = useMemo(() => {
+    if (!allLeaderboardData || !selectedEventId) return [];
+    return allLeaderboardData.filter(entry => entry.eventId === selectedEventId);
+  }, [allLeaderboardData, selectedEventId]);
 
   const sortedData = useMemo(() => {
-    if (!leaderboardData) return [];
-    return leaderboardData.map((student, index) => ({ ...student, rank: index + 1 }));
-  }, [leaderboardData]);
+    if (!eventLeaderboardData) return [];
+    // sort by completionTime ascending
+    const sorted = [...eventLeaderboardData].sort((a, b) => {
+        if (a.completionTime && b.completionTime) {
+            return a.completionTime.toDate().getTime() - b.completionTime.toDate().getTime();
+        }
+        return 0;
+    });
+    return sorted.map((student, index) => ({ ...student, rank: index + 1 }));
+  }, [eventLeaderboardData]);
 
   const filteredData = useMemo(() => {
     return sortedData.filter(entry =>

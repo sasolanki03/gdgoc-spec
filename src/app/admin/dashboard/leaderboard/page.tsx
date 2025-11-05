@@ -72,18 +72,28 @@ export default function AdminLeaderboardPage() {
     const { data: events, loading: loadingEvents } = useCollection<EventType>(eventsQuery);
 
     const leaderboardQuery = useMemo(() => {
-        if (!firestore || !selectedEventId) return null;
-        return query(collection(firestore, 'leaderboard'), where('eventId', '==', selectedEventId), orderBy('completionTime', 'asc'));
-    }, [firestore, selectedEventId]);
+        if (!firestore) return null;
+        return query(collection(firestore, 'leaderboard'));
+    }, [firestore]);
 
-    const { data: leaderboardData, loading, error } = useCollection<Omit<LeaderboardEntry, 'rank'>>(leaderboardQuery);
+    const { data: allLeaderboardData, loading, error } = useCollection<Omit<LeaderboardEntry, 'rank'>>(leaderboardQuery);
 
     const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
     const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
     const [selectedEntry, setSelectedEntry] = useState<LeaderboardEntry | null>(null);
     const { toast } = useToast();
 
-    const rankedData = useMemo(() => leaderboardData?.map((entry, index) => ({ ...entry, rank: index + 1 })) || [], [leaderboardData]);
+    const rankedData = useMemo(() => {
+        if (!allLeaderboardData || !selectedEventId) return [];
+        const eventData = allLeaderboardData.filter(entry => entry.eventId === selectedEventId);
+        const sorted = eventData.sort((a, b) => {
+            if (a.completionTime && b.completionTime) {
+                return a.completionTime.toDate().getTime() - b.completionTime.toDate().getTime();
+            }
+            return 0;
+        });
+        return sorted.map((entry, index) => ({ ...entry, rank: index + 1 }));
+    }, [allLeaderboardData, selectedEventId]);
 
     const handleFormSuccess = async (data: Omit<LeaderboardEntry, 'id' | 'rank' | 'avatar'>) => {
         if (!firestore) return;
