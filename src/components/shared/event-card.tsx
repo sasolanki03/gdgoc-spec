@@ -18,6 +18,7 @@ export function EventCard({ event }: EventCardProps) {
     const isDataUri = event.imageUrl.startsWith('data:');
     const image = !isDataUri ? PlaceHolderImages.find(img => img.id === event.imageUrl) : null;
     const imageUrl = image ? image.imageUrl : event.imageUrl;
+    const finalImageUrl = imageUrl || 'https://picsum.photos/seed/placeholder-event/400/200';
 
     const getBadgeVariant = (status: EventType['status']): "default" | "secondary" | "destructive" | "outline" => {
         switch (status) {
@@ -48,7 +49,7 @@ export function EventCard({ event }: EventCardProps) {
       <CardHeader className="p-0">
         <div className="relative h-48 w-full">
             <Image
-                src={imageUrl}
+                src={finalImageUrl}
                 alt={event.title}
                 fill
                 className="object-cover"
