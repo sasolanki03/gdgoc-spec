@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { format } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
 import { collection, query, orderBy, Timestamp } from 'firebase/firestore';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -33,11 +33,18 @@ const formSchema = z.object({
   studentName: z.string().min(2, 'Name must be at least 2 characters.'),
   profileUrl: z.string().url("Must be a valid Google Cloud Skills Boost profile URL."),
   campaignCompleted: z.boolean().default(false),
-  completionTime: z.date({
-    required_error: "A completion date is required.",
-  }),
+  completionTime: z.date().optional(),
   eventId: z.string().min(1, "Please select an event."),
+}).refine(data => {
+    if (data.campaignCompleted) {
+        return !!data.completionTime;
+    }
+    return true;
+}, {
+    message: "Completion date is required if campaign is completed.",
+    path: ["completionTime"],
 });
+
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -49,7 +56,7 @@ interface LeaderboardEntryFormProps {
 
 export function LeaderboardEntryForm({ entry, onSuccess, defaultEventId }: LeaderboardEntryFormProps) {
   const firestore = useFirestore();
-  const eventsQuery = useMemo(() => {
+  const eventsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'events'), orderBy('startDate', 'desc'));
   }, [firestore]);
@@ -62,10 +69,12 @@ export function LeaderboardEntryForm({ entry, onSuccess, defaultEventId }: Leade
         studentName: entry?.studentName || '',
         profileUrl: entry?.profileUrl || '',
         campaignCompleted: entry?.campaignCompleted || false,
-        completionTime: entry?.completionTime ? entry.completionTime.toDate() : new Date(),
+        completionTime: entry?.completionTime ? entry.completionTime.toDate() : undefined,
         eventId: entry?.eventId || defaultEventId || undefined,
     },
   });
+
+  const isCampaignCompleted = form.watch('campaignCompleted');
 
   const onSubmit = async (values: FormValues) => {
     const selectedEvent = events?.find(e => e.id === values.eventId);
@@ -73,10 +82,10 @@ export function LeaderboardEntryForm({ entry, onSuccess, defaultEventId }: Leade
 
     const dataToSave = {
         ...values,
-        completionTime: Timestamp.fromDate(values.completionTime),
+        completionTime: values.campaignCompleted && values.completionTime ? Timestamp.fromDate(values.completionTime) : null,
         eventName: selectedEvent.title,
     };
-    onSuccess(dataToSave);
+    onSuccess(dataToSave as Omit<LeaderboardEntry, 'id' | 'rank' | 'avatar'>);
   };
 
   return (
@@ -132,52 +141,7 @@ export function LeaderboardEntryForm({ entry, onSuccess, defaultEventId }: Leade
                 </FormItem>
             )}
         />
-        
-        <FormField
-            control={form.control}
-            name="completionTime"
-            render={({ field }) => (
-                <FormItem className="flex flex-col">
-                <FormLabel>Date of Last Badge Completion</FormLabel>
-                <Popover>
-                    <PopoverTrigger asChild>
-                    <FormControl>
-                        <Button
-                        variant={"outline"}
-                        className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                        )}
-                        >
-                        {field.value ? (
-                            format(field.value, "PPP")
-                        ) : (
-                            <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                    </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        disabled={(date) =>
-                        date > new Date() || date < new Date("1900-01-01")
-                        }
-                        initialFocus
-                    />
-                    </PopoverContent>
-                </Popover>
-                <FormDescription>
-                    This is used to determine the rank. Earlier is better.
-                </FormDescription>
-                <FormMessage />
-                </FormItem>
-            )}
-        />
-        
+
         <FormField
             control={form.control}
             name="campaignCompleted"
@@ -197,6 +161,52 @@ export function LeaderboardEntryForm({ entry, onSuccess, defaultEventId }: Leade
                         Check this if the student has completed all required activities.
                         </FormDescription>
                     </div>
+                </FormItem>
+            )}
+        />
+        
+        <FormField
+            control={form.control}
+            name="completionTime"
+            render={({ field }) => (
+                <FormItem className="flex flex-col">
+                <FormLabel>Date of Last Badge Completion</FormLabel>
+                <Popover>
+                    <PopoverTrigger asChild>
+                    <FormControl>
+                        <Button
+                          variant={"outline"}
+                          disabled={!isCampaignCompleted}
+                          className={cn(
+                            "w-full pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                    </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) =>
+                        date > new Date() || date < new Date("1900-01-01")
+                        }
+                        initialFocus
+                    />
+                    </PopoverContent>
+                </Popover>
+                <FormDescription>
+                    This is used to determine rank. This field is enabled only if the campaign is marked as completed.
+                </FormDescription>
+                <FormMessage />
                 </FormItem>
             )}
         />

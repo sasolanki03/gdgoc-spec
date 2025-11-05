@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -43,8 +44,7 @@ const formSchema = z.object({
 type CsvData = {
   studentName: string;
   profileUrl: string;
-  campaignCompleted: string; // 'Yes' or 'No'
-  completionTime: string; // YYYY-MM-DD
+  completionTime: string; // YYYY-MM-DD or empty
 };
 
 interface LeaderboardUploadFormProps {
@@ -81,13 +81,12 @@ export function LeaderboardUploadForm({ onSuccess, eventId }: LeaderboardUploadF
             header: true,
             skipEmptyLines: true,
             complete: (results) => {
-                // Validate required columns
-                const requiredColumns = ['studentName', 'profileUrl', 'campaignCompleted', 'completionTime'];
+                const requiredColumns = ['studentName', 'profileUrl', 'completionTime'];
                 const headers = results.meta.fields || [];
                 const missingColumns = requiredColumns.filter(col => !headers.includes(col));
 
                 if (missingColumns.length > 0) {
-                    setError(`The CSV file is missing the following required columns: ${missingColumns.join(', ')}.`);
+                    setError(`The CSV file is missing required columns: ${missingColumns.join(', ')}.`);
                     form.setValue('file', null);
                     setIsParsing(false);
                     return;
@@ -107,9 +106,9 @@ export function LeaderboardUploadForm({ onSuccess, eventId }: LeaderboardUploadF
 
   const createSampleCsv = () => {
     const csvContent = [
-        ['studentName', 'profileUrl', 'campaignCompleted', 'completionTime'].join(','),
-        ['John Doe', 'https://www.cloudskillsboost.google/public_profiles/12345', 'Yes', '2024-05-20'],
-        ['Jane Smith', 'https://www.cloudskillsboost.google/public_profiles/67890', 'No', '2024-05-21'],
+        ['studentName', 'profileUrl', 'completionTime'].join(','),
+        ['John Doe', 'https://www.cloudskillsboost.google/public_profiles/12345', '2024-05-20'],
+        ['Jane Smith', 'https://www.cloudskillsboost.google/public_profiles/67890', ''],
     ].join('\n');
     return `data:text/csv;charset=utf-8,${encodeURIComponent(csvContent)}`;
   };
@@ -130,29 +129,35 @@ export function LeaderboardUploadForm({ onSuccess, eventId }: LeaderboardUploadF
 
     try {
         const entriesToUpload = parsedData.map(item => {
-            const dateParts = item.completionTime.split('-').map(Number);
-            const completionTime = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+            const hasCompletionDate = item.completionTime && item.completionTime.trim() !== '';
+            let completionTimestamp = null;
+            if (hasCompletionDate) {
+                const dateParts = item.completionTime.split('-').map(Number);
+                const completionDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
 
-            if (isNaN(completionTime.getTime())) {
-                toast({
-                    variant: 'destructive',
-                    title: 'Invalid Date',
-                    description: `Could not parse date for ${item.studentName}: ${item.completionTime}. Please use YYYY-MM-DD format.`
-                })
-                throw new Error('Invalid date format found');
+                if (isNaN(completionDate.getTime())) {
+                    toast({
+                        variant: 'destructive',
+                        title: 'Invalid Date',
+                        description: `Could not parse date for ${item.studentName}: ${item.completionTime}. Please use YYYY-MM-DD format.`
+                    })
+                    throw new Error('Invalid date format found');
+                }
+                completionTimestamp = Timestamp.fromDate(completionDate);
             }
+            
             return {
                 studentName: item.studentName,
                 profileUrl: item.profileUrl,
-                campaignCompleted: item.campaignCompleted.toLowerCase() === 'yes',
-                completionTime: Timestamp.fromDate(completionTime),
+                campaignCompleted: hasCompletionDate,
+                completionTime: completionTimestamp,
                 eventId: selectedEvent.id,
                 eventName: selectedEvent.title,
                 avatar: ''
             }
         });
 
-        onSuccess(entriesToUpload);
+        onSuccess(entriesToUpload as Omit<LeaderboardEntry, 'id' | 'rank' | 'avatar'>[]);
 
     } catch (e: any) {
         console.error(e.message);
@@ -219,7 +224,7 @@ export function LeaderboardUploadForm({ onSuccess, eventId }: LeaderboardUploadF
                             <TableRow key={index}>
                                 <TableCell>{row.studentName}</TableCell>
                                 <TableCell className="max-w-xs truncate">{row.profileUrl}</TableCell>
-                                <TableCell>{row.campaignCompleted}</TableCell>
+                                <TableCell>{row.completionTime ? 'Yes' : 'No'}</TableCell>
                                 <TableCell>{row.completionTime}</TableCell>
                             </TableRow>
                         ))}
@@ -228,7 +233,7 @@ export function LeaderboardUploadForm({ onSuccess, eventId }: LeaderboardUploadF
                 </ScrollArea>
             </CardContent>
         </Card>
-        <DialogFooter className="px-1">
+        <DialogFooter className="px-1 pt-4">
             <Button
                 type="submit"
                 disabled={isParsing || parsedData.length === 0 || !!error}
