@@ -80,9 +80,7 @@ function buildRequestObject(context: SecurityRuleContext): SecurityRuleRequest {
     // Safely attempt to get the current user.
     const firebaseAuth = getAuth();
     const currentUser = firebaseAuth.currentUser;
-    if (currentUser) {
-      authObject = buildAuthObject(currentUser);
-    }
+    authObject = buildAuthObject(currentUser);
   } catch {
     // This will catch errors if the Firebase app is not yet initialized.
     // In this case, we'll proceed without auth information.
