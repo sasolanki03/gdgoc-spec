@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -44,8 +45,8 @@ function SiteLogo() {
           src={settingsData.logoUrl} 
           alt="Site Logo"
           width={120}
-          height={40}
-          className="object-contain h-10"
+          height={30}
+          className="object-contain h-8"
         />
       );
     }
