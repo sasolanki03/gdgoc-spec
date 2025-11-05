@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Search, Trophy, ExternalLink, CheckCircle, XCircle } from 'lucide-react';
 import { PageHeader } from '@/components/shared/page-header';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -19,6 +19,8 @@ import { collection, query, orderBy } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 
 const getRankColor = (rank: number) => {
   if (rank === 1) return 'text-yellow-400';
@@ -30,6 +32,8 @@ const getRankColor = (rank: number) => {
 export default function LeaderboardPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [selectedStudent, setSelectedStudent] = useState<LeaderboardEntry | null>(null);
+  
   const firestore = useFirestore();
   
   const eventsQuery = useMemo(() => {
@@ -73,6 +77,10 @@ export default function LeaderboardPage() {
     if (!selectedEventId || !events) return null;
     return events.find(e => e.id === selectedEventId);
   }, [selectedEventId, events]);
+
+  const handleRowClick = (entry: LeaderboardEntry) => {
+    setSelectedStudent(entry);
+  }
 
   return (
     <TooltipProvider>
@@ -154,13 +162,17 @@ export default function LeaderboardPage() {
                         filteredData.map((entry) => {
                         const avatarImage = PlaceHolderImages.find(img => img.id === entry.avatar);
                         return (
-                            <TableRow key={entry.id} className={cn(
-                            'transition-colors',
-                            entry.rank <= 3 && 'bg-card',
-                            {'bg-yellow-400/10 hover:bg-yellow-400/20': entry.rank === 1},
-                            {'bg-slate-400/10 hover:bg-slate-400/20': entry.rank === 2},
-                            {'bg-yellow-600/10 hover:bg-yellow-600/20': entry.rank === 3},
-                            )}>
+                            <TableRow 
+                                key={entry.id} 
+                                className={cn(
+                                'transition-colors cursor-pointer',
+                                entry.rank <= 3 && 'bg-card',
+                                {'bg-yellow-400/10 hover:bg-yellow-400/20': entry.rank === 1},
+                                {'bg-slate-400/10 hover:bg-slate-400/20': entry.rank === 2},
+                                {'bg-yellow-600/10 hover:bg-yellow-600/20': entry.rank === 3},
+                                )}
+                                onClick={() => handleRowClick(entry)}
+                            >
                             <TableCell className="text-center">
                                 <div className="flex items-center justify-center gap-2">
                                 <span className={cn('text-xl font-bold', getRankColor(entry.rank))}>
@@ -199,7 +211,7 @@ export default function LeaderboardPage() {
                                 <Tooltip>
                                 <TooltipTrigger asChild>
                                     <Button variant="ghost" size="icon" asChild>
-                                    <Link href={entry.profileUrl} target="_blank" rel="noopener noreferrer">
+                                    <Link href={entry.profileUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
                                         <ExternalLink className="h-5 w-5 text-muted-foreground" />
                                         <span className="sr-only">View Profile</span>
                                     </Link>
@@ -231,6 +243,54 @@ export default function LeaderboardPage() {
           )}
         </div>
       </div>
+       {selectedStudent && (
+        <Dialog open={!!selectedStudent} onOpenChange={(isOpen) => !isOpen && setSelectedStudent(null)}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle className="font-headline text-2xl flex items-center gap-4">
+                        <Trophy className={cn('h-8 w-8', getRankColor(selectedStudent.rank))} />
+                        Rank #{selectedStudent.rank}
+                    </DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-6 py-4">
+                    <div className="flex items-center gap-4">
+                         <Avatar className="h-24 w-24 border">
+                            <AvatarImage src={PlaceHolderImages.find(img => img.id === selectedStudent.avatar)?.imageUrl} alt={selectedStudent.studentName} />
+                            <AvatarFallback className="text-3xl">{selectedStudent.studentName.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <h3 className="text-2xl font-bold font-headline">{selectedStudent.studentName}</h3>
+                            <p className="text-muted-foreground">{selectedStudent.eventName}</p>
+                        </div>
+                    </div>
+                    <Card>
+                        <CardContent className="pt-6 grid grid-cols-2 gap-4 text-sm">
+                            <div className="space-y-1">
+                                <p className="font-medium">Completion Status</p>
+                                {selectedStudent.campaignCompleted ? (
+                                    <Badge variant="default" className="bg-google-green hover:bg-google-green/90">Completed</Badge>
+                                ) : (
+                                    <Badge variant="destructive">Not Completed</Badge>
+                                )}
+                            </div>
+                            <div className="space-y-1">
+                                <p className="font-medium">Completion Date</p>
+                                <p className="text-muted-foreground">{selectedStudent.completionTime ? format(selectedStudent.completionTime.toDate(), 'PPP') : 'N/A'}</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                     <Button asChild>
+                        <Link href={selectedStudent.profileUrl} target="_blank" rel="noopener noreferrer">
+                            View Skills Boost Profile
+                            <ExternalLink className="ml-2 h-4 w-4" />
+                        </Link>
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
+      )}
     </TooltipProvider>
   );
 }
+
+    
