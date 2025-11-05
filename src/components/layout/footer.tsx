@@ -36,14 +36,13 @@ function SiteLogo() {
     const settingsRef = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'site') : null, [firestore]);
     const { data: settingsData, isLoading } = useDoc<{logoUrl: string}>(settingsRef);
     
-    const [isClient, setIsClient] = useState(false);
-
+    const [hasMounted, setHasMounted] = useState(false);
     useEffect(() => {
-        setIsClient(true);
+        setHasMounted(true);
     }, []);
 
-    if (isLoading || !isClient) {
-      return <Skeleton className="h-8 w-28" />;
+    if (!hasMounted || isLoading) {
+        return <Skeleton className="h-8 w-28" />;
     }
   
     if (settingsData?.logoUrl) {
