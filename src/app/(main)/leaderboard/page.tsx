@@ -150,7 +150,6 @@ export default function LeaderboardPage() {
                                 <TableCell className="text-center"><Skeleton className="h-5 w-5 mx-auto" /></TableCell>
                                 <TableCell>
                                 <div className="flex items-center gap-4">
-                                    <Skeleton className="h-10 w-10 rounded-full" />
                                     <Skeleton className="h-5 w-32" />
                                 </div>
                                 </TableCell>
@@ -161,7 +160,6 @@ export default function LeaderboardPage() {
                             ))
                         ) : filteredData.length > 0 ? (
                         filteredData.map((entry) => {
-                        const avatarImage = PlaceHolderImages.find(img => img.id === entry.avatar);
                         return (
                             <TableRow 
                                 key={entry.id} 
@@ -184,10 +182,6 @@ export default function LeaderboardPage() {
                             </TableCell>
                             <TableCell>
                                 <div className="flex items-center gap-4">
-                                <Avatar>
-                                    {avatarImage && <AvatarImage src={avatarImage.imageUrl} alt={entry.studentName} data-ai-hint={avatarImage.imageHint} />}
-                                    <AvatarFallback>{entry.studentName.charAt(0)}</AvatarFallback>
-                                </Avatar>
                                 <span className="font-medium">{entry.studentName}</span>
                                 </div>
                             </TableCell>
@@ -255,10 +249,6 @@ export default function LeaderboardPage() {
                 </DialogHeader>
                 <div className="grid gap-6 py-4">
                     <div className="flex items-center gap-4">
-                         <Avatar className="h-24 w-24 border">
-                            <AvatarImage src={PlaceHolderImages.find(img => img.id === selectedStudent.avatar)?.imageUrl} alt={selectedStudent.studentName} />
-                            <AvatarFallback className="text-3xl">{selectedStudent.studentName.charAt(0)}</AvatarFallback>
-                        </Avatar>
                         <div>
                             <h3 className="text-2xl font-bold font-headline">{selectedStudent.studentName}</h3>
                             <p className="text-muted-foreground">{selectedStudent.eventName}</p>
@@ -293,3 +283,5 @@ export default function LeaderboardPage() {
     </TooltipProvider>
   );
 }
+
+    
