@@ -6,9 +6,10 @@ import Image from 'next/image';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useAuth, useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
-import { Upload } from 'lucide-react';
+import { Upload, KeyRound } from 'lucide-react';
+import { sendPasswordResetEmail } from 'firebase/auth';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -34,9 +35,12 @@ type SettingsFormValues = z.infer<typeof settingsSchema>;
 
 export default function AdminSettingsPage() {
     const firestore = useFirestore();
+    const auth = useAuth();
+    const { user: adminUser } = useUser();
     const { toast } = useToast();
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isResettingPassword, setIsResettingPassword] = useState(false);
 
     const settingsRef = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'branding') : null, [firestore]);
     const { data: settingsData, isLoading } = useDoc<{logoUrl: string}>(settingsRef);
@@ -95,59 +99,113 @@ export default function AdminSettingsPage() {
         reader.readAsDataURL(file);
     };
 
+    const handlePasswordReset = async () => {
+        if (!auth || !adminUser?.email) {
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: 'Could not find user information to send a password reset email.',
+            });
+            return;
+        }
+
+        setIsResettingPassword(true);
+        try {
+            await sendPasswordResetEmail(auth, adminUser.email);
+            toast({
+                title: 'Password Reset Email Sent',
+                description: `A password reset link has been sent to ${adminUser.email}. Please check your inbox.`,
+            });
+        } catch (e: any) {
+            console.error("Error sending password reset email:", e);
+            toast({
+                variant: 'destructive',
+                title: 'Error Sending Email',
+                description: e.message,
+            });
+        } finally {
+            setIsResettingPassword(false);
+        }
+    }
+
     return (
-        <Card className="w-full max-w-2xl mx-auto">
-            <CardHeader>
-                <CardTitle>Website Settings</CardTitle>
-                <CardDescription>Manage your website's branding and other settings.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                        <FormField
-                            control={form.control}
-                            name="logo"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Website Logo</FormLabel>
-                                    <div className="flex items-center gap-6">
-                                        <div className="relative h-20 w-40 rounded-md border flex items-center justify-center bg-muted">
-                                            {isLoading ? (
-                                                <Skeleton className="h-full w-full" />
-                                            ) : logoPreview ? (
-                                                <Image
-                                                    src={logoPreview}
-                                                    alt="Logo Preview"
-                                                    fill
-                                                    style={{ objectFit: 'contain' }}
-                                                />
-                                            ) : (
-                                                <Upload className="h-8 w-8 text-muted-foreground" />
-                                            )}
+        <div className="w-full max-w-2xl mx-auto space-y-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Website Settings</CardTitle>
+                    <CardDescription>Manage your website's branding and other settings.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                            <FormField
+                                control={form.control}
+                                name="logo"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Website Logo</FormLabel>
+                                        <div className="flex items-center gap-6">
+                                            <div className="relative h-20 w-40 rounded-md border flex items-center justify-center bg-muted">
+                                                {isLoading ? (
+                                                    <Skeleton className="h-full w-full" />
+                                                ) : logoPreview ? (
+                                                    <Image
+                                                        src={logoPreview}
+                                                        alt="Logo Preview"
+                                                        fill
+                                                        style={{ objectFit: 'contain' }}
+                                                    />
+                                                ) : (
+                                                    <Upload className="h-8 w-8 text-muted-foreground" />
+                                                )}
+                                            </div>
+                                            <div className="flex-1">
+                                                <FormControl>
+                                                    <Input
+                                                        type="file"
+                                                        accept={ACCEPTED_IMAGE_TYPES.join(',')}
+                                                        onChange={(e) => {
+                                                            field.onChange(e.target.files);
+                                                            handleFileChange(e);
+                                                        }}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage className="mt-2" />
+                                            </div>
                                         </div>
-                                        <div className="flex-1">
-                                            <FormControl>
-                                                <Input
-                                                    type="file"
-                                                    accept={ACCEPTED_IMAGE_TYPES.join(',')}
-                                                    onChange={(e) => {
-                                                        field.onChange(e.target.files);
-                                                        handleFileChange(e);
-                                                    }}
-                                                />
-                                            </FormControl>
-                                            <FormMessage className="mt-2" />
-                                        </div>
-                                    </div>
-                                </FormItem>
-                            )}
-                        />
-                        <Button type="submit" disabled={isSubmitting || !form.formState.isValid}>
-                            {isSubmitting ? 'Saving...' : 'Save Logo'}
+                                    </FormItem>
+                                )}
+                            />
+                            <Button type="submit" disabled={isSubmitting || !form.formState.isValid}>
+                                {isSubmitting ? 'Saving...' : 'Save Logo'}
+                            </Button>
+                        </form>
+                    </Form>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Account Settings</CardTitle>
+                    <CardDescription>Manage settings related to your administrator account.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex items-center justify-between rounded-lg border p-4">
+                        <div>
+                            <h3 className="font-medium">Password Reset</h3>
+                            <p className="text-sm text-muted-foreground">Send a password reset link to your email address.</p>
+                        </div>
+                        <Button
+                            variant="outline"
+                            onClick={handlePasswordReset}
+                            disabled={isResettingPassword}
+                        >
+                            <KeyRound className="mr-2 h-4 w-4" />
+                            {isResettingPassword ? 'Sending...' : 'Send Reset Email'}
                         </Button>
-                    </form>
-                </Form>
-            </CardContent>
-        </Card>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
     );
 }
