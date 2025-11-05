@@ -1,10 +1,16 @@
+
 'use client';
-import { getAuth, type User } from 'firebase/auth';
+import { Auth, User } from 'firebase/auth';
 
 type SecurityRuleContext = {
   path: string;
   operation: 'get' | 'list' | 'create' | 'update' | 'delete' | 'write';
   requestResourceData?: any;
+};
+
+// This is the context required by the FirestorePermissionError constructor
+export type FirestorePermissionErrorContext = SecurityRuleContext & {
+  auth: Auth;
 };
 
 interface FirebaseAuthToken {
@@ -69,42 +75,6 @@ function buildAuthObject(currentUser: User | null): FirebaseAuthObject | null {
 }
 
 /**
- * Builds the complete, simulated request object for the error message.
- * It safely tries to get the current authenticated user.
- * @param context The context of the failed Firestore operation.
- * @returns A structured request object.
- */
-function buildRequestObject(context: SecurityRuleContext): SecurityRuleRequest {
-  let authObject: FirebaseAuthObject | null = null;
-  try {
-    // Safely attempt to get the current user.
-    const firebaseAuth = getAuth();
-    const currentUser = firebaseAuth.currentUser;
-    authObject = buildAuthObject(currentUser);
-  } catch {
-    // This will catch errors if the Firebase app is not yet initialized.
-    // In this case, we'll proceed without auth information.
-  }
-
-  return {
-    auth: authObject,
-    method: context.operation,
-    path: `/databases/(default)/documents/${context.path}`,
-    resource: context.requestResourceData ? { data: context.requestResourceData } : undefined,
-  };
-}
-
-/**
- * Builds the final, formatted error message for the LLM.
- * @param requestObject The simulated request object.
- * @returns A string containing the error message and the JSON payload.
- */
-function buildErrorMessage(requestObject: SecurityRuleRequest): string {
-  return `Missing or insufficient permissions: The following request was denied by Firestore Security Rules:
-${JSON.stringify(requestObject, null, 2)}`;
-}
-
-/**
  * A custom error class designed to be consumed by an LLM for debugging.
  * It structures the error information to mimic the request object
  * available in Firestore Security Rules.
@@ -112,10 +82,25 @@ ${JSON.stringify(requestObject, null, 2)}`;
 export class FirestorePermissionError extends Error {
   public readonly request: SecurityRuleRequest;
 
-  constructor(context: SecurityRuleContext) {
-    const requestObject = buildRequestObject(context);
-    super(buildErrorMessage(requestObject));
-    this.name = 'FirebaseError';
+  constructor(context: FirestorePermissionErrorContext) {
+    const { auth, ...securityRuleContext } = context;
+    const currentUser = auth.currentUser;
+    const authObject = buildAuthObject(currentUser);
+
+    const requestObject: SecurityRuleRequest = {
+      auth: authObject,
+      method: securityRuleContext.operation,
+      path: `/databases/(default)/documents/${securityRuleContext.path}`,
+      resource: securityRuleContext.requestResourceData
+        ? { data: securityRuleContext.requestResourceData }
+        : undefined,
+    };
+    
+    const message = `Missing or insufficient permissions: The following request was denied by Firestore Security Rules:
+${JSON.stringify(requestObject, null, 2)}`;
+
+    super(message);
+    this.name = 'FirebaseError'; // To match Firebase's native error naming
     this.request = requestObject;
   }
 }
