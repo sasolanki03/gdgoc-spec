@@ -52,6 +52,7 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
         <Sidebar>
+            <SheetTitle className="sr-only">Admin Menu</SheetTitle>
             <SidebarHeader className="flex items-center justify-between p-2">
                 <Link href="/admin/dashboard" className="flex items-center gap-2">
                     <span className="font-semibold text-lg font-headline">GDG SPEC Admin</span>
@@ -86,7 +87,6 @@ export default function DashboardLayout({
             </SidebarFooter>
         </Sidebar>
         <SidebarInset>
-             <SheetTitle className="sr-only">Admin Menu</SheetTitle>
             <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
                 <SidebarTrigger className="md:hidden" />
                 <div className="ml-auto flex items-center gap-4">
