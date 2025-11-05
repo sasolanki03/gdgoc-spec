@@ -183,6 +183,17 @@
         "order": { "type": "number", "description": "Order for displaying the stat." }
       },
       "required": ["icon", "value", "label", "color", "order"]
+    },
+    "gallery_image": {
+        "title": "Gallery Image",
+        "description": "Represents an image in the homepage gallery.",
+        "type": "object",
+        "properties": {
+            "imageUrl": { "type": "string", "description": "A data URI of the image." },
+            "altText": { "type": "string", "description": "Alternative text for the image." },
+            "order": { "type": "number", "description": "Order for displaying the image." }
+        },
+        "required": ["imageUrl", "altText", "order"]
     }
   },
   "auth": {
@@ -218,6 +229,10 @@
     "/stats/{stat}": {
         "schema": { "$ref": "#/entities/stat_item" },
         "description": "Stores the homepage statistics."
+    },
+    "/gallery/{image}": {
+        "schema": { "$ref": "#/entities/gallery_image" },
+        "description": "Stores the homepage gallery images."
     }
   }
 }

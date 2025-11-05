@@ -85,3 +85,10 @@ export type StatItem = {
     color: string;
     order: number;
 };
+
+export type GalleryImage = {
+    id: string;
+    imageUrl: string;
+    altText: string;
+    order: number;
+};

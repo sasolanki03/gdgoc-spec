@@ -11,6 +11,7 @@ import {
   User,
   Trophy,
   BarChart3,
+  Image as ImageIcon,
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -39,6 +40,7 @@ import { SheetTitle } from '@/components/ui/sheet';
 const adminNavItems = [
     { href: '/admin/dashboard', label: 'Dashboard', icon: Home },
     { href: '/admin/dashboard/stats', label: 'Stats', icon: BarChart3 },
+    { href: '/admin/dashboard/gallery', label: 'Gallery', icon: ImageIcon },
     { href: '/admin/dashboard/events', label: 'Events', icon: Calendar },
     { href: '/admin/dashboard/team', label: 'Team', icon: Users },
     { href: '/admin/dashboard/leaderboard', label: 'Leaderboard', icon: Trophy },

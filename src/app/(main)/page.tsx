@@ -11,9 +11,8 @@ import { useCollection, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { StatCounter } from '@/components/shared/stat-counter';
 import { EventCard } from '@/components/shared/event-card';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { NewsletterForm } from '@/components/forms/newsletter-form';
-import type { Event as EventType, StatItem } from '@/lib/types';
+import type { Event as EventType, StatItem, GalleryImage } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import * as lucideIcons from 'lucide-react';
 
@@ -44,9 +43,6 @@ const whyJoinPoints = [
   },
 ];
 
-const galleryImageIds = ['gallery-1', 'gallery-2', 'gallery-3', 'gallery-4'];
-const galleryImages = PlaceHolderImages.filter(img => galleryImageIds.includes(img.id));
-
 const EventSkeleton = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {[...Array(3)].map((_, i) => (
@@ -57,6 +53,14 @@ const EventSkeleton = () => (
                 <Skeleton className="h-4 w-2/3" />
                 <Skeleton className="h-10 w-full mt-2" />
             </div>
+        ))}
+    </div>
+)
+
+const GallerySkeleton = () => (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="aspect-square rounded-lg" />
         ))}
     </div>
 )
@@ -77,8 +81,14 @@ export default function HomePage() {
     return query(collection(firestore, 'stats'), orderBy('order', 'asc'));
   }, [firestore]);
 
+  const galleryQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'gallery'), orderBy('order', 'asc'), limit(4));
+  }, [firestore]);
+
   const { data: allEvents, loading: loadingEvents } = useCollection<EventType>(eventsQuery);
   const { data: stats, loading: loadingStats } = useCollection<StatItem>(statsQuery);
+  const { data: galleryImages, loading: loadingGallery } = useCollection<GalleryImage>(galleryQuery);
 
   const upcomingEvents = useMemo(() => {
     if (!allEvents) return [];
@@ -209,20 +219,23 @@ export default function HomePage() {
                     A glimpse into our vibrant community activities and sessions.
                 </p>
             </div>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {galleryImages.map((image) => (
-                    <div key={image.id} className="relative aspect-square rounded-lg overflow-hidden group">
-                        <Image
-                            src={image.imageUrl}
-                            alt={image.description}
-                            fill
-                            className="object-cover transition-transform duration-300 group-hover:scale-110"
-                            data-ai-hint={image.imageHint}
-                        />
-                        <div className="absolute inset-0 bg-black/20"></div>
-                    </div>
-                ))}
-            </div>
+            {loadingGallery ? (
+                <GallerySkeleton />
+            ) : (
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    {galleryImages?.map((image) => (
+                        <div key={image.id} className="relative aspect-square rounded-lg overflow-hidden group">
+                            <Image
+                                src={image.imageUrl}
+                                alt={image.altText}
+                                fill
+                                className="object-cover transition-transform duration-300 group-hover:scale-110"
+                            />
+                            <div className="absolute inset-0 bg-black/20"></div>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
       </section>
 
