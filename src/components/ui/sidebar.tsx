@@ -194,15 +194,6 @@ const Sidebar = React.forwardRef<
     }
 
     if (isMobile) {
-      const sheetTitle = React.Children.toArray(children).find(
-        (child) =>
-          React.isValidElement(child) && child.type === SheetTitle
-      );
-      const otherChildren = React.Children.toArray(children).filter(
-        (child) =>
-          !React.isValidElement(child) || child.type !== SheetTitle
-      );
-      
       return (
         <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
           <SheetContent
@@ -216,8 +207,9 @@ const Sidebar = React.forwardRef<
             }
             side={side}
           >
-             {sheetTitle || <SheetTitle className="sr-only">Menu</SheetTitle>}
-            <div className="flex h-full w-full flex-col">{otherChildren}</div>
+            <div className="flex h-full w-full flex-col">
+              {children}
+            </div>
           </SheetContent>
         </Sheet>
       )
