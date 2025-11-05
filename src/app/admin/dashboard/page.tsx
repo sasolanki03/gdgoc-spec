@@ -1,3 +1,6 @@
+
+'use client';
+
 import Link from 'next/link';
 import {
   Activity,
@@ -7,6 +10,9 @@ import {
   BookOpen,
   Trophy,
 } from 'lucide-react';
+import { useMemo } from 'react';
+import { collection, query, where, orderBy, limit } from 'firebase/firestore';
+import { useCollection, useFirestore } from '@/firebase';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -26,8 +32,51 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Skeleton } from '@/components/ui/skeleton';
+import type { Event, EventRegistration, LeaderboardEntry, ContactMessage } from '@/lib/types';
+import { format } from 'date-fns';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export default function Dashboard() {
+  const firestore = useFirestore();
+
+  const eventsQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'events'));
+  }, [firestore]);
+
+  const registrationsQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'registrations'), orderBy('registeredAt', 'desc'), limit(5));
+  }, [firestore]);
+  
+  const allRegistrationsQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'registrations'));
+  }, [firestore]);
+
+  const leaderboardQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'leaderboard'), orderBy('completionTime', 'asc'), limit(1));
+  }, [firestore]);
+  
+  const contactsQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'contacts'), orderBy('createdAt', 'desc'), limit(5));
+  }, [firestore]);
+
+  const { data: events, loading: loadingEvents } = useCollection<Event>(eventsQuery);
+  const { data: recentRegistrations, loading: loadingRegistrations } = useCollection<EventRegistration>(registrationsQuery);
+  const { data: allRegistrations, loading: loadingAllRegistrations } = useCollection<EventRegistration>(allRegistrationsQuery);
+  const { data: leaderboard, loading: loadingLeaderboard } = useCollection<LeaderboardEntry>(leaderboardQuery);
+  const { data: contacts, loading: loadingContacts } = useCollection<ContactMessage>(contactsQuery);
+
+  const upcomingEventsCount = useMemo(() => {
+    return events?.filter(e => e.status === 'Upcoming' || e.status === 'Continue').length || 0;
+  }, [events]);
+
+  const topStudent = useMemo(() => leaderboard?.[0], [leaderboard]);
+  
   return (
     <div className="flex flex-col gap-4">
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
@@ -39,23 +88,23 @@ export default function Dashboard() {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3</div>
+            {loadingEvents ? <Skeleton className="h-8 w-10 mt-1" /> : <div className="text-2xl font-bold">{upcomingEventsCount}</div>}
             <p className="text-xs text-muted-foreground">
-              +2 this month
+              Total upcoming & ongoing events
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              New Registrations
+              Total Registrations
             </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+150</div>
+             {loadingAllRegistrations ? <Skeleton className="h-8 w-16 mt-1" /> : <div className="text-2xl font-bold">{allRegistrations?.length || 0}</div>}
             <p className="text-xs text-muted-foreground">
-              +80.1% from last month
+              Across all events
             </p>
           </CardContent>
         </Card>
@@ -65,21 +114,21 @@ export default function Dashboard() {
             <Trophy className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">Priya Sharma</div>
+             {loadingLeaderboard ? <Skeleton className="h-8 w-32 mt-1" /> : <div className="text-2xl font-bold truncate">{topStudent?.studentName || 'N/A'}</div>}
             <p className="text-xs text-muted-foreground">
-              1250 Points
+              From GCCP Leaderboard
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Members</CardTitle>
+            <CardTitle className="text-sm font-medium">Contact Messages</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+573</div>
+            {loadingContacts ? <Skeleton className="h-8 w-10 mt-1" /> : <div className="text-2xl font-bold">{contacts?.length || 0}</div>}
             <p className="text-xs text-muted-foreground">
-              +201 since last hour
+              Most recent messages
             </p>
           </CardContent>
         </Card>
@@ -90,11 +139,11 @@ export default function Dashboard() {
             <div className="grid gap-2">
               <CardTitle>Recent Registrations</CardTitle>
               <CardDescription>
-                Recent registrations from your events.
+                Last 5 registrations from your events.
               </CardDescription>
             </div>
             <Button asChild size="sm" className="ml-auto gap-1">
-              <Link href="#">
+              <Link href="/admin/dashboard/registrations">
                 View All
                 <ArrowUpRight className="h-4 w-4" />
               </Link>
@@ -104,12 +153,9 @@ export default function Dashboard() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Customer</TableHead>
-                  <TableHead className="hidden xl:table-column">
+                  <TableHead>Student</TableHead>
+                  <TableHead className="hidden xl:table-cell">
                     Event
-                  </TableHead>
-                  <TableHead className="hidden xl:table-column">
-                    Status
                   </TableHead>
                   <TableHead className="hidden md:table-cell">
                     Date
@@ -118,46 +164,40 @@ export default function Dashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                <TableRow>
-                  <TableCell>
-                    <div className="font-medium">Liam Johnson</div>
-                    <div className="hidden text-sm text-muted-foreground md:inline">
-                      liam@example.com
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden xl:table-column">
-                    Android Study Jam
-                  </TableCell>
-                  <TableCell className="hidden xl:table-column">
-                    <Badge className="text-xs" variant="outline">
-                      Approved
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell lg:hidden xl:table-column">
-                    2023-06-23
-                  </TableCell>
-                  <TableCell className="text-right">liam@example.com</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>
-                    <div className="font-medium">Olivia Smith</div>
-                    <div className="hidden text-sm text-muted-foreground md:inline">
-                      olivia@example.com
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden xl:table-column">
-                    Web Workshop
-                  </TableCell>
-                  <TableCell className="hidden xl:table-column">
-                    <Badge className="text-xs" variant="outline">
-                      Declined
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell lg:hidden xl:table-column">
-                    2023-06-24
-                  </TableCell>
-                  <TableCell className="text-right">olivia@example.com</TableCell>
-                </TableRow>
+                {loadingRegistrations ? (
+                  [...Array(5)].map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell><Skeleton className="h-5 w-28" /></TableCell>
+                      <TableCell className="hidden xl:table-cell"><Skeleton className="h-5 w-36" /></TableCell>
+                      <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-24" /></TableCell>
+                      <TableCell className="text-right"><Skeleton className="h-5 w-40 ml-auto" /></TableCell>
+                    </TableRow>
+                  ))
+                ) : recentRegistrations && recentRegistrations.length > 0 ? (
+                  recentRegistrations.map(reg => (
+                    <TableRow key={reg.id}>
+                      <TableCell>
+                        <div className="font-medium">{reg.name}</div>
+                        <div className="hidden text-sm text-muted-foreground md:inline">
+                          {reg.email}
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden xl:table-cell">
+                        {reg.eventName}
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {format(reg.registeredAt.toDate(), 'PP')}
+                      </TableCell>
+                      <TableCell className="text-right">{reg.email}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={4} className="h-24 text-center">
+                      No recent registrations.
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </CardContent>
@@ -167,32 +207,36 @@ export default function Dashboard() {
             <CardTitle>Recent Contact Messages</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-8">
-            <div className="flex items-center gap-4">
-                <Avatar className="hidden h-9 w-9 sm:flex">
-                    <AvatarImage src="https://picsum.photos/seed/1/400/400" alt="Avatar" />
-                    <AvatarFallback>OM</AvatarFallback>
-                </Avatar>
-                <div className="grid gap-1">
-                    <p className="text-sm font-medium leading-none">Olivia Martin</p>
-                    <p className="text-sm text-muted-foreground">
-                    "Question about hackathon sponsorship..."
-                    </p>
+          {loadingContacts ? (
+             [...Array(3)].map((_, i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <Skeleton className="h-9 w-9 rounded-full" />
+                  <div className="grid gap-1 w-full">
+                    <Skeleton className="h-5 w-24" />
+                    <Skeleton className="h-4 w-48" />
+                  </div>
                 </div>
-                <div className="ml-auto font-medium">1h ago</div>
-            </div>
-            <div className="flex items-center gap-4">
-                <Avatar className="hidden h-9 w-9 sm:flex">
-                    <AvatarImage src="https://picsum.photos/seed/2/400/400" alt="Avatar" />
-                    <AvatarFallback>JL</AvatarFallback>
-                </Avatar>
-                <div className="grid gap-1">
-                    <p className="text-sm font-medium leading-none">Jackson Lee</p>
-                    <p className="text-sm text-muted-foreground">
-                    "Feedback on the last workshop."
-                    </p>
+              ))
+          ) : contacts && contacts.length > 0 ? (
+            contacts.map(msg => (
+                <div key={msg.id} className="flex items-center gap-4">
+                    <Avatar className="hidden h-9 w-9 sm:flex">
+                        <AvatarFallback>{msg.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div className="grid gap-1">
+                        <p className="text-sm font-medium leading-none">{msg.name}</p>
+                        <p className="text-sm text-muted-foreground truncate max-w-xs">
+                        "{msg.subject}"
+                        </p>
+                    </div>
+                    <div className="ml-auto text-xs text-muted-foreground">{format(msg.createdAt.toDate(), 'p')}</div>
                 </div>
-                <div className="ml-auto font-medium">4h ago</div>
+            ))
+          ) : (
+            <div className="text-center text-sm text-muted-foreground py-10">
+              No recent messages.
             </div>
+          )}
           </CardContent>
         </Card>
       </div>
