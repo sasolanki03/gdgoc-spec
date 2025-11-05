@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import Papa from 'papaparse';
 import { collection, query, orderBy, Timestamp } from 'firebase/firestore';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { FileDown, Upload } from 'lucide-react';
 
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -60,7 +60,7 @@ export function LeaderboardUploadForm({ onSuccess, eventId }: LeaderboardUploadF
   const [error, setError] = useState<string | null>(null);
 
   const firestore = useFirestore();
-  const eventsQuery = useMemo(() => {
+  const eventsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'events'), orderBy('startDate', 'desc'));
   }, [firestore]);
@@ -88,7 +88,7 @@ export function LeaderboardUploadForm({ onSuccess, eventId }: LeaderboardUploadF
                 const missingColumns = requiredColumns.filter(col => !headers.includes(col));
 
                 if (missingColumns.length > 0) {
-                    setError(`The CSV file is missing the following required columns: ${missingColumns.join(', ')}.`);
+                    setError(`The CSV file is missing the following required columns: ${'${missingColumns.join(', ')}'}.`);
                     form.setValue('file', null);
                     setIsParsing(false);
                     return;
@@ -98,7 +98,7 @@ export function LeaderboardUploadForm({ onSuccess, eventId }: LeaderboardUploadF
                 setIsParsing(false);
             },
             error: (err) => {
-                setError(`Error parsing CSV file: ${err.message}`);
+                setError(`Error parsing CSV file: ${'${err.message}'}`);
                 form.setValue('file', null);
                 setIsParsing(false);
             }
@@ -138,7 +138,7 @@ export function LeaderboardUploadForm({ onSuccess, eventId }: LeaderboardUploadF
                 toast({
                     variant: 'destructive',
                     title: 'Invalid Date',
-                    description: `Could not parse date for ${item.studentName}: ${item.completionTime}. Please use YYYY-MM-DD format.`
+                    description: `Could not parse date for ${'${item.studentName}'}: ${'${item.completionTime}'}. Please use YYYY-MM-DD format.`
                 })
                 throw new Error('Invalid date format found');
             }
@@ -201,7 +201,7 @@ export function LeaderboardUploadForm({ onSuccess, eventId }: LeaderboardUploadF
                     <CardHeader>
                         <CardTitle>Data Preview</CardTitle>
                         <CardDescription>
-                            {isParsing ? 'Parsing file...' : `Found ${parsedData.length} records. Please verify the data before uploading.`}
+                            {isParsing ? 'Parsing file...' : `Found ${'${parsedData.length}'} records. Please verify the data before uploading.`}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="flex-1 overflow-hidden p-0">
