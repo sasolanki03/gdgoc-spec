@@ -92,3 +92,8 @@ export type GalleryImage = {
     altText: string;
     order: number;
 };
+
+export type AdminAuthCredentials = {
+  email: string;
+  password?: string;
+};
