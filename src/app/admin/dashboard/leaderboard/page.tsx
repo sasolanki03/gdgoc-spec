@@ -479,7 +479,7 @@ export default function AdminLeaderboardPage() {
                     <DialogHeader>
                         <DialogTitle className="font-headline text-2xl">Bulk Upload Entries</DialogTitle>
                         <DialogDescription>
-                            Upload a CSV file with student data. All entries will be added to the currently selected event: <strong>{events?.find(e=>e.id === eventId)?.title}</strong>
+                            Upload a CSV file with student data. All entries will be added to the currently selected event: <strong>{events?.find(e=>e.id === selectedEventId)?.title}</strong>
                         </DialogDescription>
                     </DialogHeader>
                     <LeaderboardUploadForm onSuccess={handleBulkUpload} eventId={selectedEventId} />
@@ -489,5 +489,10 @@ export default function AdminLeaderboardPage() {
         }
       </>
     );
+}
+
+    
+
+    
 
     
