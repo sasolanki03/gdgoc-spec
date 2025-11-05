@@ -8,9 +8,7 @@ import { Menu } from 'lucide-react';
 import type { NavItem } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { GoogleLogo } from '@/components/icons/google-logo';
-import { MobileNav } from '@/components/layout/mobile-nav';
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 const navItems: NavItem[] = [
   { title: 'Home', href: '/' },
@@ -61,6 +59,7 @@ export function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+              <SheetTitle className="sr-only">Mobile Navigation Menu</SheetTitle>
               <nav className="flex flex-col gap-4">
                 {navItems.map((item) => (
                   <Link
@@ -79,5 +78,3 @@ export function Header() {
     </header>
   );
 }
-
-    
