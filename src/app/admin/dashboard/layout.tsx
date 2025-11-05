@@ -16,7 +16,6 @@ import {
   Image as ImageIcon,
   LogOut,
   ShieldAlert,
-  UserPlus,
 } from 'lucide-react';
 import { useUser, useAuth, useFirestore } from '@/firebase';
 import { useRouter } from 'next/navigation';
@@ -65,52 +64,26 @@ const adminNavItems = [
 
 function AdminNotAuthorized() {
     const auth = useAuth();
-    const { user } = useUser();
-    const firestore = useFirestore();
     const router = useRouter();
-    const { toast } = useToast();
-    const [isBecomingAdmin, setIsBecomingAdmin] = useState(false);
 
     const handleLogout = async () => {
+        if (!auth) return;
         await signOut(auth);
         router.push('/admin');
     };
-
-    const handleBecomeAdmin = async () => {
-        if (!user || !firestore) {
-            toast({ variant: 'destructive', title: 'Error', description: 'User or database not available.' });
-            return;
-        }
-        setIsBecomingAdmin(true);
-        try {
-            await setDoc(doc(firestore, 'roles_admin', user.uid), { isAdmin: true });
-            toast({ title: 'Success!', description: 'You are now an administrator. Refreshing page...' });
-            window.location.reload(); // Refresh to re-evaluate admin status
-        } catch (error: any) {
-            console.error("Error setting admin role:", error);
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not grant admin privileges.' });
-            setIsBecomingAdmin(false);
-        }
-    }
 
     return (
         <div className="flex h-screen w-screen flex-col items-center justify-center bg-background text-center p-4">
             <ShieldAlert className="h-16 w-16 text-destructive mb-4" />
             <h1 className="text-2xl font-bold text-destructive font-headline">Access Denied</h1>
             <p className="mt-2 text-muted-foreground max-w-sm">
-                You are not authorized to access this page. Sign in and click the button below to become the first administrator.
+                You are not authorized to view this page. Please contact the site administrator to request access.
             </p>
             <div className="mt-6 flex gap-4">
                 <Button onClick={handleLogout} variant="outline">
                     <LogOut className="mr-2 h-4 w-4" />
                     Sign Out
                 </Button>
-                 {user && (
-                    <Button onClick={handleBecomeAdmin} disabled={isBecomingAdmin}>
-                        <UserPlus className="mr-2 h-4 w-4" />
-                        {isBecomingAdmin ? 'Processing...' : 'Become Admin'}
-                    </Button>
-                )}
             </div>
         </div>
     );
