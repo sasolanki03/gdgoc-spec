@@ -6,9 +6,9 @@ import { FirebaseErrorListener } from '@/components/dev/firebase-error-listener'
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'GDG SPEC',
+  title: 'GDGoC SPEC',
   description: 'Google Developer Group on Campus - Shree Parekh Engineering College, Mahuva',
-  keywords: ['GDG', 'SPEC', 'Google Developer Group', 'Mahuva', 'Engineering College'],
+  keywords: ['GDGoC', 'SPEC', 'Google Developer Group', 'Mahuva', 'Engineering College'],
 };
 
 export default function RootLayout({
@@ -36,3 +36,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+    

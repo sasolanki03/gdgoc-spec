@@ -26,7 +26,7 @@ export function Header() {
       <div className="container mx-auto px-5 md:px-20 flex h-16 items-center">
         <Link href="/" className="mr-6 flex items-center space-x-2">
           
-          <span className="font-bold sm:inline-block font-headline">GDG SPEC</span>
+          <span className="font-bold sm:inline-block font-headline">GDGoC SPEC</span>
         </Link>
 
         <div className="flex flex-1 items-center justify-center">
@@ -78,3 +78,5 @@ export function Header() {
     </header>
   );
 }
+
+    

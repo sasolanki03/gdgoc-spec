@@ -8,7 +8,7 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export const metadata: Metadata = {
   title: 'About Us',
-  description: 'Learn about the mission, vision, and activities of GDG SPEC.',
+  description: 'Learn about the mission, vision, and activities of GDGoC SPEC.',
 };
 
 const AndroidIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -29,7 +29,7 @@ export default function AboutPage() {
   return (
     <div>
       <PageHeader
-        title="About GDG SPEC"
+        title="About GDGoC SPEC"
         description="We are a community of student developers at Shree Parekh Engineering College, passionate about Google technologies and building impactful solutions."
       />
 
@@ -37,7 +37,7 @@ export default function AboutPage() {
         <div className="container mx-auto px-5 md:px-20">
           <div className="flex flex-col md:flex-row items-center justify-center gap-12">
             <div className="md:w-1/2 space-y-6 max-w-xl text-center md:text-left">
-              <h2 className="text-3xl font-bold font-headline">What is GDG on Campus?</h2>
+              <h2 className="text-3xl font-bold font-headline">What is GDGoC?</h2>
               <p className="text-muted-foreground text-lg">
                 Google Developer Groups (GDGs) are for developers who are interested in Google's developer technology; everything from the Android, Chrome, Drive, and Google Cloud platforms, to product APIs like the Cast API, Maps API, and YouTube API.
               </p>

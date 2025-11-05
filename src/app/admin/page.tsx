@@ -1,3 +1,4 @@
+
 import { LoginForm } from '@/components/forms/login-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -7,7 +8,7 @@ export default function AdminLoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-headline">Admin Panel</CardTitle>
-          <CardDescription>Sign in to manage the GDG SPEC website.</CardDescription>
+          <CardDescription>Sign in to manage the GDGoC SPEC website.</CardDescription>
         </CardHeader>
         <CardContent>
             <LoginForm />
@@ -16,3 +17,5 @@ export default function AdminLoginPage() {
     </div>
   );
 }
+
+    

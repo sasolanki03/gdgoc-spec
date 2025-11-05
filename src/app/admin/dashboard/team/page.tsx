@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -134,7 +135,7 @@ export default function AdminTeamPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle>Team</CardTitle>
-                  <CardDescription>Manage your GDG core team.</CardDescription>
+                  <CardDescription>Manage your GDGoC core team.</CardDescription>
                 </div>
                 <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                   <DialogTrigger asChild>
@@ -278,3 +279,5 @@ export default function AdminTeamPage() {
         </>
     );
 }
+
+    

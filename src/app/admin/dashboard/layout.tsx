@@ -33,7 +33,7 @@ import {
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu"
 import { GoogleLogo } from '@/components/icons/google-logo';
-import { SheetTitle } from '@/components/ui/sheet';
+import { SheetTitle, Sheet, SheetContent } from '@/components/ui/sheet';
 
 const adminNavItems = [
     { href: '/admin/dashboard', label: 'Dashboard', icon: Home },
@@ -52,9 +52,12 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
         <Sidebar>
+            <SheetContent>
+                <SheetTitle className="sr-only">Admin Menu</SheetTitle>
+            </SheetContent>
             <SidebarHeader className="flex items-center justify-between p-2">
                 <Link href="/admin/dashboard" className="flex items-center gap-2">
-                    <span className="font-semibold text-lg font-headline">GDG SPEC Admin</span>
+                    <span className="font-semibold text-lg font-headline">GDGoC SPEC Admin</span>
                 </Link>
                 <SidebarTrigger className="hidden md:flex" />
             </SidebarHeader>

@@ -87,7 +87,7 @@ export default function HomePage() {
         <div className="container mx-auto px-5 md:px-20 text-center">
             
             <h1 className="text-4xl md:text-6xl font-extrabold font-headline tracking-tight">
-                Google developer Group
+                Google Developer Group
             </h1>
             <p className="text-2xl md:text-4xl font-normal text-muted-foreground">on Campus</p>
             <p className="mt-4 text-2xl md:text-3xl font-semibold text-primary">
@@ -173,7 +173,7 @@ export default function HomePage() {
       <section className="py-10 md:py-12 bg-card border-y">
         <div className="container mx-auto px-5 md:px-20">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold font-headline">Why Join GDG SPEC?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold font-headline">Why Join GDGoC SPEC?</h2>
             <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
               Become part of a thriving community of student developers.
             </p>
@@ -235,3 +235,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
