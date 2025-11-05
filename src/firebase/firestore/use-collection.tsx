@@ -12,7 +12,6 @@ import {
   Auth,
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError, FirestorePermissionErrorContext } from '@/firebase/errors';
 import { useAuth } from '../provider';
 
 
@@ -26,7 +25,7 @@ export type WithId<T> = T & { id: string };
 export interface UseCollectionResult<T> {
   data: WithId<T>[] | null; // Document data with ID, or null.
   isLoading: boolean;       // True if loading.
-  error: FirestoreError | Error | null; // Error object, or null.
+  error: FirestoreError | null; // Error object, or null.
 }
 
 /* Internal implementation of Query:
@@ -63,7 +62,7 @@ export function useCollection<T = any>(
   const auth = useAuth(); // Get the auth instance
   const [data, setData] = useState<StateDataType>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<FirestoreError | Error | null>(null);
+  const [error, setError] = useState<FirestoreError | null>(null);
 
   useEffect(() => {
     if (!memoizedTargetRefOrQuery) {
@@ -87,26 +86,14 @@ export function useCollection<T = any>(
         setError(null);
         setIsLoading(false);
       },
-      async (error: FirestoreError) => {
-        // This logic extracts the path from either a ref or a query
-        const path: string =
-          memoizedTargetRefOrQuery.type === 'collection'
-            ? (memoizedTargetRefOrQuery as CollectionReference).path
-            : (memoizedTargetRefOrQuery as unknown as InternalQuery)._query.path.canonicalString()
-
-        // Create the rich, contextual error asynchronously.
-        const permissionError = new FirestorePermissionError({
-            auth: auth,
-            path: path,
-            operation: 'list'
-        });
-
-        setError(permissionError);
+      (error: FirestoreError) => {
+        // The original FirestoreError is now used directly.
+        setError(error);
         setData(null);
         setIsLoading(false);
 
         // trigger global error propagation
-        errorEmitter.emit('permission-error', permissionError);
+        errorEmitter.emit('permission-error', error);
       }
     );
 

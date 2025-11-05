@@ -11,7 +11,6 @@ import {
   Auth,
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
 import { useAuth } from '../provider';
 
 /** Utility type to add an 'id' field to a given type T. */
@@ -24,7 +23,7 @@ type WithId<T> = T & { id: string };
 export interface UseDocResult<T> {
   data: WithId<T> | null; // Document data with ID, or null.
   isLoading: boolean;       // True if loading.
-  error: FirestoreError | Error | null; // Error object, or null.
+  error: FirestoreError | null; // Error object, or null.
 }
 
 /**
@@ -48,7 +47,7 @@ export function useDoc<T = any>(
   const auth = useAuth(); // Get the auth instance
   const [data, setData] = useState<StateDataType>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<FirestoreError | Error | null>(null);
+  const [error, setError] = useState<FirestoreError | null>(null);
 
   useEffect(() => {
     if (!memoizedDocRef) {
@@ -73,19 +72,14 @@ export function useDoc<T = any>(
         setError(null); // Clear any previous error on successful snapshot (even if doc doesn't exist)
         setIsLoading(false);
       },
-      async (error: FirestoreError) => {
-        const contextualError = new FirestorePermissionError({
-          auth, // Pass the auth instance here
-          operation: 'get',
-          path: memoizedDocRef.path,
-        });
-
-        setError(contextualError);
+      (error: FirestoreError) => {
+        // The original FirestoreError is now used directly.
+        setError(error);
         setData(null);
         setIsLoading(false);
 
         // trigger global error propagation
-        errorEmitter.emit('permission-error', contextualError);
+        errorEmitter.emit('permission-error', error);
       }
     );
 

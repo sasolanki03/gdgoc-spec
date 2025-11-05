@@ -4,7 +4,6 @@
 import { useEffect } from 'react';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { useToast } from '@/hooks/use-toast';
-import { FirestorePermissionError } from '@/firebase/errors';
 import { FirestoreError } from 'firebase/firestore';
 
 // This component centralizes the handling of Firestore permission errors
@@ -13,22 +12,16 @@ export function FirebaseErrorListener() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const handleError = (error: FirestorePermissionError | FirestoreError) => {
-      // Check if it's our custom, detailed error
-      if (error instanceof FirestorePermissionError) {
-        // Log the detailed request object to the console for debugging.
-        console.error('Firestore Permission Error:', error.request);
-      } else {
-        // Log the generic Firebase error
-        console.error('Firestore Error:', error.message);
-      }
+    const handleError = (error: FirestoreError) => {
+      // Log the generic Firebase error. It contains the useful message.
+      console.error('Firestore Permission Error:', error.message);
 
       // Display a user-friendly toast notification.
       toast({
         variant: 'destructive',
         title: 'Permission Denied',
         description:
-          'You do not have permission to perform this action. Please contact an administrator if you believe this is an error.',
+          'You do not have permission to perform this action. Check the console for more details.',
       });
     };
 
