@@ -1,4 +1,3 @@
-
 'use client';
 
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -52,4 +51,3 @@ export function PermissionErrorDisplay({ error }: PermissionErrorDisplayProps) {
     </div>
   );
 }
-
