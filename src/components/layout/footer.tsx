@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Github, Twitter, Linkedin, Instagram } from 'lucide-react';
 import { doc } from 'firebase/firestore';
+import React, { useState, useEffect } from 'react';
 
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import type { SocialLink } from '@/lib/types';
@@ -34,8 +35,14 @@ function SiteLogo() {
     const firestore = useFirestore();
     const settingsRef = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'site') : null, [firestore]);
     const { data: settingsData, isLoading } = useDoc<{logoUrl: string}>(settingsRef);
-  
-    if (isLoading) {
+    
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+    if (isLoading || !isClient) {
       return <Skeleton className="h-8 w-28" />;
     }
   
@@ -44,9 +51,9 @@ function SiteLogo() {
         <Image 
           src={settingsData.logoUrl} 
           alt="Site Logo"
-          width={120}
-          height={30}
-          className="object-contain h-8"
+          width={112}
+          height={32}
+          className="object-contain h-8 w-auto"
         />
       );
     }

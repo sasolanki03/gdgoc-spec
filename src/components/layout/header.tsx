@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Menu } from 'lucide-react';
 import Image from 'next/image';
 import { doc } from 'firebase/firestore';
+import React, { useState, useEffect } from 'react';
 
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import type { NavItem } from '@/lib/types';
@@ -27,9 +28,15 @@ function SiteLogo() {
     const firestore = useFirestore();
     const settingsRef = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'site') : null, [firestore]);
     const { data: settingsData, isLoading } = useDoc<{logoUrl: string}>(settingsRef);
-  
-    if (isLoading) {
-      return <Skeleton className="h-12 w-40" />;
+    
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+    if (isLoading || !isClient) {
+      return <Skeleton className="h-10 w-32" />;
     }
   
     if (settingsData?.logoUrl) {
@@ -37,9 +44,10 @@ function SiteLogo() {
         <Image 
           src={settingsData.logoUrl} 
           alt="Site Logo"
-          width={160}
+          width={128}
           height={40}
-          className="object-contain h-12 w-auto"
+          className="object-contain h-10 w-auto"
+          priority
         />
       );
     }
