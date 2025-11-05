@@ -15,6 +15,7 @@ import {
   BarChart3,
   Image as ImageIcon,
   LogOut,
+  ShieldAlert,
 } from 'lucide-react';
 import { useUser, useAuth } from '@/firebase';
 import { useRouter } from 'next/navigation';
@@ -45,7 +46,8 @@ import {
 import { GoogleLogo } from '@/components/icons/google-logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { SheetTitle } from '@/components/ui/sheet';
+import { useAdmin } from '@/firebase/auth/use-admin';
+import { AnimatedGdgLogo } from '@/components/shared/animated-gdg-logo';
 
 const adminNavItems = [
     { href: '/admin/dashboard', label: 'Dashboard', icon: Home },
@@ -58,42 +60,72 @@ const adminNavItems = [
     { href: '/admin/dashboard/contacts', label: 'Contact Messages', icon: Mail },
 ];
 
+function AdminNotAuthorized() {
+    const auth = useAuth();
+    const router = useRouter();
+
+    const handleLogout = async () => {
+        await signOut(auth);
+        router.push('/admin');
+    };
+
+    return (
+        <div className="flex h-screen w-screen flex-col items-center justify-center bg-background text-center p-4">
+            <ShieldAlert className="h-16 w-16 text-destructive mb-4" />
+            <h1 className="text-2xl font-bold text-destructive font-headline">Access Denied</h1>
+            <p className="mt-2 text-muted-foreground max-w-sm">
+                You are not authorized to access this page. Please contact an administrator if you believe this is an error.
+            </p>
+            <Button onClick={handleLogout} variant="outline" className="mt-6">
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+            </Button>
+        </div>
+    );
+}
+
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user, loading } = useUser();
+  const { user, isUserLoading } = useUser();
+  const { isAdmin, loading: isAdminLoading } = useAdmin();
   const auth = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!isUserLoading && !user) {
       router.push('/admin');
     }
-  }, [user, loading, router]);
+  }, [user, isUserLoading, router]);
 
   const handleLogout = async () => {
+    if (!auth) return;
     await signOut(auth);
     router.push('/admin');
   };
+  
+  const isLoading = isUserLoading || isAdminLoading;
 
-  if (loading || !user) {
+  if (isLoading) {
     return (
         <div className="flex h-screen w-screen items-center justify-center">
             <div className="flex flex-col items-center gap-4">
-                <GoogleLogo className="h-12 w-24" />
-                <p className="text-muted-foreground">Authenticating...</p>
-                <Skeleton className="h-4 w-64 mt-2" />
+                <AnimatedGdgLogo />
+                <p className="text-muted-foreground">Verifying access...</p>
             </div>
         </div>
     );
   }
 
+  if (!isAdmin) {
+    return <AdminNotAuthorized />;
+  }
+
   return (
     <SidebarProvider>
         <Sidebar>
-            <SheetTitle className="sr-only">Admin Navigation</SheetTitle>
             <SidebarHeader className="flex items-center justify-between p-2">
                 <Link href="/admin/dashboard" className="flex items-center gap-2">
                     <span className="font-semibold text-lg font-headline">GDGoC SPEC Admin</span>
@@ -137,13 +169,13 @@ export default function DashboardLayout({
                             className="overflow-hidden rounded-full"
                         >
                             <Avatar>
-                                {user.photoURL && <AvatarImage src={user.photoURL} alt={user.displayName || 'User'} />}
-                                <AvatarFallback>{user.displayName ? user.displayName.charAt(0) : 'A'}</AvatarFallback>
+                                {user?.photoURL && <AvatarImage src={user.photoURL} alt={user.displayName || 'User'} />}
+                                <AvatarFallback>{user?.displayName ? user.displayName.charAt(0) : 'A'}</AvatarFallback>
                             </Avatar>
                         </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>{user.displayName || 'My Account'}</DropdownMenuLabel>
+                        <DropdownMenuLabel>{user?.displayName || 'My Account'}</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem>Settings</DropdownMenuItem>
                         <DropdownMenuSeparator />
@@ -160,3 +192,4 @@ export default function DashboardLayout({
     </SidebarProvider>
   );
 }
+
