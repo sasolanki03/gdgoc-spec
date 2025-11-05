@@ -56,6 +56,7 @@ function SiteLogo() {
 
 export function Header() {
   const pathname = usePathname();
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const handleJoinClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (pathname === '/') {
@@ -63,6 +64,10 @@ export function Header() {
         document.getElementById('newsletter')?.scrollIntoView({ behavior: 'smooth' });
     }
   };
+
+  const handleLinkClick = () => {
+    setIsSheetOpen(false);
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -93,7 +98,7 @@ export function Header() {
             <a href="/#newsletter" onClick={handleJoinClick}>Join Community</a>
           </Button>
           
-          <Sheet>
+          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="md:hidden">
                 <Menu className="h-5 w-5" />
@@ -108,6 +113,7 @@ export function Header() {
                     key={item.href}
                     href={item.href}
                     className="block px-2 py-1 text-lg"
+                    onClick={handleLinkClick}
                   >
                     {item.title}
                   </Link>
