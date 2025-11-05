@@ -65,18 +65,22 @@ const adminNavItems = [
 function AdminSidebar() {
     const { user } = useUser();
     const auth = useAuth();
-    const { state } = useSidebar();
+    const { state, setOpenMobile } = useSidebar();
     
     const handleLogout = async () => {
       if (!auth) return;
       await signOut(auth);
       // The AuthGuard will handle the redirect.
     };
+
+    const handleLinkClick = () => {
+        setOpenMobile(false);
+    }
   
     return (
         <Sidebar>
             <SidebarHeader>
-                <Link href="/admin/dashboard" className={cn("flex items-center gap-2 font-semibold text-lg font-headline", state === 'collapsed' && 'justify-center')}>
+                <Link href="/admin/dashboard" onClick={handleLinkClick} className={cn("flex items-center gap-2 font-semibold text-lg font-headline", state === 'collapsed' && 'justify-center')}>
                     <span className={cn(state === 'expanded' ? 'inline' : 'hidden')}>GDGoC SPEC Admin</span>
                 </Link>
             </SidebarHeader>
@@ -85,7 +89,7 @@ function AdminSidebar() {
                     {adminNavItems.map((item) => (
                         <SidebarMenuItem key={item.href}>
                             <SidebarMenuButton asChild tooltip={item.label}>
-                                <Link href={item.href}>
+                                <Link href={item.href} onClick={handleLinkClick}>
                                     <item.icon />
                                     <span className={cn(state === 'expanded' ? 'inline' : 'hidden')}>{item.label}</span>
                                 </Link>
@@ -163,5 +167,3 @@ export default function DashboardLayout({
     </SidebarProvider>
   );
 }
-
-    
