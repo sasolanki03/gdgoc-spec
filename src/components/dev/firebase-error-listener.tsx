@@ -13,7 +13,7 @@ export function FirebaseErrorListener() {
 
   useEffect(() => {
     const handleError = (error: FirestorePermissionError) => {
-      console.error('Firestore Permission Error:', error.toContextObject());
+      console.error('Firestore Permission Error:', error.request);
 
       // In a real app, you might log this to a service like Sentry or Bugsnag
       // Sentry.captureException(error);
