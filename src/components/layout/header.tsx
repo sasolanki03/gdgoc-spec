@@ -37,11 +37,11 @@ function SiteLogo() {
   if (!hasMounted || isLoading) {
     return <Skeleton className="h-10 w-32" />;
   }
-  
+
   if (settingsData?.logoUrl) {
     return (
-      <Image 
-        src={settingsData.logoUrl} 
+      <Image
+        src={settingsData.logoUrl}
         alt="Site Logo"
         width={128}
         height={40}
@@ -50,18 +50,13 @@ function SiteLogo() {
       />
     );
   }
-  
+
   return <span className="text-xl font-bold sm:inline-block font-headline">GDGoC SPEC</span>;
 }
 
 export function Header() {
   const pathname = usePathname();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [hasMounted, setHasMounted] = useState(false);
-
-  useEffect(() => {
-    setHasMounted(true);
-  }, []);
 
   const handleJoinClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (pathname === '/') {
@@ -87,10 +82,8 @@ export function Header() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={cn(
-                  'flex items-center text-lg font-medium transition-colors hover:text-primary',
-                  hasMounted && pathname === item.href ? 'text-primary font-semibold' : 'text-muted-foreground'
-                )}
+                className="flex items-center text-lg font-medium text-muted-foreground transition-colors hover:text-primary"
+                data-active={pathname === item.href}
               >
                 {item.title}
               </Link>
