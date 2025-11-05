@@ -20,40 +20,36 @@ export default function AdminLoginPage() {
     const { user, isUserLoading } = useUser();
     const router = useRouter();
     const { toast } = useToast();
-    const [isSigningIn, setIsSigningIn] = useState(true); // Start with true to handle initial auth check
+    const [isProcessingAuth, setIsProcessingAuth] = useState(false);
 
     useEffect(() => {
-        // This effect now only handles the redirect *after* a successful login and the user object is confirmed.
         if (!isUserLoading && user) {
           router.push('/admin/dashboard');
-        } else if (!isUserLoading && !user) {
-            // If the initial check completes and there's no user, stop the loading spinner.
-            setIsSigningIn(false);
         }
     }, [user, isUserLoading, router]);
 
     // This effect handles the result of a Google sign-in redirect
     useEffect(() => {
-        if (auth && !user && !isUserLoading) {
+        if (auth && !user && !isUserLoading && !isProcessingAuth) {
             getRedirectResult(auth)
                 .then((result) => {
                     if (result) {
-                        // User has just signed in via redirect. The user object will be updated by onAuthStateChanged,
-                        // and the effect above will handle the redirect to the dashboard.
-                        setIsSigningIn(true);
+                        // User has just signed in via redirect.
+                        setIsProcessingAuth(true); // Prevent re-triggering while auth state updates
+                        toast({ title: 'Signed in successfully!', description: 'Redirecting to dashboard...' });
                     }
                 })
                 .catch((error) => {
                     console.error("Error with redirect result:", error);
                     toast({ variant: 'destructive', title: 'Login Failed', description: error.message });
-                    setIsSigningIn(false);
+                    setIsProcessingAuth(false);
                 });
         }
-    }, [auth, user, isUserLoading, toast]);
+    }, [auth, user, isUserLoading, toast, isProcessingAuth]);
 
     const handleGoogleSignIn = async () => {
         if (!auth) return;
-        setIsSigningIn(true);
+        setIsProcessingAuth(true);
         const provider = new GoogleAuthProvider();
         try {
             await signInWithRedirect(auth, provider);
@@ -61,13 +57,13 @@ export default function AdminLoginPage() {
         } catch (error: any) {
             console.error("Google sign-in error:", error);
             toast({ variant: 'destructive', title: 'Login Failed', description: error.message });
-            setIsSigningIn(false);
+            setIsProcessingAuth(false);
         }
     };
 
     const handleEmailAuth = async (credentials: AdminAuthCredentials, action: 'login' | 'register') => {
         if (!auth) return;
-        setIsSigningIn(true);
+        setIsProcessingAuth(true);
 
         try {
             if(action === 'login') {
@@ -75,28 +71,35 @@ export default function AdminLoginPage() {
             } else {
                 await createUserWithEmailAndPassword(auth, credentials.email, credentials.password);
             }
-            // onAuthStateChanged in useUser hook will handle user state update,
-            // and the first useEffect will handle the redirect.
+            // onAuthStateChanged will trigger the user state update, and the first useEffect will handle the redirect.
         } catch (error: any) {
              toast({
                 variant: 'destructive',
                 title: `${action === 'login' ? 'Login' : 'Registration'} Failed`,
-                description: error.message || 'An unexpected error occurred.'
+                description: error.code === 'auth/invalid-credential' ? 'Invalid email or password.' : (error.message || 'An unexpected error occurred.'),
             })
-            setIsSigningIn(false); // only stop spinner on error, otherwise wait for redirect
+            setIsProcessingAuth(false);
         }
     }
     
-    if (isSigningIn || isUserLoading) {
+    // While the useUser hook is loading OR we are actively processing an auth action, show a loading spinner.
+    if (isUserLoading || isProcessingAuth) {
         return (
              <div className="flex h-screen w-screen items-center justify-center bg-muted/40">
-                <AnimatedGdgLogo />
+                 <div className="flex flex-col items-center gap-2">
+                    <AnimatedGdgLogo />
+                    <p className="text-muted-foreground">Signing in...</p>
+                 </div>
              </div>
         );
     }
     
-    // If we're not loading and there's no user, show the login form.
-    // If there is a user, the useEffect will have already triggered the redirect.
+    // If not loading and no user, show the login form.
+    // If there is a user, the useEffect will have already started the redirect, so we can return null.
+    if (user) {
+        return null;
+    }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
       <Card className="w-full max-w-sm">
@@ -105,7 +108,7 @@ export default function AdminLoginPage() {
           <CardDescription>Sign in to manage the GDGoC SPEC website.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-            <AdminLoginForm onSubmit={handleEmailAuth} isSubmitting={isSigningIn} />
+            <AdminLoginForm onSubmit={handleEmailAuth} isSubmitting={isProcessingAuth} />
 
             <div className="relative">
                 <div className="absolute inset-0 flex items-center">
@@ -118,7 +121,7 @@ export default function AdminLoginPage() {
                 </div>
             </div>
             
-            <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isSigningIn}>
+            <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isProcessingAuth}>
                 <GoogleLogo className="mr-2 h-5 w-5" />
                 Google
             </Button>
