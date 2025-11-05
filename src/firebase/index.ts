@@ -13,15 +13,12 @@ let firestore: Firestore;
 // This function ensures Firebase is initialized only once.
 function getFirebaseServices() {
   if (!getApps().length) {
-    // For environments like Vercel, we must provide the config explicitly.
     firebaseApp = initializeApp(firebaseConfig);
-    auth = getAuth(firebaseApp);
-    firestore = getFirestore(firebaseApp);
   } else {
     firebaseApp = getApp();
-    auth = getAuth(firebaseApp);
-    firestore = getFirestore(firebaseApp);
   }
+  auth = getAuth(firebaseApp);
+  firestore = getFirestore(firebaseApp);
   return { firebaseApp, auth, firestore };
 }
 
@@ -49,4 +46,5 @@ export * from './non-blocking-login';
 export * from './errors';
 export * from './error-emitter';
 export * from './auth/use-admin';
+export * from './auth/use-user';
 export { useMemoFirebase } from './provider';

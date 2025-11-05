@@ -1,8 +1,7 @@
 
 'use client';
 
-import { useUser } from '@/firebase/auth/use-user';
-import { useAdmin } from '@/firebase/auth/use-admin';
+import { useUser, useAdmin } from '@/firebase';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, type ReactNode } from 'react';
 
@@ -52,7 +51,7 @@ interface AuthGuardProps {
 }
 
 export function AuthGuard({ children }: AuthGuardProps) {
-    const { user, loading: isUserLoading } = useUser();
+    const { user, isUserLoading } = useUser();
     const { isAdmin, loading: isAdminLoading } = useAdmin();
     const pathname = usePathname();
     const router = useRouter();

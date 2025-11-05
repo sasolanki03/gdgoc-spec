@@ -18,7 +18,7 @@ import {
   ShieldAlert,
   Link2,
 } from 'lucide-react';
-import { useAuth } from '@/firebase';
+import { useAuth, useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'firebase/auth';
 
@@ -46,7 +46,6 @@ import {
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useUser } from '@/firebase/auth/use-user';
 import { cn } from '@/lib/utils';
 
 
