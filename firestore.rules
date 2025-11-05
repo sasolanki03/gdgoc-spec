@@ -35,7 +35,7 @@ service cloud.firestore {
      * @allow (create, update, delete): Only admins can perform these operations.
      */
     match /teamMembers/{teamMemberId} {
-      allow get, list: if isSignedIn();
+      allow get, list: if true;
       allow create, update, delete: if isAdmin();
     }
 
