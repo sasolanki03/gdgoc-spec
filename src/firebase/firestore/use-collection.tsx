@@ -87,26 +87,26 @@ export function useCollection<T = any>(
         setError(null);
         setIsLoading(false);
       },
-      (error: FirestoreError) => {
+      async (error: FirestoreError) => {
         // This logic extracts the path from either a ref or a query
         const path: string =
           memoizedTargetRefOrQuery.type === 'collection'
             ? (memoizedTargetRefOrQuery as CollectionReference).path
             : (memoizedTargetRefOrQuery as unknown as InternalQuery)._query.path.canonicalString()
 
-        // Pass the auth object directly into the error context
-        const contextualError = new FirestorePermissionError({
-          auth, // Pass the auth instance here
-          operation: 'list',
-          path,
+        // Create the rich, contextual error asynchronously.
+        const permissionError = new FirestorePermissionError({
+            auth: auth,
+            path: path,
+            operation: 'list'
         });
 
-        setError(contextualError);
+        setError(permissionError);
         setData(null);
         setIsLoading(false);
 
         // trigger global error propagation
-        errorEmitter.emit('permission-error', contextualError);
+        errorEmitter.emit('permission-error', permissionError);
       }
     );
 
