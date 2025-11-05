@@ -57,7 +57,7 @@ export default function Dashboard() {
 
   const leaderboardQuery = useMemo(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'leaderboard'), orderBy('completionTime', 'asc'), limit(1));
+    return query(collection(firestore, 'leaderboard'), orderBy('completionTime', 'asc'));
   }, [firestore]);
   
   const contactsQuery = useMemo(() => {
@@ -68,14 +68,18 @@ export default function Dashboard() {
   const { data: events, loading: loadingEvents } = useCollection<Event>(eventsQuery);
   const { data: recentRegistrations, loading: loadingRegistrations } = useCollection<EventRegistration>(registrationsQuery);
   const { data: allRegistrations, loading: loadingAllRegistrations } = useCollection<EventRegistration>(allRegistrationsQuery);
-  const { data: leaderboard, loading: loadingLeaderboard } = useCollection<LeaderboardEntry>(leaderboardQuery);
+  const { data: leaderboardData, loading: loadingLeaderboard } = useCollection<LeaderboardEntry>(leaderboardQuery);
   const { data: contacts, loading: loadingContacts } = useCollection<ContactMessage>(contactsQuery);
 
   const upcomingEventsCount = useMemo(() => {
     return events?.filter(e => e.status === 'Upcoming' || e.status === 'Continue').length || 0;
   }, [events]);
 
-  const topStudent = useMemo(() => leaderboard?.[0], [leaderboard]);
+  const topStudent = useMemo(() => {
+    if (!leaderboardData || leaderboardData.length === 0) return null;
+    // Since the query orders by completionTime ascending, the first one is the top student overall
+    return leaderboardData[0];
+  }, [leaderboardData]);
   
   return (
     <div className="flex flex-col gap-4">
