@@ -1,12 +1,12 @@
 'use client';
-import { FirestoreError } from 'firebase/firestore';
+import { FirestorePermissionError } from './errors';
 
 /**
  * Defines the shape of all possible events and their corresponding payload types.
  * This centralizes event definitions for type safety across the application.
  */
 export interface AppEvents {
-  'permission-error': FirestoreError;
+  'permission-error': FirestorePermissionError;
 }
 
 // A generic type for a callback function.
