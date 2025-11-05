@@ -33,6 +33,8 @@ import {
   SidebarFooter,
   SidebarTrigger,
   SidebarInset,
+  SidebarCollapse,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import {
@@ -45,6 +47,7 @@ import {
   } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useUser } from '@/firebase/auth/use-user';
+import { cn } from '@/lib/utils';
 
 
 const adminNavItems = [
@@ -58,6 +61,55 @@ const adminNavItems = [
     { href: '/admin/dashboard/contacts', label: 'Contact Messages', icon: Mail },
     { href: '/admin/dashboard/settings', label: 'Settings', icon: Settings },
 ];
+
+function AdminSidebar() {
+    const { user } = useUser();
+    const auth = useAuth();
+    const { state } = useSidebar();
+    
+    const handleLogout = async () => {
+      if (!auth) return;
+      await signOut(auth);
+      // The AuthGuard will handle the redirect.
+    };
+  
+    return (
+        <Sidebar>
+            <SidebarHeader>
+                <Link href="/admin/dashboard" className={cn("flex items-center gap-2 font-semibold text-lg font-headline", state === 'collapsed' && 'justify-center')}>
+                    <span className={cn(state === 'expanded' ? 'inline' : 'hidden')}>GDGoC SPEC Admin</span>
+                </Link>
+            </SidebarHeader>
+            <SidebarContent>
+                <SidebarMenu>
+                    {adminNavItems.map((item) => (
+                        <SidebarMenuItem key={item.href}>
+                            <SidebarMenuButton asChild tooltip={item.label}>
+                                <Link href={item.href}>
+                                    <item.icon />
+                                    <span className={cn(state === 'expanded' ? 'inline' : 'hidden')}>{item.label}</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    ))}
+                </SidebarMenu>
+            </SidebarContent>
+            <SidebarFooter>
+                <div className={cn("flex items-center p-2", state === 'collapsed' ? 'justify-center' : 'justify-between')}>
+                    <SidebarCollapse />
+                </div>
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton onClick={handleLogout} tooltip="Logout">
+                            <LogOut />
+                            <span className={cn(state === 'expanded' ? 'inline' : 'hidden')}>Logout</span>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+            </SidebarFooter>
+        </Sidebar>
+    );
+}
 
 export default function DashboardLayout({
   children,
@@ -75,41 +127,10 @@ export default function DashboardLayout({
 
   return (
     <SidebarProvider>
-        <Sidebar>
-            <SidebarHeader className="flex items-center justify-between p-2">
-                <Link href="/admin/dashboard" className="flex items-center gap-2">
-                    <span className="font-semibold text-lg font-headline">GDGoC SPEC Admin</span>
-                </Link>
-                <SidebarTrigger className="hidden md:flex" />
-            </SidebarHeader>
-            <SidebarContent>
-                <SidebarMenu>
-                    {adminNavItems.map((item) => (
-                        <SidebarMenuItem key={item.href}>
-                            <SidebarMenuButton asChild tooltip={item.label}>
-                                <Link href={item.href}>
-                                    <item.icon />
-                                    <span>{item.label}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                    ))}
-                </SidebarMenu>
-            </SidebarContent>
-            <SidebarFooter>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton onClick={handleLogout} tooltip="Logout">
-                            <LogOut />
-                            <span>Logout</span>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                </SidebarMenu>
-            </SidebarFooter>
-        </Sidebar>
+        <AdminSidebar />
         <SidebarInset>
             <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-                <SidebarTrigger className="md:hidden" />
+                <SidebarTrigger />
                 <div className="ml-auto flex items-center gap-4">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -142,3 +163,5 @@ export default function DashboardLayout({
     </SidebarProvider>
   );
 }
+
+    
