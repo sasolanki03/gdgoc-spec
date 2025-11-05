@@ -35,7 +35,7 @@ function SiteLogo() {
     }, []);
 
     if (!hasMounted || isLoading) {
-      return <Skeleton className="h-10 w-32" />;
+        return <Skeleton className="h-10 w-32" />;
     }
   
     if (settingsData?.logoUrl) {
@@ -71,8 +71,8 @@ export function Header() {
             <SiteLogo />
         </Link>
 
-        <div className="flex flex-1 items-center justify-center">
-          <nav className="hidden gap-6 lg:flex">
+        <div className="flex flex-1 items-center justify-end md:justify-center">
+          <nav className="hidden gap-6 md:flex">
             {navItems.map((item) => (
               <Link
                 key={item.href}
@@ -95,7 +95,7 @@ export function Header() {
           
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="lg:hidden">
+              <Button variant="ghost" size="icon" className="md:hidden">
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">Toggle Menu</span>
               </Button>
