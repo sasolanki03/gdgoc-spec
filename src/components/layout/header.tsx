@@ -57,12 +57,6 @@ function SiteLogo() {
 export function Header() {
   const pathname = usePathname();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [hasMounted, setHasMounted] = useState(false);
-
-  useEffect(() => {
-    setHasMounted(true);
-  }, []);
-
 
   const handleJoinClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (pathname === '/') {
@@ -89,7 +83,7 @@ export function Header() {
                 key={item.href}
                 href={item.href}
                 className="flex items-center text-lg font-medium text-muted-foreground transition-colors hover:text-primary"
-                data-active={hasMounted ? pathname === item.href : undefined}
+                data-active={pathname === item.href}
               >
                 {item.title}
               </Link>
