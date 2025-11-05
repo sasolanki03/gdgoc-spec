@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -227,7 +228,7 @@ export default function AdminSettingsPage() {
                                                 <FormItem>
                                                     <FormLabel className="flex items-center gap-2">
                                                         <Icon />
-                                                        {`socialLinks.${index}.name`}
+                                                        {field.name}
                                                     </FormLabel>
                                                     <FormControl>
                                                         <Input placeholder={`https://${field.name.toLowerCase()}.com/...`} {...inputField} />
