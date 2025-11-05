@@ -52,7 +52,6 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
         <Sidebar>
-            <SheetTitle className="sr-only">Admin Menu</SheetTitle>
             <SidebarHeader className="flex items-center justify-between p-2">
                 <Link href="/admin/dashboard" className="flex items-center gap-2">
                     <span className="font-semibold text-lg font-headline">GDG SPEC Admin</span>
@@ -117,3 +116,5 @@ export default function DashboardLayout({
     </SidebarProvider>
   );
 }
+
+    
