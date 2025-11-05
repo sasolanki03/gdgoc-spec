@@ -4,11 +4,15 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu } from 'lucide-react';
+import Image from 'next/image';
+import { doc } from 'firebase/firestore';
 
+import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import type { NavItem } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Skeleton } from '../ui/skeleton';
 
 const navItems: NavItem[] = [
   { title: 'Home', href: '/' },
@@ -19,14 +23,37 @@ const navItems: NavItem[] = [
   { title: 'Contact', href: '/contact' },
 ];
 
+function SiteLogo() {
+    const firestore = useFirestore();
+    const settingsRef = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'branding') : null, [firestore]);
+    const { data: settingsData, isLoading } = useDoc<{logoUrl: string}>(settingsRef);
+  
+    if (isLoading) {
+      return <Skeleton className="h-8 w-28" />;
+    }
+  
+    if (settingsData?.logoUrl) {
+      return (
+        <Image 
+          src={settingsData.logoUrl} 
+          alt="Site Logo"
+          width={120}
+          height={40}
+          className="object-contain"
+        />
+      );
+    }
+  
+    return <span className="font-bold sm:inline-block font-headline">GDGoC SPEC</span>;
+}
+
 export function Header() {
   const pathname = usePathname();
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-5 md:px-20 flex h-16 items-center">
         <Link href="/" className="mr-6 flex items-center space-x-2">
-          
-          <span className="font-bold sm:inline-block font-headline">GDGoC SPEC</span>
+            <SiteLogo />
         </Link>
 
         <div className="flex flex-1 items-center justify-center">
@@ -78,5 +105,3 @@ export function Header() {
     </header>
   );
 }
-
-    

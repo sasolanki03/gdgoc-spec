@@ -13,7 +13,7 @@ import {
   User,
   Trophy,
   BarChart3,
-  Image as ImageIcon,
+  ImageIcon,
   LogOut,
   ShieldAlert,
 } from 'lucide-react';
@@ -55,6 +55,7 @@ const adminNavItems = [
     { href: '/admin/dashboard/leaderboard', label: 'Leaderboard', icon: Trophy },
     { href: '/admin/dashboard/registrations', label: 'Registrations', icon: FileText },
     { href: '/admin/dashboard/contacts', label: 'Contact Messages', icon: Mail },
+    { href: '/admin/dashboard/settings', label: 'Settings', icon: Settings },
 ];
 
 export default function DashboardLayout({
