@@ -1,238 +1,195 @@
-
 {
   "entities": {
-    "user_profile": {
-      "title": "User Profile",
-      "description": "Represents a user's profile information.",
+    "TeamMember": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "TeamMember",
       "type": "object",
+      "description": "Represents a team member of the GDG SPECM Website.",
       "properties": {
-        "displayName": {
+        "id": {
           "type": "string",
-          "description": "The user's display name."
+          "description": "Unique identifier for the TeamMember entity."
         },
-        "email": {
-          "type": "string",
-          "format": "email",
-          "description": "The user's email address."
-        },
-        "photoURL": {
-          "type": "string",
-          "format": "uri",
-          "description": "URL of the user's profile picture."
-        }
-      }
-    },
-    "leaderboard_entry": {
-      "title": "Leaderboard Entry",
-      "description": "Represents a single entry in the leaderboard.",
-      "type": "object",
-      "properties": {
-        "studentName": {
-          "type": "string"
-        },
-        "profileUrl": {
-          "type": "string",
-          "format": "uri"
-        },
-        "campaignCompleted": {
-          "type": "boolean"
-        },
-        "completionTime": {
-          "type": "string",
-          "format": "date"
-        },
-        "avatar": {
-          "type": "string"
-        },
-        "eventId": {
-          "type": "string"
-        },
-        "eventName": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "studentName",
-        "profileUrl",
-        "campaignCompleted",
-        "completionTime",
-        "eventId",
-        "eventName"
-      ]
-    },
-    "team_member": {
-      "title": "Team Member",
-      "description": "Represents a member of the GDG core team.",
-      "type": "object",
-      "properties": {
         "name": {
           "type": "string",
-          "description": "Full name of the team member."
+          "description": "Name of the team member."
         },
         "role": {
           "type": "string",
-          "enum": [
-            "Lead",
-            "Co-Lead",
-            "Technical Team",
-            "Management Team",
-            "Design Team",
-            "Core Team"
-          ]
-        },
-        "position": {
-          "type": "string",
-          "description": "The specific position or title (e.g., Web Lead, Android Lead)."
-        },
-        "branch": {
-          "type": "string"
-        },
-        "year": {
-          "type": "string"
-        },
-        "photo": {
-          "type": "string",
-          "description": "A data URI of the member's photo."
+          "description": "Role of the team member within the GDG SPECM team."
         },
         "bio": {
           "type": "string",
-          "description": "A short biography of the member."
+          "description": "Short biography of the team member."
         },
-        "socials": {
+        "socialLinks": {
           "type": "array",
+          "description": "An array of social media links for the team member.",
           "items": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string"
-              },
-              "href": {
-                "type": "string"
-              }
-            }
+            "type": "string"
           }
+        },
+        "imageURL": {
+          "type": "string",
+          "description": "URL of the team member's profile picture."
         }
       },
       "required": [
+        "id",
         "name",
         "role",
-        "position",
-        "branch",
-        "year",
-        "photo",
-        "bio"
+        "bio",
+        "socialLinks"
       ]
     },
-    "event": {
-      "title": "Event",
-      "description": "Represents a community event.",
+    "StudentProgress": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "StudentProgress",
       "type": "object",
+      "description": "Represents the progress of a student on the leaderboard.",
       "properties": {
-        "title": { "type": "string" },
-        "description": { "type": "string" },
-        "startDate": { "type": "string", "format": "date-time" },
-        "endDate": { "type": "string", "format": "date-time" },
-        "time": { "type": "string" },
-        "venue": { "type": "string" },
-        "imageUrl": { "type": "string", "format": "uri" },
-        "type": { "type": "string" },
-        "status": { "type": "string", "enum": ["Upcoming", "Past", "Continue"] }
-      },
-      "required": ["title", "description", "startDate", "endDate", "time", "venue", "status"]
-    },
-    "event_registration": {
-      "title": "Event Registration",
-      "description": "Represents a user's registration for an event.",
-      "type": "object",
-      "properties": {
-        "name": { "type": "string" },
-        "email": { "type": "string", "format": "email" },
-        "phone": { "type": "string" },
-        "rollNo": { "type": "string" },
-        "branch": { "type": "string" },
-        "year": { "type": "string" },
-        "eventId": { "type": "string" },
-        "eventName": { "type": "string" },
-        "registeredAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["name", "email", "eventId", "eventName", "registeredAt"]
-    },
-    "contact_message": {
-        "title": "Contact Message",
-        "description": "Represents a message submitted through the contact form.",
-        "type": "object",
-        "properties": {
-            "name": { "type": "string" },
-            "email": { "type": "string", "format": "email" },
-            "subject": { "type": "string" },
-            "message": { "type": "string" },
-            "createdAt": { "type": "string", "format": "date-time" },
-            "isRead": { "type": "boolean" }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the StudentProgress entry."
         },
-        "required": ["name", "email", "subject", "message", "createdAt"]
-    },
-    "stat_item": {
-      "title": "Stat Item",
-      "description": "Represents a single statistic item on the homepage.",
-      "type": "object",
-      "properties": {
-        "icon": { "type": "string", "description": "Lucide icon name (e.g., Users, Calendar)." },
-        "value": { "type": "number" },
-        "label": { "type": "string" },
-        "color": { "type": "string", "description": "Tailwind CSS color class (e.g., text-google-blue)." },
-        "order": { "type": "number", "description": "Order for displaying the stat." }
-      },
-      "required": ["icon", "value", "label", "color", "order"]
-    },
-    "gallery_image": {
-        "title": "Gallery Image",
-        "description": "Represents an image in the homepage gallery.",
-        "type": "object",
-        "properties": {
-            "imageUrl": { "type": "string", "description": "A data URI of the image." },
-            "altText": { "type": "string", "description": "Alternative text for the image." },
-            "order": { "type": "number", "description": "Order for displaying the image." }
+        "studentName": {
+          "type": "string",
+          "description": "Name of the student."
         },
-        "required": ["imageUrl", "altText", "order"]
+        "studentId": {
+          "type": "string",
+          "description": "Id of student."
+        },
+        "progressValue": {
+          "type": "number",
+          "description": "The student's progress value or score."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp of the last progress update.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "studentName",
+        "progressValue",
+        "timestamp"
+      ]
+    },
+    "FileUpload": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "FileUpload",
+      "type": "object",
+      "description": "Represents the uploaded file information and its processing status.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the FileUpload entry."
+        },
+        "fileName": {
+          "type": "string",
+          "description": "Name of the uploaded file."
+        },
+        "uploadTimestamp": {
+          "type": "string",
+          "description": "Timestamp of when the file was uploaded.",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the file processing (e.g., uploaded, processing, completed, failed)."
+        },
+        "processedRecords": {
+          "type": "number",
+          "description": "The number of records processed from the file."
+        },
+        "failureReason": {
+          "type": "string",
+          "description": "If upload fails, the reason is captured."
+        }
+      },
+      "required": [
+        "id",
+        "fileName",
+        "uploadTimestamp",
+        "status"
+      ]
     }
   },
   "auth": {
     "providers": [
-      "google.com"
+      "password",
+      "anonymous"
     ]
   },
   "firestore": {
-    "/leaderboard/{entry}": {
-      "schema": {
-        "$ref": "#/entities/leaderboard_entry"
+    "structure": [
+      {
+        "path": "/team_members/{teamMemberId}",
+        "definition": {
+          "entityName": "TeamMember",
+          "schema": {
+            "$ref": "#/backend/entities/TeamMember"
+          },
+          "description": "Stores information about team members.  Publicly readable.",
+          "params": [
+            {
+              "name": "teamMemberId",
+              "description": "Unique identifier for the team member."
+            }
+          ]
+        }
       },
-      "description": "Stores the leaderboard entries for the Google Cloud Career Practitioner campaign."
-    },
-    "/teamMembers/{member}": {
-      "schema": {
-        "$ref": "#/entities/team_member"
+      {
+        "path": "/student_progress/{studentProgressId}",
+        "definition": {
+          "entityName": "StudentProgress",
+          "schema": {
+            "$ref": "#/backend/entities/StudentProgress"
+          },
+          "description": "Stores student progress data for the leaderboard.  Publicly readable.",
+          "params": [
+            {
+              "name": "studentProgressId",
+              "description": "Unique identifier for the student progress entry."
+            }
+          ]
+        }
       },
-      "description": "Stores the information for each core team member."
-    },
-    "/events/{event}": {
-        "schema": { "$ref": "#/entities/event" },
-        "description": "Stores all event data."
-    },
-    "/registrations/{registration}": {
-        "schema": { "$ref": "#/entities/event_registration" },
-        "description": "Stores all event registration data."
-    },
-    "/contacts/{message}": {
-        "schema": { "$ref": "#/entities/contact_message" },
-        "description": "Stores all messages from the contact form."
-    },
-    "/stats/{stat}": {
-        "schema": { "$ref": "#/entities/stat_item" },
-        "description": "Stores the homepage statistics."
-    },
-    "/gallery/{image}": {
-        "schema": { "$ref": "#/entities/gallery_image" },
-        "description": "Stores the homepage gallery images."
-    }
+      {
+        "path": "/file_uploads/{fileUploadId}",
+        "definition": {
+          "entityName": "FileUpload",
+          "schema": {
+            "$ref": "#/backend/entities/FileUpload"
+          },
+          "description": "Stores file upload metadata. Only accessible by admins. Admins are determined by presence in `/roles_admin/{uid}`.",
+          "params": [
+            {
+              "name": "fileUploadId",
+              "description": "Unique identifier for the file upload."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles_admin/{userId}",
+        "definition": {
+          "entityName": "roles_admin",
+          "schema": {
+            "$ref": "#/backend/entities/FileUpload"
+          },
+          "description": "Documents in this collection denote admin roles. Existence of document is sufficient; content is ignored.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "User ID of the admin."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to be secure, scalable, and easily debuggable, adhering to the core principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). It incorporates denormalization where necessary to avoid hierarchical authorization dependencies, and segregates data based on access needs to maintain a homogeneous security posture. The structure employs consistent access modeling patterns, leveraging path-based ownership and membership maps for collaborative data. The file uploads collection has role-based access control so that it is only accessible by admins."
   }
 }

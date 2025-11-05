@@ -1,9 +1,99 @@
-
+/**
+ * @fileoverview Firestore Security Rules for the GDG SPECM Website.
+ *
+ * Core Philosophy:
+ * This ruleset prioritizes security and clarity by enforcing explicit authorization checks for all data access. It uses a combination of public read access for some collections and role-based access control for sensitive data.  The prototyping philosophy allows for rapid iteration by relaxing data validation constraints but strictly enforcing authorization.
+ *
+ * Data Structure:
+ * - /team_members/{teamMemberId}: Publicly readable data about team members.
+ * - /student_progress/{studentProgressId}: Publicly readable data about student progress on the leaderboard.
+ * - /file_uploads/{fileUploadId}: Metadata for uploaded files, restricted to admin access.
+ * - /roles_admin/{userId}: Collection to denote admin roles. Existence of document is sufficient to grant admin privileges.
+ *
+ * Key Security Decisions:
+ * - Public read access is granted for team member and student progress data to support public display of this information.
+ * - Access to file upload metadata is restricted to users identified as administrators.
+ * - The presence of a document in `/roles_admin/{userId}` is the sole factor determining administrator status. The document's contents are ignored.
+ * - Data validation is relaxed in this prototyping phase.
+ *
+ * Denormalization for Authorization:
+ * - Admin status is checked via a `get()` call on the `/roles_admin/{userId}` collection.
+ *
+ * Structural Segregation:
+ * - Public data (team members, student progress) is stored in top-level collections with open read access.
+ * - Private data (file uploads) is secured with role-based access control.
+ */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true;
+
+    /**
+     * @description Allows anyone to read team member data. Only admins can create, update, or delete.
+     * @path /team_members/{teamMemberId}
+     * @allow (get, list): Anyone can read team member data.
+     * @allow (create, update, delete): Only admins can perform these operations.
+     * @deny (create, update, delete): Non-admins cannot perform these operations.
+     * @principle Grants public read access but restricts write access to admins.
+     */
+    match /team_members/{teamMemberId} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    /**
+     * @description Allows anyone to read student progress data. Only admins can create, update, or delete.
+     * @path /student_progress/{studentProgressId}
+     * @allow (get, list): Anyone can read student progress data.
+     * @allow (create, update, delete): Only admins can perform these operations.
+     * @deny (create, update, delete): Non-admins cannot perform these operations.
+     * @principle Grants public read access but restricts write access to admins.
+     */
+    match /student_progress/{studentProgressId} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    /**
+     * @description Restricts access to file upload metadata to administrators only.
+     * @path /file_uploads/{fileUploadId}
+     * @allow (get, list, create, update, delete): Only admins can perform these operations.
+     * @deny (get, list, create, update, delete): Non-admins cannot perform these operations.
+     * @principle Enforces role-based access control to protect sensitive data.
+     */
+    match /file_uploads/{fileUploadId} {
+      allow get, list, create, update, delete: if isAdmin();
+    }
+
+    /**
+     * @description Allows creation of admin role documents.  No access to list, update, or delete. Existence of document confers admin role.
+     * @path /roles_admin/{userId}
+     * @allow (create): Any authenticated user can create a role document with their own user ID.
+     * @deny (get, list, update, delete): These operations are not permitted on the roles_admin collection.
+     * @principle Enforces that users can only create their own admin role document, and restricts other operations.
+     */
+    match /roles_admin/{userId} {
+        allow get: if false;
+        allow list: if false;
+        allow create: if isSignedIn() && request.auth.uid == userId;
+        allow update: if false;
+        allow delete: if false;
+    }
+
+    // Helper functions
+    /**
+     * @description Checks if the user is signed in.
+     * @return {boolean} True if the user is signed in, false otherwise.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * @description Checks if the user is an administrator by verifying the existence of a document in the roles_admin collection.
+     * @return {boolean} True if the user is an administrator, false otherwise.
+     */
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
     }
   }
 }
