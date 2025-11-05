@@ -4,7 +4,7 @@
 import { useState, useMemo } from 'react';
 import { collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy, Timestamp, writeBatch, where } from 'firebase/firestore';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { PlusCircle, MoreHorizontal, Trash, CheckCircle, XCircle, Upload, Trophy } from 'lucide-react';
+import { PlusCircle, MoreHorizontal, Trash, CheckCircle, XCircle, Upload, Trophy, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 
 import {
@@ -59,10 +59,12 @@ import {
   import { LeaderboardEntryForm } from '@/components/forms/leaderboard-entry-form';
   import { LeaderboardUploadForm } from '@/components/forms/leaderboard-upload-form';
   import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export default function AdminLeaderboardPage() {
     const firestore = useFirestore();
     const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+    const [selectedEntries, setSelectedEntries] = useState<string[]>([]);
     
     const eventsQuery = useMemoFirebase(() => {
         if (!firestore) return null;
@@ -146,6 +148,32 @@ export default function AdminLeaderboardPage() {
             });
         }
     };
+
+    const handleBulkDelete = async () => {
+        if (!firestore || selectedEntries.length === 0) return;
+        
+        const batch = writeBatch(firestore);
+        selectedEntries.forEach(id => {
+            const docRef = doc(firestore, 'leaderboard', id);
+            batch.delete(docRef);
+        });
+
+        try {
+            await batch.commit();
+            toast({
+                title: 'Bulk Delete Successful!',
+                description: `${selectedEntries.length} entries have been removed.`,
+            });
+            setSelectedEntries([]);
+        } catch (e: any) {
+            console.error("Error committing batch delete: ", e);
+            toast({
+                variant: 'destructive',
+                title: 'Error during Bulk Delete',
+                description: e.message,
+            });
+        }
+    };
     
     const handleBulkUpload = async (entries: Omit<LeaderboardEntry, 'id' | 'rank' | 'avatar'>[]) => {
         if (!firestore) return;
@@ -193,6 +221,22 @@ export default function AdminLeaderboardPage() {
         setIsFormDialogOpen(true);
     }
     
+    const onSelectAll = (checked: boolean) => {
+        if (checked) {
+            setSelectedEntries(rankedData.map(entry => entry.id));
+        } else {
+            setSelectedEntries([]);
+        }
+    };
+
+    const onRowSelect = (id: string, checked: boolean) => {
+        if (checked) {
+            setSelectedEntries(prev => [...prev, id]);
+        } else {
+            setSelectedEntries(prev => prev.filter(entryId => entryId !== id));
+        }
+    };
+
     return (
       <>
         <Card className="w-full mx-auto">
@@ -203,7 +247,7 @@ export default function AdminLeaderboardPage() {
                 <CardDescription>Manually add, edit, or delete leaderboard entries for a selected event.</CardDescription>
                 </div>
                 <div className="flex w-full md:w-auto gap-2">
-                    <Select onValueChange={setSelectedEventId} value={selectedEventId || ''}>
+                    <Select onValueChange={(value) => { setSelectedEventId(value); setSelectedEntries([])}} value={selectedEventId || ''}>
                       <SelectTrigger className="w-full md:w-[280px]">
                         <SelectValue placeholder="Select an event to manage" />
                       </SelectTrigger>
@@ -229,23 +273,58 @@ export default function AdminLeaderboardPage() {
                 </div>
             ) : (
                 <>
-                <div className="flex justify-end gap-2 mb-4">
-                    <Button size="sm" variant="outline" className="gap-1" onClick={() => setIsUploadDialogOpen(true)}>
-                        <Upload className="h-3.5 w-3.5" />
-                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Bulk Upload
-                        </span>
-                    </Button>
-                    <Button size="sm" className="gap-1" onClick={handleAddClick}>
-                        <PlusCircle className="h-3.5 w-3.5" />
-                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Add Entry
-                        </span>
-                    </Button>
+                <div className="flex justify-between items-center mb-4">
+                    <div>
+                        {selectedEntries.length > 0 && (
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="destructive" size="sm">
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Delete ({selectedEntries.length})
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            This will permanently delete {selectedEntries.length} selected entries. This action cannot be undone.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive hover:bg-destructive/90">
+                                            Delete
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        )}
+                    </div>
+                    <div className="flex justify-end gap-2">
+                        <Button size="sm" variant="outline" className="gap-1" onClick={() => setIsUploadDialogOpen(true)}>
+                            <Upload className="h-3.5 w-3.5" />
+                            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                            Bulk Upload
+                            </span>
+                        </Button>
+                        <Button size="sm" className="gap-1" onClick={handleAddClick}>
+                            <PlusCircle className="h-3.5 w-3.5" />
+                            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                            Add Entry
+                            </span>
+                        </Button>
+                    </div>
                 </div>
                 <Table>
                     <TableHeader>
                     <TableRow>
+                        <TableHead padding="checkbox" className="w-12">
+                            <Checkbox
+                                checked={rankedData.length > 0 && selectedEntries.length === rankedData.length}
+                                onCheckedChange={(checked) => onSelectAll(!!checked)}
+                                aria-label="Select all"
+                            />
+                        </TableHead>
                         <TableHead className="w-16 text-center">Rank</TableHead>
                         <TableHead>Student</TableHead>
                         <TableHead>Event</TableHead>
@@ -260,6 +339,7 @@ export default function AdminLeaderboardPage() {
                         {loading ? (
                             [...Array(5)].map((_, i) => (
                                 <TableRow key={i}>
+                                    <TableCell><Skeleton className="h-4 w-4" /></TableCell>
                                     <TableCell className="text-center"><Skeleton className="h-5 w-5 mx-auto" /></TableCell>
                                     <TableCell>
                                         <div className='flex items-center gap-2'>
@@ -278,8 +358,16 @@ export default function AdminLeaderboardPage() {
                         ) : (
                             rankedData.map((entry) => {
                                 const avatarImage = PlaceHolderImages.find(img => img.id === entry.avatar);
+                                const isSelected = selectedEntries.includes(entry.id);
                                 return (
-                                    <TableRow key={entry.id}>
+                                    <TableRow key={entry.id} data-state={isSelected ? 'selected' : undefined}>
+                                        <TableCell>
+                                            <Checkbox
+                                                checked={isSelected}
+                                                onCheckedChange={(checked) => onRowSelect(entry.id, !!checked)}
+                                                aria-label="Select row"
+                                            />
+                                        </TableCell>
                                         <TableCell className="font-medium text-center">{entry.rank}</TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-3">
@@ -391,7 +479,7 @@ export default function AdminLeaderboardPage() {
                     <DialogHeader>
                         <DialogTitle className="font-headline text-2xl">Bulk Upload Entries</DialogTitle>
                         <DialogDescription>
-                            Upload a CSV file with student data. All entries will be added to the currently selected event: <strong>{events?.find(e=>e.id === selectedEventId)?.title}</strong>
+                            Upload a CSV file with student data. All entries will be added to the currently selected event: <strong>{events?.find(e=>e.id === eventId)?.title}</strong>
                         </DialogDescription>
                     </DialogHeader>
                     <LeaderboardUploadForm onSuccess={handleBulkUpload} eventId={selectedEventId} />
@@ -401,4 +489,5 @@ export default function AdminLeaderboardPage() {
         }
       </>
     );
-}
+
+    
