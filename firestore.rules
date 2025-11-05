@@ -65,6 +65,73 @@ service cloud.firestore {
     }
 
     /**
+     * @description Allows anyone to read gallery images. Only admins can write.
+     * @path /gallery/{imageId}
+     * @allow (get, list): Anyone can read gallery images.
+     * @allow (create, update, delete): Only admins can write to the gallery.
+     */
+    match /gallery/{imageId} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    /**
+     * @description Allows anyone to read homepage stats. Only admins can write.
+     * @path /stats/{statId}
+     * @allow (get, list): Anyone can read stats.
+     * @allow (create, update, delete): Only admins can write stats.
+     */
+    match /stats/{statId} {
+        allow get, list: if true;
+        allow create, update, delete: if isAdmin();
+    }
+
+    /**
+     * @description Allows anyone to read events. Only admins can write.
+     * @path /events/{eventId}
+     * @allow (get, list): Anyone can read events.
+     * @allow (create, update, delete): Only admins can write to events.
+     */
+    match /events/{eventId} {
+        allow get, list: if true;
+        allow create, update, delete: if isAdmin();
+    }
+
+    /**
+     * @description Allows authenticated users to submit registrations. Admins can read/delete.
+     * @path /registrations/{registrationId}
+     * @allow (create): Any authenticated user can create a registration.
+     * @allow (get, list, delete): Only admins can access registrations.
+     */
+    match /registrations/{registrationId} {
+      allow create: if isSignedIn();
+      allow get, list, delete: if isAdmin();
+      allow update: if false;
+    }
+
+     /**
+     * @description Allows anyone to send a contact message. Admins can read/delete.
+     * @path /contacts/{contactId}
+     * @allow (create): Anyone can create a contact message.
+     * @allow (get, list, delete): Only admins can read/delete messages.
+     */
+    match /contacts/{contactId} {
+      allow create: if true;
+      allow get, list, delete, update: if isAdmin();
+    }
+
+    /**
+     * @description Allows anyone to read leaderboard data. Admins can write.
+     * @path /leaderboard/{entryId}
+     * @allow (get, list): Anyone can read the leaderboard.
+     * @allow (create, update, delete): Only admins can write to the leaderboard.
+     */
+    match /leaderboard/{entryId} {
+        allow get, list: if true;
+        allow create, update, delete: if isAdmin();
+    }
+
+    /**
      * @description Allows creation of admin role documents.  No access to list, update, or delete. Existence of document confers admin role.
      * @path /roles_admin/{userId}
      * @allow (create): Any authenticated user can create a role document with their own user ID.
