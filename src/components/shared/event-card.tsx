@@ -15,8 +15,8 @@ interface EventCardProps {
 }
 
 export function EventCard({ event }: EventCardProps) {
-    const isPlaceholder = !event.imageUrl.startsWith('data:');
-    const image = isPlaceholder ? PlaceHolderImages.find(img => img.id === event.imageUrl) : null;
+    const isDataUri = event.imageUrl.startsWith('data:');
+    const image = !isDataUri ? PlaceHolderImages.find(img => img.id === event.imageUrl) : null;
     const imageUrl = image ? image.imageUrl : event.imageUrl;
 
     const getBadgeVariant = (status: EventType['status']): "default" | "secondary" | "destructive" | "outline" => {
