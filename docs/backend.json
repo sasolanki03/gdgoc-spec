@@ -170,6 +170,19 @@
             "isRead": { "type": "boolean" }
         },
         "required": ["name", "email", "subject", "message", "createdAt"]
+    },
+    "stat_item": {
+      "title": "Stat Item",
+      "description": "Represents a single statistic item on the homepage.",
+      "type": "object",
+      "properties": {
+        "icon": { "type": "string", "description": "Lucide icon name (e.g., Users, Calendar)." },
+        "value": { "type": "number" },
+        "label": { "type": "string" },
+        "color": { "type": "string", "description": "Tailwind CSS color class (e.g., text-google-blue)." },
+        "order": { "type": "number", "description": "Order for displaying the stat." }
+      },
+      "required": ["icon", "value", "label", "color", "order"]
     }
   },
   "auth": {
@@ -201,6 +214,10 @@
     "/contacts/{message}": {
         "schema": { "$ref": "#/entities/contact_message" },
         "description": "Stores all messages from the contact form."
+    },
+    "/stats/{stat}": {
+        "schema": { "$ref": "#/entities/stat_item" },
+        "description": "Stores the homepage statistics."
     }
   }
 }

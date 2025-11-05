@@ -77,3 +77,11 @@ export type ContactMessage = {
     isRead: boolean;
 };
 
+export type StatItem = {
+    id: string;
+    icon: string;
+    value: number;
+    label: string;
+    color: string;
+    order: number;
+};

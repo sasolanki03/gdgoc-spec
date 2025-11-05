@@ -3,7 +3,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Users, Calendar, Lightbulb, Code, ArrowRight, Mic, Group, Award } from 'lucide-react';
+import { Users, Calendar, Lightbulb, Code, ArrowRight, Mic, Group, Award, LucideIcon } from 'lucide-react';
 import { useMemo } from 'react';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
 import { useCollection, useFirestore } from '@/firebase';
@@ -13,8 +13,9 @@ import { StatCounter } from '@/components/shared/stat-counter';
 import { EventCard } from '@/components/shared/event-card';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { NewsletterForm } from '@/components/forms/newsletter-form';
-import type { Event as EventType } from '@/lib/types';
+import type { Event as EventType, StatItem } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import * as lucideIcons from 'lucide-react';
 
 const whyJoinPoints = [
   {
@@ -71,7 +72,13 @@ export default function HomePage() {
     );
   }, [firestore]);
 
-  const { data: allEvents, loading } = useCollection<EventType>(eventsQuery);
+  const statsQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'stats'), orderBy('order', 'asc'));
+  }, [firestore]);
+
+  const { data: allEvents, loading: loadingEvents } = useCollection<EventType>(eventsQuery);
+  const { data: stats, loading: loadingStats } = useCollection<StatItem>(statsQuery);
 
   const upcomingEvents = useMemo(() => {
     if (!allEvents) return [];
@@ -111,27 +118,28 @@ export default function HomePage() {
       <section className="border-y">
         <div className="container mx-auto px-5 md:px-20 py-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            <div className="p-4">
-              <Users className="h-12 w-12 mx-auto mb-4 text-google-blue" />
-              <div className="text-4xl font-bold font-headline">
-                +<StatCounter value={500} />
-              </div>
-              <p className="text-muted-foreground mt-2">Community Members</p>
-            </div>
-            <div className="p-4">
-              <Calendar className="h-12 w-12 mx-auto mb-4 text-google-green" />
-              <div className="text-4xl font-bold font-headline">
-                +<StatCounter value={50} />
-              </div>
-              <p className="text-muted-foreground mt-2">Events Hosted</p>
-            </div>
-            <div className="p-4">
-              <Code className="h-12 w-12 mx-auto mb-4 text-google-yellow" />
-              <div className="text-4xl font-bold font-headline">
-                +<StatCounter value={100} />
-              </div>
-              <p className="text-muted-foreground mt-2">Projects Completed</p>
-            </div>
+            {loadingStats ? (
+              [...Array(3)].map((_, i) => (
+                <div key={i} className="p-4 space-y-2">
+                    <Skeleton className="h-12 w-12 mx-auto rounded-full" />
+                    <Skeleton className="h-10 w-24 mx-auto" />
+                    <Skeleton className="h-5 w-40 mx-auto" />
+                </div>
+              ))
+            ) : (
+                stats?.map((stat) => {
+                    const Icon = (lucideIcons as Record<string, LucideIcon>)[stat.icon];
+                    return (
+                        <div key={stat.id} className="p-4">
+                            {Icon && <Icon className={`h-12 w-12 mx-auto mb-4 ${stat.color}`} />}
+                            <div className="text-4xl font-bold font-headline">
+                                +<StatCounter value={stat.value} />
+                            </div>
+                            <p className="text-muted-foreground mt-2">{stat.label}</p>
+                        </div>
+                    )
+                })
+            )}
           </div>
         </div>
       </section>
@@ -146,7 +154,7 @@ export default function HomePage() {
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {loading ? (
+            {loadingEvents ? (
                 <EventSkeleton />
             ) : upcomingEvents && upcomingEvents.length > 0 ? (
                 upcomingEvents.map(event => (
@@ -235,5 +243,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    
