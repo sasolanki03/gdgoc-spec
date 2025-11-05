@@ -113,7 +113,7 @@ service cloud.firestore {
      * @description Allows anyone to send a contact message. Admins can read/delete.
      * @path /contacts/{contactId}
      * @allow (create): Anyone can create a contact message.
-     * @allow (get, list, delete): Only admins can read/delete messages.
+     * @allow (get, list, delete, update): if isAdmin();
      */
     match /contacts/{contactId} {
       allow create: if true;
@@ -132,14 +132,15 @@ service cloud.firestore {
     }
 
     /**
-     * @description Allows creation of admin role documents.  No access to list, update, or delete. Existence of document confers admin role.
+     * @description Allows creation of admin role documents and self-read. No access to list, update, or delete for others.
      * @path /roles_admin/{userId}
      * @allow (create): Any authenticated user can create a role document with their own user ID.
-     * @deny (get, list, update, delete): These operations are not permitted on the roles_admin collection.
-     * @principle Enforces that users can only create their own admin role document, and restricts other operations.
+     * @allow (get): A user can read their own admin role document.
+     * @deny (list, update, delete): These operations are not permitted on the roles_admin collection.
+     * @principle Enforces that users can only create/check their own admin role document.
      */
     match /roles_admin/{userId} {
-        allow get: if false;
+        allow get: if isSignedIn() && request.auth.uid == userId;
         allow list: if false;
         allow create: if isSignedIn() && request.auth.uid == userId;
         allow update: if false;
