@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -12,56 +13,37 @@ import { AnimatedGdgLogo } from '@/components/shared/animated-gdg-logo';
 
 export default function AdminLoginPage() {
     const auth = useAuth();
-    const { user, loading } = useUser();
+    const { user, isUserLoading } = useUser();
     const router = useRouter();
     const { toast } = useToast();
     const [isSigningIn, setIsSigningIn] = useState(true); // Start as true to handle redirect
 
     useEffect(() => {
-        if (!loading && user) {
+        if (!isUserLoading && user) {
           router.push('/admin/dashboard');
-        }
-    }, [user, loading, router]);
-
-    useEffect(() => {
-        const handleRedirectResult = async () => {
-            if (!auth) return;
-            try {
-                const result = await getRedirectResult(auth);
-                if (result) {
-                    // User signed in or already signed in.
-                    // The useUser hook will handle the redirect to the dashboard.
-                    toast({
-                        title: 'Login Successful!',
-                        description: 'Redirecting to dashboard...',
-                    });
-                } else {
-                    // No redirect result, so the user is not signing in.
-                    setIsSigningIn(false);
-                }
-            } catch (error: any) {
-                console.error("Authentication Error:", error);
-                toast({
-                    variant: 'destructive',
-                    title: 'Authentication Failed',
-                    description: error.message || 'An error occurred during sign-in.',
-                });
-                setIsSigningIn(false);
+        } else if (!isUserLoading && !user) {
+          // If there's no user and we are not loading, the user needs to sign in.
+          // We check for redirect results, and if there are none, we can show the page.
+          getRedirectResult(auth).then((result) => {
+            if (!result) {
+              setIsSigningIn(false);
             }
+          }).catch(error => {
+            console.error("Error checking redirect result:", error);
+            setIsSigningIn(false); // Show login page even if redirect check fails
+          });
         }
-        handleRedirectResult();
-    }, [auth, toast, router]);
+    }, [user, isUserLoading, router, auth]);
 
     const handleGoogleSignIn = async () => {
         if (!auth) return;
         setIsSigningIn(true);
         const provider = new GoogleAuthProvider();
-        // It's safe to call this even if the user is already being redirected.
-        // Firebase handles this gracefully.
         await signInWithRedirect(auth, provider);
     };
     
-    if (loading || isSigningIn || user) {
+    // Show a loading spinner while checking auth state or if a user is found (and we're about to redirect)
+    if (isUserLoading || isSigningIn || user) {
         return (
              <div className="flex h-screen w-screen items-center justify-center bg-muted/40">
                 <AnimatedGdgLogo />
