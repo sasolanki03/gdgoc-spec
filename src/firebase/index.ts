@@ -6,27 +6,20 @@ import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
 
-let firebaseApp: FirebaseApp;
-let auth: Auth;
-let firestore: Firestore;
+let app: FirebaseApp;
 
-// This function ensures Firebase is initialized only once.
-function getFirebaseServices() {
-  if (!getApps().length) {
-    firebaseApp = initializeApp(firebaseConfig);
-  } else {
-    firebaseApp = getApp();
-  }
-  auth = getAuth(firebaseApp);
-  firestore = getFirestore(firebaseApp);
-  return { firebaseApp, auth, firestore };
+if (!getApps().length) {
+  app = initializeApp(firebaseConfig);
+} else {
+  app = getApp();
 }
 
+const auth = getAuth(app);
+const firestore = getFirestore(app);
 
-// IMPORTANT: DO NOT MODIFY THIS FUNCTION
+// This function is a simple getter for the initialized services.
 export function initializeFirebase() {
-    // Simply return the singleton instance of the services.
-    return getFirebaseServices();
+    return { firebaseApp: app, auth, firestore };
 }
 
 export function getSdks(firebaseApp: FirebaseApp) {

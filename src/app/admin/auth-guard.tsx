@@ -1,7 +1,8 @@
 
 'use client';
 
-import { useUser, useAdmin } from '@/firebase';
+import { useAdmin } from '@/firebase/auth/use-admin';
+import { useUser } from '@/firebase/provider';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, type ReactNode } from 'react';
 
@@ -9,7 +10,7 @@ import AdminLoginPage from './page';
 import { AnimatedGdgLogo } from '@/components/shared/animated-gdg-logo';
 import { ShieldAlert, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/firebase';
+import { useAuth } from '@/firebase/provider';
 import { signOut } from 'firebase/auth';
 
 function LoadingScreen() {
