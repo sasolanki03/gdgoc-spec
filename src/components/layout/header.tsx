@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -25,7 +24,7 @@ const navItems: NavItem[] = [
 
 function SiteLogo() {
     const firestore = useFirestore();
-    const settingsRef = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'branding') : null, [firestore]);
+    const settingsRef = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'site') : null, [firestore]);
     const { data: settingsData, isLoading } = useDoc<{logoUrl: string}>(settingsRef);
   
     if (isLoading) {
@@ -49,6 +48,14 @@ function SiteLogo() {
 
 export function Header() {
   const pathname = usePathname();
+
+  const handleJoinClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (pathname === '/') {
+        e.preventDefault();
+        document.getElementById('newsletter')?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-5 md:px-20 flex h-16 items-center">
@@ -75,7 +82,7 @@ export function Header() {
 
         <div className="flex items-center justify-end gap-4">
           <Button asChild variant="default" className="hidden sm:flex bg-google-blue hover:bg-google-blue/90">
-            <Link href="/#newsletter">Join Community</Link>
+            <a href="/#newsletter" onClick={handleJoinClick}>Join Community</a>
           </Button>
           
           <Sheet>

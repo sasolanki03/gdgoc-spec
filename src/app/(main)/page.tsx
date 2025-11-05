@@ -1,4 +1,3 @@
-
 'use client';
 
 import Image from 'next/image';
@@ -97,6 +96,11 @@ export default function HomePage() {
       .slice(0, 3);
   }, [allEvents]);
   
+  const handleJoinClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    document.getElementById('newsletter')?.scrollIntoView({ behavior: 'smooth' });
+  };
+  
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
@@ -115,7 +119,7 @@ export default function HomePage() {
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
                 <Button asChild size="lg" className="text-lg bg-primary hover:bg-primary/90">
-                    <Link href="/#newsletter">Join Community</Link>
+                    <a href="/#newsletter" onClick={handleJoinClick}>Join Community</a>
                 </Button>
                 <Button asChild size="lg" variant="outline" className="text-lg">
                     <Link href="/events">Upcoming Events</Link>
@@ -240,7 +244,7 @@ export default function HomePage() {
       </section>
 
       {/* Newsletter Section */}
-      <section id="newsletter" className="py-10 md:py-12 bg-card border-t">
+      <section id="newsletter" className="py-10 md:py-12 bg-card border-t scroll-mt-20">
         <div className="container max-w-4xl text-center mx-auto px-5">
           <div className="space-y-6">
             <h2 className="text-3xl md:text-4xl font-bold font-headline">Stay in the Loop!</h2>
