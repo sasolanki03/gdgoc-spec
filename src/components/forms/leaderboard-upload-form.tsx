@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -20,13 +19,13 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import type { LeaderboardEntry, Event as EventType } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { DialogFooter } from '../ui/dialog';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_FILE_TYPES = ['text/csv'];
@@ -88,7 +87,7 @@ export function LeaderboardUploadForm({ onSuccess, eventId }: LeaderboardUploadF
                 const missingColumns = requiredColumns.filter(col => !headers.includes(col));
 
                 if (missingColumns.length > 0) {
-                    setError(`The CSV file is missing the following required columns: ${'${missingColumns.join(', ')}'}.`);
+                    setError(`The CSV file is missing the following required columns: ${missingColumns.join(', ')}.`);
                     form.setValue('file', null);
                     setIsParsing(false);
                     return;
@@ -98,7 +97,7 @@ export function LeaderboardUploadForm({ onSuccess, eventId }: LeaderboardUploadF
                 setIsParsing(false);
             },
             error: (err) => {
-                setError(`Error parsing CSV file: ${'${err.message}'}`);
+                setError(`Error parsing CSV file: ${err.message}`);
                 form.setValue('file', null);
                 setIsParsing(false);
             }
@@ -138,7 +137,7 @@ export function LeaderboardUploadForm({ onSuccess, eventId }: LeaderboardUploadF
                 toast({
                     variant: 'destructive',
                     title: 'Invalid Date',
-                    description: `Could not parse date for ${'${item.studentName}'}: ${'${item.completionTime}'}. Please use YYYY-MM-DD format.`
+                    description: `Could not parse date for ${item.studentName}: ${item.completionTime}. Please use YYYY-MM-DD format.`
                 })
                 throw new Error('Invalid date format found');
             }
@@ -161,85 +160,84 @@ export function LeaderboardUploadForm({ onSuccess, eventId }: LeaderboardUploadF
   };
 
   return (
-    <div className="flex flex-col gap-4">
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
-                
-                <FormField
-                    control={form.control}
-                    name="file"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>CSV File</FormLabel>
-                        <FormControl>
-                            <Input 
-                                type="file" 
-                                accept=".csv" 
-                                onChange={(e) => {
-                                    field.onChange(e.target.files);
-                                    handleFileChange(e);
-                                }}
-                            />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
-            
-                <a 
-                    href={createSampleCsv()} 
-                    download="sample-leaderboard.csv"
-                    className={cn(buttonVariants({ variant: 'link' }), 'self-start p-0 h-auto')}
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
+        <div className="px-1 space-y-4">
+            <FormField
+                control={form.control}
+                name="file"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>CSV File</FormLabel>
+                    <FormControl>
+                        <Input 
+                            type="file" 
+                            accept=".csv" 
+                            onChange={(e) => {
+                                field.onChange(e.target.files);
+                                handleFileChange(e);
+                            }}
+                        />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+            />
+        
+            <a 
+                href={createSampleCsv()} 
+                download="sample-leaderboard.csv"
+                className={cn(buttonVariants({ variant: 'link' }), 'self-start p-0 h-auto')}
+            >
+                <FileDown className="mr-2 h-4 w-4" />
+                Download Sample CSV
+            </a>
+
+            {error && <p className="text-sm text-destructive">{error}</p>}
+        </div>
+
+        <Card className={cn('flex-1 flex flex-col', { 'hidden': parsedData.length === 0 && !isParsing })}>
+            <CardHeader>
+                <CardTitle>Data Preview</CardTitle>
+                <CardDescription>
+                    {isParsing ? 'Parsing file...' : `Found ${parsedData.length} records. Please verify the data before uploading.`}
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1 overflow-hidden p-0">
+                <ScrollArea className="h-72">
+                    <Table>
+                        <TableHeader className="sticky top-0 bg-card">
+                            <TableRow>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Profile URL</TableHead>
+                                <TableHead>Completed</TableHead>
+                                <TableHead>Completion Date</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                        {parsedData.map((row, index) => (
+                            <TableRow key={index}>
+                                <TableCell>{row.studentName}</TableCell>
+                                <TableCell className="max-w-xs truncate">{row.profileUrl}</TableCell>
+                                <TableCell>{row.campaignCompleted}</TableCell>
+                                <TableCell>{row.completionTime}</TableCell>
+                            </TableRow>
+                        ))}
+                        </TableBody>
+                    </Table>
+                </ScrollArea>
+            </CardContent>
+        </Card>
+        <DialogFooter className="px-1">
+            <Button
+                type="submit"
+                disabled={isParsing || parsedData.length === 0 || !!error}
+                className="w-full"
                 >
-                    <FileDown className="mr-2 h-4 w-4" />
-                    Download Sample CSV
-                </a>
-
-                {error && <p className="text-sm text-destructive">{error}</p>}
-
-                <Card className={cn('flex-1 flex flex-col', { 'hidden': parsedData.length === 0 && !isParsing })}>
-                    <CardHeader>
-                        <CardTitle>Data Preview</CardTitle>
-                        <CardDescription>
-                            {isParsing ? 'Parsing file...' : `Found ${'${parsedData.length}'} records. Please verify the data before uploading.`}
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex-1 overflow-hidden p-0">
-                        <ScrollArea className="h-72">
-                            <Table>
-                                <TableHeader className="sticky top-0 bg-card">
-                                    <TableRow>
-                                        <TableHead>Name</TableHead>
-                                        <TableHead>Profile URL</TableHead>
-                                        <TableHead>Completed</TableHead>
-                                        <TableHead>Completion Date</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                {parsedData.map((row, index) => (
-                                    <TableRow key={index}>
-                                        <TableCell>{row.studentName}</TableCell>
-                                        <TableCell className="max-w-xs truncate">{row.profileUrl}</TableCell>
-                                        <TableCell>{row.campaignCompleted}</TableCell>
-                                        <TableCell>{row.completionTime}</TableCell>
-                                    </TableRow>
-                                ))}
-                                </TableBody>
-                            </Table>
-                        </ScrollArea>
-                    </CardContent>
-                </Card>
-                <CardFooter className="p-0 pt-4">
-                    <Button
-                        type="submit"
-                        disabled={isParsing || parsedData.length === 0 || !!error || !form.formState.isValid}
-                        className="w-full"
-                        >
-                        Upload {parsedData.length > 0 ? parsedData.length : ''} entries
-                    </Button>
-                </CardFooter>
-            </form>
-        </Form>
-    </div>
+                Upload {parsedData.length > 0 ? parsedData.length : ''} entries
+            </Button>
+        </DialogFooter>
+      </form>
+    </Form>
   );
 }
