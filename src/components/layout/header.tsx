@@ -34,7 +34,7 @@ function SiteLogo() {
     setHasMounted(true);
   }, []);
 
-  if (!hasMounted) {
+  if (!hasMounted || isLoading) {
     return <Skeleton className="h-10 w-32" />;
   }
   
@@ -57,6 +57,11 @@ function SiteLogo() {
 export function Header() {
   const pathname = usePathname();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   const handleJoinClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (pathname === '/') {
@@ -84,7 +89,7 @@ export function Header() {
                 href={item.href}
                 className={cn(
                   'flex items-center text-lg font-medium transition-colors hover:text-primary',
-                  pathname === item.href ? 'text-primary font-semibold' : 'text-muted-foreground'
+                  hasMounted && pathname === item.href ? 'text-primary font-semibold' : 'text-muted-foreground'
                 )}
               >
                 {item.title}
