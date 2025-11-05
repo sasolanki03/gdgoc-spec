@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -11,14 +10,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import type { LeaderboardEntry } from '@/lib/types';
+import type { LeaderboardEntry, Event as EventType } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, where } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const getRankColor = (rank: number) => {
   if (rank === 1) return 'text-yellow-400';
@@ -29,18 +29,29 @@ const getRankColor = (rank: number) => {
 
 export default function LeaderboardPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedEventId, setSelectedEventId] = useState<string>('all');
   const firestore = useFirestore();
   
+  const eventsQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'events'), orderBy('startDate', 'desc'));
+  }, [firestore]);
+
+  const { data: events, loading: loadingEvents } = useCollection<EventType>(eventsQuery);
+
   const leaderboardQuery = useMemo(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'leaderboard'), orderBy('completionTime', 'asc'));
-  }, [firestore]);
+    let q = query(collection(firestore, 'leaderboard'), orderBy('completionTime', 'asc'));
+    if (selectedEventId !== 'all') {
+      q = query(q, where('eventId', '==', selectedEventId));
+    }
+    return q;
+  }, [firestore, selectedEventId]);
 
   const { data: leaderboardData, loading } = useCollection<Omit<LeaderboardEntry, 'rank'>>(leaderboardQuery);
 
   const sortedData = useMemo(() => {
     if (!leaderboardData) return [];
-    // The data is already sorted by the query, so we just add the rank
     return leaderboardData.map((student, index) => ({ ...student, rank: index + 1 }));
   }, [leaderboardData]);
 
@@ -55,7 +66,7 @@ export default function LeaderboardPage() {
       <div>
         <PageHeader
           title="Student Leaderboard"
-          description="Track your progress and see how you stack up against your peers in the Google Cloud Career Practitioner campaign."
+          description="Track your progress and see how you stack up against your peers in our events and campaigns."
         />
         <div className="container mx-auto px-5 md:px-20 py-10">
           <div className="mb-8 flex flex-col md:flex-row gap-4 items-center">
@@ -69,6 +80,21 @@ export default function LeaderboardPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
+             <Select onValueChange={setSelectedEventId} defaultValue="all">
+              <SelectTrigger className="w-full md:w-[280px]">
+                <SelectValue placeholder="Select an event" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Events</SelectItem>
+                {loadingEvents ? (
+                  <SelectItem value="loading" disabled>Loading events...</SelectItem>
+                ) : (
+                  events?.map(event => (
+                    <SelectItem key={event.id} value={event.id}>{event.title}</SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
           </div>
 
           <Card>
@@ -168,7 +194,7 @@ export default function LeaderboardPage() {
                           <TableCell colSpan={5} className="text-center py-16">
                             <h3 className="text-2xl font-bold font-headline">No Students Found</h3>
                             <p className="text-muted-foreground mt-2">
-                                {searchTerm ? "Try adjusting your search." : "The leaderboard is currently empty."}
+                                {searchTerm ? "Try adjusting your search." : "The leaderboard is currently empty for this event."}
                             </p>
                           </TableCell>
                       </TableRow>
@@ -183,7 +209,3 @@ export default function LeaderboardPage() {
     </TooltipProvider>
   );
 }
-
-    
-
-    

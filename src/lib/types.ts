@@ -28,7 +28,8 @@ export type Event = {
   id: string;
   title: string;
   description: string;
-  date: Timestamp;
+  startDate: Timestamp;
+  endDate: Timestamp;
   time: string;
   venue: string;
   imageUrl: string;
@@ -49,6 +50,8 @@ export type LeaderboardEntry = {
   campaignCompleted: boolean;
   completionTime: Timestamp;
   profileUrl: string;
+  eventId: string;
+  eventName: string;
 };
 
 export type EventRegistration = {
@@ -73,3 +76,4 @@ export type ContactMessage = {
     createdAt: Timestamp;
     isRead: boolean;
 };
+

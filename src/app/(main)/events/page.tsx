@@ -35,7 +35,7 @@ export default function EventsPage() {
 
   const eventsQuery = useMemo(() => {
       if (!firestore) return null;
-      return query(collection(firestore, 'events'), orderBy('date', 'desc'));
+      return query(collection(firestore, 'events'), orderBy('startDate', 'desc'));
   }, [firestore]);
 
   const { data: events, loading } = useCollection<EventType>(eventsQuery);

@@ -41,7 +41,8 @@ const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/web
 const formSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters.'),
   description: z.string().min(20, 'Description must be at least 20 characters.'),
-  date: z.date({ required_error: 'A date is required.' }),
+  startDate: z.date({ required_error: 'A start date is required.' }),
+  endDate: z.date({ required_error: 'An end date is required.' }),
   time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]\s(AM|PM)$/i, 'Invalid time format (e.g., 10:00 AM)'),
   venue: z.string().min(3, 'Venue is required.'),
   status: z.enum(['Upcoming', 'Past', 'Continue']),
@@ -57,6 +58,9 @@ const formSchema = z.object({
         if (!value || value.length === 0) return false;
         return ACCEPTED_IMAGE_TYPES.includes(value?.[0]?.type);
     }, ".jpg, .jpeg, .png and .webp files are accepted.")
+}).refine(data => data.endDate >= data.startDate, {
+  message: "End date cannot be before start date",
+  path: ["endDate"],
 });
 
 interface EventFormProps {
@@ -82,7 +86,8 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
     defaultValues: {
       title: event?.title || '',
       description: event?.description || '',
-      date: event ? event.date.toDate() : undefined,
+      startDate: event ? event.startDate.toDate() : undefined,
+      endDate: event ? event.endDate.toDate() : undefined,
       time: event?.time || '',
       venue: event?.venue || '',
       status: event?.status || 'Upcoming',
@@ -124,7 +129,8 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
 
         const eventData = {
             ...values,
-            date: Timestamp.fromDate(values.date),
+            startDate: Timestamp.fromDate(values.startDate),
+            endDate: Timestamp.fromDate(values.endDate),
             imageUrl: imageDataUrl,
         };
 
@@ -208,10 +214,10 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
         <div className="grid grid-cols-2 gap-4">
             <FormField
               control={form.control}
-              name="date"
+              name="startDate"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Date</FormLabel>
+                  <FormLabel>Start Date</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -244,7 +250,48 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
                 </FormItem>
               )}
             />
-            <FormField
+             <FormField
+              control={form.control}
+              name="endDate"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>End Date</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-full pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+             <FormField
               control={form.control}
               name="time"
               render={({ field }) => (
@@ -257,21 +304,20 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="venue"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Venue</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., Auditorium" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
         </div>
-
-        <FormField
-          control={form.control}
-          name="venue"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Venue</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g., Auditorium" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         
         <div className="grid grid-cols-2 gap-4">
             <FormField

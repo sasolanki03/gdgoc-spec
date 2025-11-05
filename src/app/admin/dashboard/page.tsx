@@ -116,7 +116,7 @@ export default function Dashboard() {
           <CardContent>
              {loadingLeaderboard ? <Skeleton className="h-8 w-32 mt-1" /> : <div className="text-2xl font-bold truncate">{topStudent?.studentName || 'N/A'}</div>}
             <p className="text-xs text-muted-foreground">
-              From GCCP Leaderboard
+              From all leaderboards
             </p>
           </CardContent>
         </Card>

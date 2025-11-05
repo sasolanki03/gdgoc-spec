@@ -43,13 +43,21 @@
         },
         "avatar": {
           "type": "string"
+        },
+        "eventId": {
+          "type": "string"
+        },
+        "eventName": {
+          "type": "string"
         }
       },
       "required": [
         "studentName",
         "profileUrl",
         "campaignCompleted",
-        "completionTime"
+        "completionTime",
+        "eventId",
+        "eventName"
       ]
     },
     "team_member": {
@@ -122,14 +130,15 @@
       "properties": {
         "title": { "type": "string" },
         "description": { "type": "string" },
-        "date": { "type": "string", "format": "date-time" },
+        "startDate": { "type": "string", "format": "date-time" },
+        "endDate": { "type": "string", "format": "date-time" },
         "time": { "type": "string" },
         "venue": { "type": "string" },
         "imageUrl": { "type": "string", "format": "uri" },
         "type": { "type": "string" },
         "status": { "type": "string", "enum": ["Upcoming", "Past", "Continue"] }
       },
-      "required": ["title", "description", "date", "time", "venue", "status"]
+      "required": ["title", "description", "startDate", "endDate", "time", "venue", "status"]
     },
     "event_registration": {
       "title": "Event Registration",

@@ -208,6 +208,7 @@ export default function AdminLeaderboardPage() {
                 <TableRow>
                     <TableHead className="w-16 text-center">Rank</TableHead>
                     <TableHead>Student</TableHead>
+                    <TableHead>Event</TableHead>
                     <TableHead className="text-center">Campaign Completed</TableHead>
                     <TableHead className="text-center">Completion Date</TableHead>
                     <TableHead>
@@ -226,6 +227,7 @@ export default function AdminLeaderboardPage() {
                                     <Skeleton className="h-5 w-24" />
                                 </div>
                             </TableCell>
+                             <TableCell><Skeleton className="h-5 w-32" /></TableCell>
                             <TableCell className="text-center"><Skeleton className="h-6 w-6 rounded-full mx-auto" /></TableCell>
                             <TableCell className="text-center"><Skeleton className="h-5 w-40 mx-auto" /></TableCell>
                             <TableCell>
@@ -247,6 +249,7 @@ export default function AdminLeaderboardPage() {
                                 <div className="font-medium">{entry.studentName}</div>
                                 </div>
                             </TableCell>
+                             <TableCell className="font-medium">{entry.eventName}</TableCell>
                             <TableCell className="text-center">
                                 {entry.campaignCompleted ? (
                                     <CheckCircle className="h-5 w-5 text-green-500 mx-auto" />
@@ -338,7 +341,3 @@ export default function AdminLeaderboardPage() {
       </>
     );
 }
-
-    
-
-    

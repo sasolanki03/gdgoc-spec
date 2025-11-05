@@ -67,7 +67,7 @@ export default function HomePage() {
     if (!firestore) return null;
     return query(
       collection(firestore, 'events'),
-      orderBy('date', 'asc'),
+      orderBy('startDate', 'asc'),
     );
   }, [firestore]);
 

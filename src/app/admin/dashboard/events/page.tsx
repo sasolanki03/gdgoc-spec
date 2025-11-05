@@ -63,7 +63,7 @@ export default function AdminEventsPage() {
     const firestore = useFirestore();
     const eventsQuery = useMemo(() => {
         if (!firestore) return null;
-        return query(collection(firestore, 'events'), orderBy('date', 'desc'));
+        return query(collection(firestore, 'events'), orderBy('startDate', 'desc'));
     }, [firestore]);
 
     const { data: events, loading, error } = useCollection<Event>(eventsQuery);
@@ -177,7 +177,7 @@ export default function AdminEventsPage() {
                       Venue
                     </TableHead>
                     <TableHead className="hidden md:table-cell">
-                      Date
+                      Start Date
                     </TableHead>
                     <TableHead>
                       <span className="sr-only">Actions</span>
@@ -225,7 +225,7 @@ export default function AdminEventsPage() {
                                 </Badge>
                             </TableCell>
                             <TableCell className="hidden md:table-cell">{event.venue}</TableCell>
-                            <TableCell className="hidden md:table-cell">{format(event.date.toDate(), 'PPP')}</TableCell>
+                            <TableCell className="hidden md:table-cell">{format(event.startDate.toDate(), 'PPP')}</TableCell>
                             <TableCell>
                                 <AlertDialog>
                                     <DropdownMenu>

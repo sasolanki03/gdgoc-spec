@@ -1,12 +1,13 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import Papa from 'papaparse';
-import { Timestamp } from 'firebase/firestore';
+import { collection, query, orderBy, Timestamp } from 'firebase/firestore';
+import { useCollection, useFirestore } from '@/firebase';
 import { FileDown, Upload } from 'lucide-react';
 
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -23,8 +24,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import type { LeaderboardEntry } from '@/lib/types';
+import type { LeaderboardEntry, Event as EventType } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_FILE_TYPES = ['text/csv'];
@@ -37,6 +39,7 @@ const formSchema = z.object({
       (files) => ACCEPTED_FILE_TYPES.includes(files?.[0]?.type),
       ".csv files are accepted."
     ),
+  eventId: z.string().min(1, "Please select an event."),
 });
 
 type CsvData = {
@@ -55,6 +58,13 @@ export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps)
   const [parsedData, setParsedData] = useState<CsvData[]>([]);
   const [isParsing, setIsParsing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const firestore = useFirestore();
+  const eventsQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'events'), orderBy('startDate', 'desc'));
+  }, [firestore]);
+  const { data: events, loading: loadingEvents } = useCollection<EventType>(eventsQuery);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -79,7 +89,7 @@ export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps)
 
                 if (missingColumns.length > 0) {
                     setError(`The CSV file is missing the following required columns: ${missingColumns.join(', ')}.`);
-                    form.reset(); // Reset the form to clear the invalid file
+                    form.setValue('file', null);
                     setIsParsing(false);
                     return;
                 }
@@ -89,7 +99,7 @@ export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps)
             },
             error: (err) => {
                 setError(`Error parsing CSV file: ${err.message}`);
-                form.reset();
+                form.setValue('file', null);
                 setIsParsing(false);
             }
         });
@@ -105,14 +115,23 @@ export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps)
     return `data:text/csv;charset=utf-8,${encodeURIComponent(csvContent)}`;
   };
   
-  function handleFormSubmit() {
+  function handleFormSubmit(values: z.infer<typeof formSchema>) {
     if (isParsing || parsedData.length === 0 || !!error) {
         return;
     }
+    const selectedEvent = events?.find(e => e.id === values.eventId);
+    if (!selectedEvent) {
+        toast({
+            variant: 'destructive',
+            title: 'Event not found',
+            description: 'The selected event could not be found. Please try again.'
+        });
+        return;
+    }
+
     try {
         const entriesToUpload = parsedData.map(item => {
             const dateParts = item.completionTime.split('-').map(Number);
-            // new Date(year, monthIndex, day) - month is 0-indexed
             const completionTime = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
 
             if (isNaN(completionTime.getTime())) {
@@ -128,14 +147,15 @@ export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps)
                 profileUrl: item.profileUrl,
                 campaignCompleted: item.campaignCompleted.toLowerCase() === 'yes',
                 completionTime: Timestamp.fromDate(completionTime),
-                avatar: '' // will be generated on the server
+                eventId: selectedEvent.id,
+                eventName: selectedEvent.title,
+                avatar: ''
             }
         });
 
         onSuccess(entriesToUpload);
 
     } catch (e: any) {
-        // Errors are toasted inside the map, so just need to stop execution.
         console.error(e.message);
     }
   };
@@ -143,7 +163,30 @@ export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps)
   return (
     <div className="flex flex-col gap-4">
         <Form {...form}>
-            <form onSubmit={(e) => { e.preventDefault(); form.handleSubmit(handleFormSubmit)();}} className="space-y-4">
+            <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
+                <FormField
+                    control={form.control}
+                    name="eventId"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Target Event</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={loadingEvents}>
+                            <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select an event for the leaderboard" />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {loadingEvents && <SelectItem value="loading" disabled>Loading events...</SelectItem>}
+                                {events?.map(event => (
+                                    <SelectItem key={event.id} value={event.id}>{event.title}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
                 <FormField
                     control={form.control}
                     name="file"
@@ -207,22 +250,18 @@ export function LeaderboardUploadForm({ onSuccess }: LeaderboardUploadFormProps)
                             </Table>
                         </ScrollArea>
                     </CardContent>
-                    <CardFooter>
-                        <Button
-                            type="submit"
-                            disabled={isParsing || parsedData.length === 0 || !!error}
-                            className="w-full mt-4"
-                            >
-                            Upload {parsedData.length} entries
-                        </Button>
-                    </CardFooter>
                 </Card>
+                <CardFooter className="p-0 pt-4">
+                    <Button
+                        type="submit"
+                        disabled={isParsing || parsedData.length === 0 || !!error || !form.formState.isValid}
+                        className="w-full"
+                        >
+                        Upload {parsedData.length > 0 ? parsedData.length : ''} entries
+                    </Button>
+                </CardFooter>
             </form>
         </Form>
     </div>
   );
 }
-
-    
-
-    

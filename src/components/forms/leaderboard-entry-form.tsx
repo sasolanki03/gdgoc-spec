@@ -1,13 +1,14 @@
 
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { format } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
-import { Timestamp } from 'firebase/firestore';
+import { collection, query, orderBy, Timestamp } from 'firebase/firestore';
+import { useCollection, useFirestore } from '@/firebase';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -23,8 +24,9 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import type { LeaderboardEntry } from '@/lib/types';
+import type { LeaderboardEntry, Event as EventType } from '@/lib/types';
 
 
 const formSchema = z.object({
@@ -34,6 +36,7 @@ const formSchema = z.object({
   completionTime: z.date({
     required_error: "A completion date is required.",
   }),
+  eventId: z.string().min(1, "Please select an event."),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -44,7 +47,13 @@ interface LeaderboardEntryFormProps {
 }
 
 export function LeaderboardEntryForm({ entry, onSuccess }: LeaderboardEntryFormProps) {
-  
+  const firestore = useFirestore();
+  const eventsQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'events'), orderBy('startDate', 'desc'));
+  }, [firestore]);
+  const { data: events, loading: loadingEvents } = useCollection<EventType>(eventsQuery);
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     mode: 'onChange',
@@ -53,13 +62,18 @@ export function LeaderboardEntryForm({ entry, onSuccess }: LeaderboardEntryFormP
         profileUrl: entry?.profileUrl || '',
         campaignCompleted: entry?.campaignCompleted || false,
         completionTime: entry?.completionTime ? entry.completionTime.toDate() : new Date(),
+        eventId: entry?.eventId || undefined,
     },
   });
 
   const onSubmit = async (values: FormValues) => {
+    const selectedEvent = events?.find(e => e.id === values.eventId);
+    if (!selectedEvent) return;
+
     const dataToSave = {
         ...values,
         completionTime: Timestamp.fromDate(values.completionTime),
+        eventName: selectedEvent.title,
     };
     onSuccess(dataToSave);
   };
@@ -67,7 +81,29 @@ export function LeaderboardEntryForm({ entry, onSuccess }: LeaderboardEntryFormP
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto p-1">
-
+         <FormField
+            control={form.control}
+            name="eventId"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>Event</FormLabel>
+                 <Select onValueChange={field.onChange} defaultValue={field.value} disabled={loadingEvents}>
+                    <FormControl>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select an event for the leaderboard" />
+                        </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                        {loadingEvents && <SelectItem value="loading" disabled>Loading events...</SelectItem>}
+                        {events?.map(event => (
+                            <SelectItem key={event.id} value={event.id}>{event.title}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                <FormMessage />
+                </FormItem>
+            )}
+        />
         <FormField
             control={form.control}
             name="studentName"

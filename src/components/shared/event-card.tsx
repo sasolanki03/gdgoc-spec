@@ -32,6 +32,17 @@ export function EventCard({ event }: EventCardProps) {
         }
       };
 
+    const formattedDate = () => {
+        if (!event.startDate || !event.endDate) return '';
+        const start = event.startDate.toDate();
+        const end = event.endDate.toDate();
+
+        if (format(start, 'PPP') === format(end, 'PPP')) {
+            return format(start, 'PPP');
+        }
+        return `${format(start, 'PP')} - ${format(end, 'PP')}`;
+    }
+
   return (
     <Card className="overflow-hidden flex flex-col h-full transition-transform transform hover:-translate-y-2 hover:shadow-xl">
       <CardHeader className="p-0">
@@ -65,7 +76,7 @@ export function EventCard({ event }: EventCardProps) {
         <div className="space-y-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            <span>{event.date ? format(event.date.toDate(), 'PP') : ''} at {event.time}</span>
+            <span>{formattedDate()} at {event.time}</span>
           </div>
           <div className="flex items-center gap-2">
             <MapPin className="h-4 w-4" />
