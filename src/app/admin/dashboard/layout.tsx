@@ -21,7 +21,6 @@ import { useUser, useAuth, useFirestore } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { signOut } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
 
 import {
   SidebarProvider,
@@ -100,15 +99,17 @@ export default function DashboardLayout({
   const router = useRouter();
 
   useEffect(() => {
+    // This is the sole guard for the dashboard.
+    // If auth state is determined and there's no user, redirect to login.
     if (!isUserLoading && !user) {
-      router.push('/admin');
+      router.replace('/admin');
     }
   }, [user, isUserLoading, router]);
 
   const handleLogout = async () => {
     if (!auth) return;
     await signOut(auth);
-    router.push('/admin');
+    // After signing out, the effect above will trigger the redirect to /admin
   };
   
   const isLoading = isUserLoading || isAdminLoading;
@@ -124,8 +125,15 @@ export default function DashboardLayout({
     );
   }
 
-  if (!isAdmin) {
+  // After loading, if the user is authenticated but not an admin, show the denial page.
+  if (user && !isAdmin) {
     return <AdminNotAuthorized />;
+  }
+  
+  // If there's no user, the useEffect will have already started the redirect.
+  // We can render null here to prevent a flash of the dashboard content.
+  if (!user) {
+      return null;
   }
 
   return (

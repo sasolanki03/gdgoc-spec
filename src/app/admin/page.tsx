@@ -20,13 +20,36 @@ export default function AdminLoginPage() {
     const { user, isUserLoading } = useUser();
     const router = useRouter();
     const { toast } = useToast();
-    const [isSigningIn, setIsSigningIn] = useState(false);
+    const [isSigningIn, setIsSigningIn] = useState(true); // Start with true to handle initial auth check
 
     useEffect(() => {
+        // This effect now only handles the redirect *after* a successful login and the user object is confirmed.
         if (!isUserLoading && user) {
           router.push('/admin/dashboard');
+        } else if (!isUserLoading && !user) {
+            // If the initial check completes and there's no user, stop the loading spinner.
+            setIsSigningIn(false);
         }
     }, [user, isUserLoading, router]);
+
+    // This effect handles the result of a Google sign-in redirect
+    useEffect(() => {
+        if (auth && !user && !isUserLoading) {
+            getRedirectResult(auth)
+                .then((result) => {
+                    if (result) {
+                        // User has just signed in via redirect. The user object will be updated by onAuthStateChanged,
+                        // and the effect above will handle the redirect to the dashboard.
+                        setIsSigningIn(true);
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error with redirect result:", error);
+                    toast({ variant: 'destructive', title: 'Login Failed', description: error.message });
+                    setIsSigningIn(false);
+                });
+        }
+    }, [auth, user, isUserLoading, toast]);
 
     const handleGoogleSignIn = async () => {
         if (!auth) return;
@@ -34,6 +57,7 @@ export default function AdminLoginPage() {
         const provider = new GoogleAuthProvider();
         try {
             await signInWithRedirect(auth, provider);
+            // After redirect, the effect handling getRedirectResult will take over.
         } catch (error: any) {
             console.error("Google sign-in error:", error);
             toast({ variant: 'destructive', title: 'Login Failed', description: error.message });
@@ -52,7 +76,7 @@ export default function AdminLoginPage() {
                 await createUserWithEmailAndPassword(auth, credentials.email, credentials.password);
             }
             // onAuthStateChanged in useUser hook will handle user state update,
-            // and the useEffect above will handle the redirect.
+            // and the first useEffect will handle the redirect.
         } catch (error: any) {
              toast({
                 variant: 'destructive',
@@ -63,7 +87,7 @@ export default function AdminLoginPage() {
         }
     }
     
-    if (isUserLoading) {
+    if (isSigningIn || isUserLoading) {
         return (
              <div className="flex h-screen w-screen items-center justify-center bg-muted/40">
                 <AnimatedGdgLogo />
@@ -71,28 +95,8 @@ export default function AdminLoginPage() {
         );
     }
     
-    // This effect handles the result of a Google sign-in redirect
-    useEffect(() => {
-        if (auth && !user && !isUserLoading) {
-            getRedirectResult(auth)
-                .catch((error) => {
-                    console.error("Error with redirect result:", error);
-                    toast({ variant: 'destructive', title: 'Login Failed', description: error.message });
-                });
-        }
-    }, [auth, user, isUserLoading, toast]);
-
-    // If a user is already logged in, the main useEffect will redirect them.
-    // We only show the login form if there is no user and we are not in the middle of an auth state check.
-    if (user) {
-         return (
-             <div className="flex h-screen w-screen items-center justify-center bg-muted/40">
-                <AnimatedGdgLogo />
-                <p className="ml-4">Redirecting to dashboard...</p>
-             </div>
-        );
-    }
-
+    // If we're not loading and there's no user, show the login form.
+    // If there is a user, the useEffect will have already triggered the redirect.
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
       <Card className="w-full max-w-sm">
