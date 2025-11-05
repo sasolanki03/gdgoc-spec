@@ -54,8 +54,6 @@ import {
   import type { LeaderboardEntry, Event as EventType } from '@/lib/types';
   import { useToast } from '@/hooks/use-toast';
   import { Skeleton } from '@/components/ui/skeleton';
-  import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-  import { PlaceHolderImages } from '@/lib/placeholder-images';
   import { LeaderboardEntryForm } from '@/components/forms/leaderboard-entry-form';
   import { LeaderboardUploadForm } from '@/components/forms/leaderboard-upload-form';
   import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -482,5 +480,3 @@ export default function AdminLeaderboardPage() {
       </>
     );
 }
-
-    
