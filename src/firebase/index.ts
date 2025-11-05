@@ -13,20 +13,8 @@ let firestore: Firestore;
 // This function ensures Firebase is initialized only once.
 function getFirebaseServices() {
   if (!getApps().length) {
-    try {
-      // Important! In a deployed Firebase App Hosting environment, initializeApp()
-      // without arguments will automatically use the backend's service account credentials.
-      firebaseApp = initializeApp();
-    } catch (e) {
-      // During local development, fallback to the client-side config.
-      if (process.env.NODE_ENV !== "production") {
-        firebaseApp = initializeApp(firebaseConfig);
-      } else {
-        console.error('Automatic Firebase initialization failed in production.', e);
-        // In a real production scenario, you might want to handle this more gracefully.
-        throw e;
-      }
-    }
+    // For environments like Vercel, we must provide the config explicitly.
+    firebaseApp = initializeApp(firebaseConfig);
     auth = getAuth(firebaseApp);
     firestore = getFirestore(firebaseApp);
   } else {
@@ -60,6 +48,5 @@ export * from './non-blocking-updates';
 export * from './non-blocking-login';
 export * from './errors';
 export * from './error-emitter';
-export * from './auth/use-user';
 export * from './auth/use-admin';
 export { useMemoFirebase } from './provider';
