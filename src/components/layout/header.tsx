@@ -25,33 +25,33 @@ const navItems: NavItem[] = [
 ];
 
 function SiteLogo() {
-    const firestore = useFirestore();
-    const settingsRef = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'site') : null, [firestore]);
-    const { data: settingsData, isLoading } = useDoc<{logoUrl: string}>(settingsRef);
-    
-    const [hasMounted, setHasMounted] = useState(false);
-    useEffect(() => {
-        setHasMounted(true);
-    }, []);
+  const firestore = useFirestore();
+  const settingsRef = useMemoFirebase(() => (firestore ? doc(firestore, 'settings', 'site') : null), [firestore]);
+  const { data: settingsData, isLoading } = useDoc<{ logoUrl: string }>(settingsRef);
+  const [hasMounted, setHasMounted] = useState(false);
 
-    if (!hasMounted || isLoading) {
-        return <Skeleton className="h-10 w-32" />;
-    }
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  if (!hasMounted) {
+    return <Skeleton className="h-10 w-32" />;
+  }
   
-    if (settingsData?.logoUrl) {
-      return (
-        <Image 
-          src={settingsData.logoUrl} 
-          alt="Site Logo"
-          width={128}
-          height={40}
-          className="object-contain h-10 w-auto"
-          priority
-        />
-      );
-    }
+  if (settingsData?.logoUrl) {
+    return (
+      <Image 
+        src={settingsData.logoUrl} 
+        alt="Site Logo"
+        width={128}
+        height={40}
+        className="object-contain h-10 w-auto"
+        priority
+      />
+    );
+  }
   
-    return <span className="text-xl font-bold sm:inline-block font-headline">GDGoC SPEC</span>;
+  return <span className="text-xl font-bold sm:inline-block font-headline">GDGoC SPEC</span>;
 }
 
 export function Header() {
@@ -78,8 +78,8 @@ export function Header() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'flex items-center text-lg font-medium transition-colors hover:text-foreground/80 sm:text-sm',
-                  pathname === item.href ? 'text-foreground' : 'text-foreground/60'
+                  'flex items-center text-lg font-medium transition-colors hover:text-primary',
+                  pathname === item.href ? 'text-primary font-semibold' : 'text-muted-foreground'
                 )}
               >
                 {item.title}
