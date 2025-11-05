@@ -14,7 +14,7 @@ import type { LeaderboardEntry, Event as EventType } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -36,14 +36,14 @@ export default function LeaderboardPage() {
   
   const firestore = useFirestore();
   
-  const eventsQuery = useMemo(() => {
+  const eventsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'events'), orderBy('startDate', 'desc'));
   }, [firestore]);
 
   const { data: events, loading: loadingEvents } = useCollection<EventType>(eventsQuery);
 
-  const leaderboardQuery = useMemo(() => {
+  const leaderboardQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'leaderboard'));
   }, [firestore]);
@@ -292,5 +292,3 @@ export default function LeaderboardPage() {
     </TooltipProvider>
   );
 }
-
-    

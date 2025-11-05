@@ -3,7 +3,7 @@
 
 import { useState, useMemo } from 'react';
 import { collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy, Timestamp } from 'firebase/firestore';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { PlusCircle, MoreHorizontal, Trash, LucideIcon } from 'lucide-react';
 import * as lucideIcons from 'lucide-react';
 
@@ -57,7 +57,7 @@ import {
 
 export default function AdminStatsPage() {
     const firestore = useFirestore();
-    const statsQuery = useMemo(() => {
+    const statsQuery = useMemoFirebase(() => {
         if (!firestore) return null;
         return query(collection(firestore, 'stats'), orderBy('order', 'asc'));
     }, [firestore]);

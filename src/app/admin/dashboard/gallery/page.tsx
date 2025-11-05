@@ -4,7 +4,7 @@
 import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import { PlusCircle, MoreHorizontal, Trash, Upload } from 'lucide-react';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from 'firebase/firestore';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +19,7 @@ import { GalleryImageForm } from '@/components/forms/gallery-image-form';
 
 export default function AdminGalleryPage() {
     const firestore = useFirestore();
-    const galleryQuery = useMemo(() => {
+    const galleryQuery = useMemoFirebase(() => {
         if (!firestore) return null;
         return query(collection(firestore, 'gallery'), orderBy('order', 'asc'));
     }, [firestore]);

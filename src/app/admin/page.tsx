@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -16,7 +15,7 @@ export default function AdminLoginPage() {
     const { user, loading } = useUser();
     const router = useRouter();
     const { toast } = useToast();
-    const [isSigningIn, setIsSigningIn] = useState(false);
+    const [isSigningIn, setIsSigningIn] = useState(true); // Start as true to handle redirect
 
     useEffect(() => {
         if (!loading && user) {
@@ -26,15 +25,19 @@ export default function AdminLoginPage() {
 
     useEffect(() => {
         const handleRedirectResult = async () => {
-            if (isSigningIn) return; // Prevent loop
+            if (!auth) return;
             try {
                 const result = await getRedirectResult(auth);
                 if (result) {
+                    // User signed in or already signed in.
+                    // The useUser hook will handle the redirect to the dashboard.
                     toast({
                         title: 'Login Successful!',
                         description: 'Redirecting to dashboard...',
                     });
-                    // This will trigger the other useEffect to redirect
+                } else {
+                    // No redirect result, so the user is not signing in.
+                    setIsSigningIn(false);
                 }
             } catch (error: any) {
                 console.error("Authentication Error:", error);
@@ -47,15 +50,18 @@ export default function AdminLoginPage() {
             }
         }
         handleRedirectResult();
-    }, [auth, toast, isSigningIn]);
+    }, [auth, toast, router]);
 
     const handleGoogleSignIn = async () => {
+        if (!auth) return;
         setIsSigningIn(true);
         const provider = new GoogleAuthProvider();
+        // It's safe to call this even if the user is already being redirected.
+        // Firebase handles this gracefully.
         await signInWithRedirect(auth, provider);
     };
     
-    if (loading || user) {
+    if (loading || isSigningIn || user) {
         return (
              <div className="flex h-screen w-screen items-center justify-center bg-muted/40">
                 <AnimatedGdgLogo />

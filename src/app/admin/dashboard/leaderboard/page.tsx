@@ -3,7 +3,7 @@
 
 import { useState, useMemo } from 'react';
 import { collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy, Timestamp, writeBatch, where } from 'firebase/firestore';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { PlusCircle, MoreHorizontal, Trash, CheckCircle, XCircle, Upload, Trophy } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -64,14 +64,14 @@ export default function AdminLeaderboardPage() {
     const firestore = useFirestore();
     const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
     
-    const eventsQuery = useMemo(() => {
+    const eventsQuery = useMemoFirebase(() => {
         if (!firestore) return null;
         return query(collection(firestore, 'events'), orderBy('startDate', 'desc'));
     }, [firestore]);
 
     const { data: events, loading: loadingEvents } = useCollection<EventType>(eventsQuery);
 
-    const leaderboardQuery = useMemo(() => {
+    const leaderboardQuery = useMemoFirebase(() => {
         if (!firestore) return null;
         return query(collection(firestore, 'leaderboard'));
     }, [firestore]);

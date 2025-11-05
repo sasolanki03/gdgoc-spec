@@ -3,7 +3,7 @@
 
 import { useMemo } from 'react';
 import { collection, query, orderBy } from 'firebase/firestore';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import type { EventRegistration } from '@/lib/types';
 import { format } from 'date-fns';
 
@@ -28,7 +28,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminRegistrationsPage() {
     const firestore = useFirestore();
-    const registrationsQuery = useMemo(() => {
+    const registrationsQuery = useMemoFirebase(() => {
         if (!firestore) return null;
         return query(collection(firestore, 'registrations'), orderBy('registeredAt', 'desc'));
     }, [firestore]);

@@ -5,7 +5,7 @@ import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import { PlusCircle, MoreHorizontal, Trash } from 'lucide-react';
 import { collection, updateDoc, deleteDoc, doc, query, orderBy, addDoc } from 'firebase/firestore';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 
 import {
     Table,
@@ -58,7 +58,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminTeamPage() {
     const firestore = useFirestore();
-    const teamQuery = useMemo(() => {
+    const teamQuery = useMemoFirebase(() => {
         if (!firestore) return null;
         return query(collection(firestore, 'teamMembers'), orderBy('name', 'asc'));
     }, [firestore]);
@@ -279,5 +279,3 @@ export default function AdminTeamPage() {
         </>
     );
 }
-
-    

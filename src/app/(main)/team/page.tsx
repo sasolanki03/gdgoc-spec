@@ -3,7 +3,7 @@
 
 import { useMemo } from 'react';
 import { collection } from 'firebase/firestore';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { PageHeader } from '@/components/shared/page-header';
 import { TeamMemberCard } from '@/components/shared/team-member-card';
 import type { TeamMember } from '@/lib/types';
@@ -34,7 +34,7 @@ const TeamSkeleton = () => (
 export default function TeamPage() {
   const firestore = useFirestore();
 
-  const teamQuery = useMemo(() => {
+  const teamQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return collection(firestore, 'teamMembers');
   }, [firestore]);

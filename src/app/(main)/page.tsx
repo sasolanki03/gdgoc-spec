@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Users, Calendar, Lightbulb, Code, ArrowRight, Mic, Group, Award, LucideIcon } from 'lucide-react';
 import { useMemo } from 'react';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 
 import { Button } from '@/components/ui/button';
 import { StatCounter } from '@/components/shared/stat-counter';
@@ -68,7 +68,7 @@ const GallerySkeleton = () => (
 export default function HomePage() {
   const firestore = useFirestore();
 
-  const eventsQuery = useMemo(() => {
+  const eventsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(
       collection(firestore, 'events'),
@@ -76,12 +76,12 @@ export default function HomePage() {
     );
   }, [firestore]);
 
-  const statsQuery = useMemo(() => {
+  const statsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'stats'), orderBy('order', 'asc'));
   }, [firestore]);
 
-  const galleryQuery = useMemo(() => {
+  const galleryQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'gallery'), orderBy('order', 'asc'), limit(4));
   }, [firestore]);

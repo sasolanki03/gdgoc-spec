@@ -3,7 +3,7 @@
 
 import { useState, useMemo } from 'react';
 import { collection, query, orderBy, where } from 'firebase/firestore';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 
 import type { Event as EventType } from '@/lib/types';
 import { PageHeader } from '@/components/shared/page-header';
@@ -33,7 +33,7 @@ export default function EventsPage() {
 
   const firestore = useFirestore();
 
-  const eventsQuery = useMemo(() => {
+  const eventsQuery = useMemoFirebase(() => {
       if (!firestore) return null;
       return query(collection(firestore, 'events'), orderBy('startDate', 'desc'));
   }, [firestore]);

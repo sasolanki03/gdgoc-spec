@@ -3,7 +3,7 @@
 
 import { useMemo } from 'react';
 import { collection, query, orderBy } from 'firebase/firestore';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import type { ContactMessage } from '@/lib/types';
 import { format } from 'date-fns';
 
@@ -26,7 +26,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminContactsPage() {
     const firestore = useFirestore();
-    const messagesQuery = useMemo(() => {
+    const messagesQuery = useMemoFirebase(() => {
         if (!firestore) return null;
         return query(collection(firestore, 'contacts'), orderBy('createdAt', 'desc'));
     }, [firestore]);

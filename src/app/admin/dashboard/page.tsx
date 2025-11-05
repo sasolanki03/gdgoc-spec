@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { useMemo } from 'react';
 import { collection, query, where, orderBy, limit } from 'firebase/firestore';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -40,27 +40,27 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 export default function Dashboard() {
   const firestore = useFirestore();
 
-  const eventsQuery = useMemo(() => {
+  const eventsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'events'));
   }, [firestore]);
 
-  const registrationsQuery = useMemo(() => {
+  const registrationsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'registrations'), orderBy('registeredAt', 'desc'), limit(5));
   }, [firestore]);
   
-  const allRegistrationsQuery = useMemo(() => {
+  const allRegistrationsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'registrations'));
   }, [firestore]);
 
-  const leaderboardQuery = useMemo(() => {
+  const leaderboardQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'leaderboard'), orderBy('completionTime', 'asc'));
   }, [firestore]);
   
-  const contactsQuery = useMemo(() => {
+  const contactsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'contacts'), orderBy('createdAt', 'desc'), limit(5));
   }, [firestore]);

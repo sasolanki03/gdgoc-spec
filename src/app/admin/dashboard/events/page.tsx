@@ -4,7 +4,7 @@
 import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import { PlusCircle, MoreHorizontal, Trash } from 'lucide-react';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy, Timestamp } from 'firebase/firestore';
 
 import {
@@ -61,7 +61,7 @@ import { format } from 'date-fns';
 
 export default function AdminEventsPage() {
     const firestore = useFirestore();
-    const eventsQuery = useMemo(() => {
+    const eventsQuery = useMemoFirebase(() => {
         if (!firestore) return null;
         return query(collection(firestore, 'events'), orderBy('startDate', 'desc'));
     }, [firestore]);
