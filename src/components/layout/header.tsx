@@ -29,7 +29,7 @@ function SiteLogo() {
     const { data: settingsData, isLoading } = useDoc<{logoUrl: string}>(settingsRef);
   
     if (isLoading) {
-      return <Skeleton className="h-8 w-28" />;
+      return <Skeleton className="h-10 w-36" />;
     }
   
     if (settingsData?.logoUrl) {
@@ -37,14 +37,14 @@ function SiteLogo() {
         <Image 
           src={settingsData.logoUrl} 
           alt="Site Logo"
-          width={120}
-          height={30}
-          className="object-contain h-8"
+          width={160}
+          height={40}
+          className="object-contain h-10"
         />
       );
     }
   
-    return <span className="font-bold sm:inline-block font-headline">GDGoC SPEC</span>;
+    return <span className="text-xl font-bold sm:inline-block font-headline">GDGoC SPEC</span>;
 }
 
 export function Header() {
@@ -59,7 +59,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-5 md:px-20 flex h-16 items-center">
+      <div className="container mx-auto px-5 md:px-20 flex h-20 items-center">
         <Link href="/" className="mr-6 flex items-center space-x-2">
             <SiteLogo />
         </Link>
