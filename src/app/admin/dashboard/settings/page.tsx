@@ -54,12 +54,23 @@ export default function AdminSettingsPage() {
     const settingsRef = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'site') : null, [firestore]);
     const { data: settingsData, isLoading } = useDoc<{logoUrl: string, socialLinks: z.infer<typeof socialLinkSchema>[]}>(settingsRef);
 
+    const defaultSocialLinks: z.infer<typeof socialLinkSchema>[] = [
+        { name: 'Instagram', href: '' },
+        { name: 'LinkedIn', href: '' },
+        { name: 'Twitter', href: '' },
+        { name: 'GitHub', href: '' },
+        { name: 'Discord', href: '' },
+    ];
+
     const form = useForm<SettingsFormValues>({
         resolver: zodResolver(settingsSchema),
         mode: 'onChange',
+        defaultValues: {
+            socialLinks: defaultSocialLinks,
+        }
     });
 
-    const { fields } = useFieldArray({
+    const { fields, replace } = useFieldArray({
         control: form.control,
         name: "socialLinks",
     });
@@ -70,18 +81,12 @@ export default function AdminSettingsPage() {
                 setLogoPreview(settingsData.logoUrl);
             }
             if (settingsData.socialLinks) {
-                form.setValue('socialLinks', settingsData.socialLinks);
+                replace(settingsData.socialLinks);
             } else {
-                 form.setValue('socialLinks', [
-                    { name: 'Instagram', href: '' },
-                    { name: 'LinkedIn', href: '' },
-                    { name: 'Twitter', href: '' },
-                    { name: 'GitHub', href: '' },
-                    { name: 'Discord', href: '' },
-                 ]);
+                replace(defaultSocialLinks);
             }
         }
-    }, [settingsData, form]);
+    }, [settingsData, replace]);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
