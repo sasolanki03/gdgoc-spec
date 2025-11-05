@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import {
   Home,
@@ -51,7 +52,7 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
         <Sidebar>
-            <SheetTitle className="sr-only">Admin Menu</SheetTitle>
+            <SheetTitle>Admin Menu</SheetTitle>
             <SidebarHeader className="flex items-center justify-between p-2">
                 <Link href="/admin/dashboard" className="flex items-center gap-2">
                     <span className="font-semibold text-lg font-headline">GDGoC SPEC Admin</span>
