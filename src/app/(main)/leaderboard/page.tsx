@@ -57,12 +57,13 @@ export default function LeaderboardPage() {
 
   const sortedData = useMemo(() => {
     if (!eventLeaderboardData) return [];
-    // sort by completionTime ascending
     const sorted = [...eventLeaderboardData].sort((a, b) => {
         if (a.completionTime && b.completionTime) {
             return a.completionTime.toDate().getTime() - b.completionTime.toDate().getTime();
         }
-        return 0;
+        if (a.completionTime) return -1;
+        if (b.completionTime) return 1;
+        return a.studentName.localeCompare(b.studentName);
     });
     return sorted.map((student, index) => ({ ...student, rank: index + 1 }));
   }, [eventLeaderboardData]);
