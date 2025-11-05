@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth, useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
-import { Upload, KeyRound, Instagram, Linkedin, Twitter, Github } from 'lucide-react';
+import { Upload, KeyRound, Instagram, Linkedin, Twitter, Github, Trash, PlusCircle } from 'lucide-react';
 import { sendPasswordResetEmail } from 'firebase/auth';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const socialLinkSchema = z.object({
   name: z.enum(['Instagram', 'LinkedIn', 'Twitter', 'GitHub', 'Discord']),
@@ -54,23 +55,15 @@ export default function AdminSettingsPage() {
     const settingsRef = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'site') : null, [firestore]);
     const { data: settingsData, isLoading } = useDoc<{logoUrl: string, socialLinks: z.infer<typeof socialLinkSchema>[]}>(settingsRef);
 
-    const defaultSocialLinks: z.infer<typeof socialLinkSchema>[] = [
-        { name: 'Instagram', href: '' },
-        { name: 'LinkedIn', href: '' },
-        { name: 'Twitter', href: '' },
-        { name: 'GitHub', href: '' },
-        { name: 'Discord', href: '' },
-    ];
-
     const form = useForm<SettingsFormValues>({
         resolver: zodResolver(settingsSchema),
         mode: 'onChange',
         defaultValues: {
-            socialLinks: defaultSocialLinks,
+            socialLinks: [],
         }
     });
 
-    const { fields, replace } = useFieldArray({
+    const { fields, append, remove, replace } = useFieldArray({
         control: form.control,
         name: "socialLinks",
     });
@@ -82,8 +75,6 @@ export default function AdminSettingsPage() {
             }
             if (settingsData.socialLinks) {
                 replace(settingsData.socialLinks);
-            } else {
-                replace(defaultSocialLinks);
             }
         }
     }, [settingsData, replace]);
@@ -223,27 +214,59 @@ export default function AdminSettingsPage() {
                             <h3 className="text-lg font-medium">Social Media Links</h3>
                             <div className="space-y-4 mt-4">
                                 {fields.map((field, index) => {
-                                    const Icon = socialIcons[field.name];
                                     return (
-                                        <FormField
-                                            key={field.id}
-                                            control={form.control}
-                                            name={`socialLinks.${index}.href`}
-                                            render={({ field: inputField }) => (
-                                                <FormItem>
-                                                    <FormLabel className="flex items-center gap-2">
-                                                        <Icon />
-                                                        {field.name}
-                                                    </FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder={`https://${field.name.toLowerCase()}.com/...`} {...inputField} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
+                                        <div key={field.id} className="flex items-end gap-2">
+                                            <FormField
+                                                control={form.control}
+                                                name={`socialLinks.${index}.name`}
+                                                render={({ field: selectField }) => (
+                                                    <FormItem className="w-48">
+                                                        <FormLabel>Platform</FormLabel>
+                                                        <Select onValueChange={selectField.onChange} defaultValue={selectField.value}>
+                                                            <FormControl>
+                                                                <SelectTrigger>
+                                                                    <SelectValue placeholder="Select..." />
+                                                                </SelectTrigger>
+                                                            </FormControl>
+                                                            <SelectContent>
+                                                                {Object.keys(socialIcons).map(name => (
+                                                                    <SelectItem key={name} value={name}>{name}</SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <FormField
+                                                control={form.control}
+                                                name={`socialLinks.${index}.href`}
+                                                render={({ field: inputField }) => (
+                                                    <FormItem className="flex-1">
+                                                        <FormLabel>URL</FormLabel>
+                                                        <FormControl>
+                                                            <Input placeholder="https://..." {...inputField} />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+                                                <Trash className="h-4 w-4 text-destructive" />
+                                            </Button>
+                                        </div>
                                     );
                                 })}
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="mt-2"
+                                    onClick={() => append({ name: 'GitHub', href: '' })}
+                                >
+                                    <PlusCircle className="mr-2 h-4 w-4" />
+                                    Add Social Link
+                                </Button>
                             </div>
                         </div>
                     </CardContent>
