@@ -5,12 +5,12 @@
 import { FirebaseOptions, initializeApp, getApp } from 'firebase/app';
 
 const firebaseConfig: FirebaseOptions = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyDnLDEfWfMM0VDaZUzvjY1_gsO94Mh1TTA",
+  authDomain: "studio-2441159653-157ae.firebaseapp.com",
+  projectId: "studio-2441159653-157ae",
+  storageBucket: "studio-2441159653-157ae.firebasestorage.app",
+  messagingSenderId: "1067495317033",
+  appId: "1:1067495317033:web:447d00461e0346e2228638"
 };
 
 function initializeFirebaseApp() {

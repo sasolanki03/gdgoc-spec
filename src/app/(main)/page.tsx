@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Users, Calendar, Lightbulb, Code, ArrowRight, Mic, Group, Award } from 'lucide-react';
 import { useMemo } from 'react';
-import { collection, query, orderBy, where, limit } from 'firebase/firestore';
+import { collection, query, orderBy, limit } from 'firebase/firestore';
 import { useCollection, useFirestore } from '@/firebase';
 
 import { Button } from '@/components/ui/button';
@@ -67,13 +67,18 @@ export default function HomePage() {
     if (!firestore) return null;
     return query(
       collection(firestore, 'events'),
-      where('status', 'in', ['Upcoming', 'Continue']),
       orderBy('date', 'asc'),
-      limit(3)
     );
   }, [firestore]);
 
-  const { data: upcomingEvents, loading } = useCollection<EventType>(eventsQuery);
+  const { data: allEvents, loading } = useCollection<EventType>(eventsQuery);
+
+  const upcomingEvents = useMemo(() => {
+    if (!allEvents) return [];
+    return allEvents
+      .filter(event => event.status === 'Upcoming' || event.status === 'Continue')
+      .slice(0, 3);
+  }, [allEvents]);
   
   return (
     <div className="flex flex-col">
