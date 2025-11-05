@@ -29,7 +29,7 @@ function SiteLogo() {
     const { data: settingsData, isLoading } = useDoc<{logoUrl: string}>(settingsRef);
   
     if (isLoading) {
-      return <Skeleton className="h-10 w-36" />;
+      return <Skeleton className="h-12 w-40" />;
     }
   
     if (settingsData?.logoUrl) {
@@ -39,7 +39,7 @@ function SiteLogo() {
           alt="Site Logo"
           width={160}
           height={40}
-          className="object-contain h-10"
+          className="object-contain h-12 w-auto"
         />
       );
     }
@@ -65,7 +65,7 @@ export function Header() {
         </Link>
 
         <div className="flex flex-1 items-center justify-center">
-          <nav className="hidden gap-6 md:flex">
+          <nav className="hidden gap-6 lg:flex">
             {navItems.map((item) => (
               <Link
                 key={item.href}
@@ -88,7 +88,7 @@ export function Header() {
           
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden">
+              <Button variant="ghost" size="icon" className="lg:hidden">
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">Toggle Menu</span>
               </Button>
