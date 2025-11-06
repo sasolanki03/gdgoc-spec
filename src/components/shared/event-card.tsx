@@ -15,9 +15,9 @@ interface EventCardProps {
 }
 
 export function EventCard({ event }: EventCardProps) {
-    const isDataUri = event.imageUrl.startsWith('data:');
-    const placeholder = !isDataUri ? PlaceHolderImages.find(img => img.id === event.imageUrl) : null;
-    const finalImageUrl = isDataUri ? event.imageUrl : placeholder?.imageUrl || 'https://picsum.photos/seed/placeholder-event/400/200';
+    const isDataOrHttp = event.imageUrl.startsWith('data:') || event.imageUrl.startsWith('http');
+    const placeholder = !isDataOrHttp ? PlaceHolderImages.find(img => img.id === event.imageUrl) : null;
+    const finalImageUrl = isDataOrHttp ? event.imageUrl : placeholder?.imageUrl || 'https://picsum.photos/seed/placeholder-event/400/200';
 
     const getBadgeVariant = (status: EventType['status']): "default" | "secondary" | "destructive" | "outline" => {
         switch (status) {

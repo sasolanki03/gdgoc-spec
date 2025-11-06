@@ -71,9 +71,9 @@ interface EventFormProps {
 export function EventForm({ event, onSuccess }: EventFormProps) {
   const { toast } = useToast();
   const [imagePreview, setImagePreview] = useState<string | null>(() => {
-    if (!event) return null;
-    const isPlaceholder = !event.imageUrl.startsWith('data:');
-    if (isPlaceholder) {
+    if (!event?.imageUrl) return null;
+    const isPlaceholderId = !event.imageUrl.startsWith('data:') && !event.imageUrl.startsWith('http');
+    if (isPlaceholderId) {
         const image = PlaceHolderImages.find(img => img.id === event.imageUrl);
         return image ? image.imageUrl : null;
     }
@@ -122,16 +122,31 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
     };
 
     try {
-        let imageDataUrl = typeof values.imageUrl === 'string' ? values.imageUrl : event?.imageUrl || '';
-        if (file) {
-            imageDataUrl = await readFileAsDataURL(file);
+        let finalImageUrl = event?.imageUrl || '';
+        if (file) { // A new file was selected
+            finalImageUrl = await readFileAsDataURL(file);
+        } else if (imagePreview) { // No new file, but there was a preview
+            // Check if the preview is a data URL (meaning it was a new upload or an already saved data URI)
+            // or an http url (from placeholder list)
+            if (imagePreview.startsWith('data:') || imagePreview.startsWith('http')) {
+                finalImageUrl = imagePreview
+            }
+        }
+        
+        if (!finalImageUrl) {
+            toast({
+                variant: 'destructive',
+                title: 'Image Required',
+                description: 'Please select an image for the event.'
+            });
+            return;
         }
 
         const eventData = {
             ...values,
             startDate: Timestamp.fromDate(values.startDate),
             endDate: Timestamp.fromDate(values.endDate),
-            imageUrl: imageDataUrl,
+            imageUrl: finalImageUrl,
         };
 
         onSuccess(eventData);
