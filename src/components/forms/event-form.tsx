@@ -64,7 +64,7 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
   const storage = useStorage();
   const [imagePreview, setImagePreview] = useState<string | null>(event?.imageUrl || null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [imageChanged, setImageChanged] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -82,15 +82,7 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
     },
   });
 
-  const { formState: { isDirty }, trigger } = form;
-
-  useEffect(() => {
-    // This effect ensures that if the image is changed, the form is marked as "dirty"
-    // which will enable the save button.
-    if (imageChanged) {
-      trigger();
-    }
-  }, [imageChanged, trigger]);
+  const { formState: { isDirty } } = form;
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -98,32 +90,32 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
-        setImageChanged(true);
+        setImageFile(file);
       };
       reader.readAsDataURL(file);
     } else {
-      // If a file is cleared, revert to the original event image if it exists
       setImagePreview(event?.imageUrl || null);
-      setImageChanged(false);
+      setImageFile(null);
     }
   };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setIsSubmitting(true);
     if (!storage) {
         toast({ variant: "destructive", title: "Error", description: "Storage service is not available." });
+        setIsSubmitting(false);
         return;
     }
-    setIsSubmitting(true);
+
     let finalImageUrl = event?.imageUrl || '';
-    const imageFile = values.image?.[0];
 
     try {
-        if (imageFile) { // An image was newly selected
-            const validationResult = z.any()
+        if (imageFile) {
+             const validationResult = z.any()
                 .refine((file) => file.size <= MAX_FILE_SIZE, `Max file size is 4MB.`)
                 .refine((file) => ACCEPTED_IMAGE_TYPES.includes(file.type), ".jpg, .jpeg, .png and .webp files are accepted.")
                 .safeParse(imageFile);
-
+            
             if (!validationResult.success) {
                 form.setError('image', { message: validationResult.error.errors[0].message });
                 setIsSubmitting(false);
@@ -135,11 +127,10 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
             finalImageUrl = await getDownloadURL(uploadResult.ref);
         }
 
-        // Ensure there is an image URL, either the old one or the newly uploaded one.
         if (!finalImageUrl) {
-            toast({ variant: 'destructive', title: 'Image Required', description: 'Please select an image for the event.' });
-            setIsSubmitting(false);
-            return;
+             toast({ variant: 'destructive', title: 'Image Required', description: 'Please select an image for the event.' });
+             setIsSubmitting(false);
+             return;
         }
         
         const eventData = {
@@ -154,7 +145,7 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
         onSuccess(eventData as Omit<Event, 'id'>);
         form.reset();
         setImagePreview(null);
-        setImageChanged(false);
+        setImageFile(null);
     } catch (error: any) {
         console.error("Error processing form:", error);
         toast({ variant: "destructive", title: "Error", description: error.message || "Could not save the event." });
@@ -384,10 +375,12 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
             />
         </div>
 
-        <Button type="submit" className="w-full" disabled={isSubmitting || (!isDirty && !imageChanged)}>
+        <Button type="submit" className="w-full" disabled={isSubmitting || (!isDirty && !imageFile)}>
           {isSubmitting ? 'Saving...' : (event ? 'Save Changes' : 'Create Event')}
         </Button>
       </form>
     </Form>
   );
 }
+
+    
