@@ -11,7 +11,9 @@ export function useUser() {
 
   useEffect(() => {
     if (!auth) {
-      setLoading(false);
+      // Auth service might not be available on first render, especially during SSR.
+      // We will wait for it to become available.
+      setLoading(true);
       return;
     };
 
