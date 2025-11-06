@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -48,16 +48,6 @@ const formSchema = z.object({
   status: z.enum(['Upcoming', 'Past', 'Continue']),
   type: z.enum(['Workshop', 'Hackathon', 'Seminar', 'Study Jam', 'Tech Talk', 'Info Session']),
   imageUrl: z.any()
-    .refine((value) => {
-        if (typeof value === 'string') return true; // Already a URL/Data URI
-        if (!value || value.length === 0) return false; // Must have a file if not string
-        return value?.[0]?.size <= MAX_FILE_SIZE;
-    }, `Max file size is 4MB.`)
-    .refine((value) => {
-        if (typeof value === 'string') return true;
-        if (!value || value.length === 0) return false;
-        return ACCEPTED_IMAGE_TYPES.includes(value?.[0]?.type);
-    }, ".jpg, .jpeg, .png and .webp files are accepted.")
 }).refine(data => data.endDate >= data.startDate, {
   message: "End date cannot be before start date",
   path: ["endDate"],
@@ -70,15 +60,17 @@ interface EventFormProps {
 
 export function EventForm({ event, onSuccess }: EventFormProps) {
   const { toast } = useToast();
-  const [imagePreview, setImagePreview] = useState<string | null>(() => {
+  
+  const getInitialPreview = () => {
     if (!event?.imageUrl) return null;
-    const isPlaceholderId = !event.imageUrl.startsWith('data:') && !event.imageUrl.startsWith('http');
-    if (isPlaceholderId) {
-        const image = PlaceHolderImages.find(img => img.id === event.imageUrl);
-        return image ? image.imageUrl : null;
+    if (event.imageUrl.startsWith('data:') || event.imageUrl.startsWith('http')) {
+        return event.imageUrl;
     }
-    return event.imageUrl;
-  });
+    const image = PlaceHolderImages.find(img => img.id === event.imageUrl);
+    return image ? image.imageUrl : null;
+  };
+
+  const [imagePreview, setImagePreview] = useState<string | null>(getInitialPreview());
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -96,43 +88,59 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
     },
   });
 
+  const { formState: { isDirty }, trigger, setValue } = form;
+  const [imageChanged, setImageChanged] = useState(false);
+
+  useEffect(() => {
+    if (imageChanged) {
+        // This effectively marks the form as dirty when an image is changed.
+    }
+  }, [imageChanged]);
+
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
+        setImageChanged(true); // Mark that the image has been changed
       };
       reader.readAsDataURL(file);
+      // We set the file object to the form value
+      setValue('imageUrl', event.target.files, { shouldValidate: true, shouldDirty: true });
     } else {
-        setImagePreview(null);
+        setImagePreview(getInitialPreview());
+        setImageChanged(false);
     }
   };
+  
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    const file = Array.isArray(values.imageUrl) ? values.imageUrl[0] : null;
-
-    const readFileAsDataURL = (file: File): Promise<string> => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-    };
+    
+    let finalImageUrl = imagePreview;
 
     try {
-        let finalImageUrl = event?.imageUrl || '';
-        if (file) { // A new file was selected
-            finalImageUrl = await readFileAsDataURL(file);
-        } else if (imagePreview) { // No new file, but there was a preview
-            // Check if the preview is a data URL (meaning it was a new upload or an already saved data URI)
-            // or an http url (from placeholder list)
-            if (imagePreview.startsWith('data:') || imagePreview.startsWith('http')) {
-                finalImageUrl = imagePreview
+        // If a new file was uploaded, values.imageUrl will be a FileList
+        if (values.imageUrl instanceof FileList && values.imageUrl.length > 0) {
+            const file = values.imageUrl[0];
+            const validationResult = z.any()
+                .refine((file) => file.size <= MAX_FILE_SIZE, `Max file size is 4MB.`)
+                .refine((file) => ACCEPTED_IMAGE_TYPES.includes(file.type), ".jpg, .jpeg, .png and .webp files are accepted.")
+                .safeParse(file);
+
+            if (!validationResult.success) {
+                form.setError('imageUrl', { message: validationResult.error.errors[0].message });
+                return;
             }
+
+            finalImageUrl = await new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result as string);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
         }
-        
+
         if (!finalImageUrl) {
             toast({
                 variant: 'destructive',
@@ -141,7 +149,7 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
             });
             return;
         }
-
+        
         const eventData = {
             ...values,
             startDate: Timestamp.fromDate(values.startDate),
@@ -153,11 +161,11 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
         form.reset();
         setImagePreview(null);
     } catch (error) {
-        console.error("Error processing file:", error);
+        console.error("Error processing form:", error);
         toast({
             variant: "destructive",
             title: "Error",
-            description: "Could not process the image file."
+            description: "Could not process the form."
         });
     }
   };
@@ -187,10 +195,7 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
                     <Input 
                         type="file" 
                         accept="image/*" 
-                        onChange={(e) => {
-                            field.onChange(e.target.files);
-                            handleImageChange(e);
-                        }}
+                        onChange={handleImageChange}
                     />
                 </FormControl>
               <FormMessage />
@@ -384,7 +389,7 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
             />
         </div>
 
-        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting || !form.formState.isValid}>
+        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting || (!isDirty && !imageChanged)}>
           {form.formState.isSubmitting ? 'Saving...' : (event ? 'Save Changes' : 'Create Event')}
         </Button>
       </form>

@@ -15,9 +15,20 @@ interface EventCardProps {
 }
 
 export function EventCard({ event }: EventCardProps) {
-    const isDataOrHttp = event.imageUrl.startsWith('data:') || event.imageUrl.startsWith('http');
-    const placeholder = !isDataOrHttp ? PlaceHolderImages.find(img => img.id === event.imageUrl) : null;
-    const finalImageUrl = isDataOrHttp ? event.imageUrl : placeholder?.imageUrl || 'https://picsum.photos/seed/placeholder-event/400/200';
+    let finalImageUrl = 'https://picsum.photos/seed/placeholder-event/400/200';
+    let placeholderHint = 'event banner';
+
+    if (event.imageUrl) {
+        if (event.imageUrl.startsWith('data:') || event.imageUrl.startsWith('http')) {
+            finalImageUrl = event.imageUrl;
+        } else {
+            const placeholder = PlaceHolderImages.find(img => img.id === event.imageUrl);
+            if (placeholder) {
+                finalImageUrl = placeholder.imageUrl;
+                placeholderHint = placeholder.imageHint;
+            }
+        }
+    }
 
     const getBadgeVariant = (status: EventType['status']): "default" | "secondary" | "destructive" | "outline" => {
         switch (status) {
@@ -52,7 +63,7 @@ export function EventCard({ event }: EventCardProps) {
                 alt={event.title}
                 fill
                 className="object-cover"
-                data-ai-hint={placeholder?.imageHint || 'event banner'}
+                data-ai-hint={placeholderHint}
             />
         </div>
         <div className="p-6 pb-2">
