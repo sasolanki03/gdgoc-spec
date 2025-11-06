@@ -1,14 +1,14 @@
 
 import type { Metadata } from 'next';
 import { Toaster } from '@/components/ui/toaster';
-import { FirebaseClientProvider } from '@/firebase';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { FirebaseErrorListener } from '@/components/dev/firebase-error-listener';
 import './globals.css';
 
 export const metadata: Metadata = {
   title: 'GDGoC SPEC',
   description: 'Google Developer Group on Campus - Shree Parekh Engineering College, Mahuva',
-  keywords: ['GDGoC', 'SPEC', 'Google Developer Group', 'Mahuva', 'Engineering College'],
+  keywords: ['GDG', 'SPEC', 'Google Developer Group', 'Mahuva', 'Engineering College'],
 };
 
 export default function RootLayout({
@@ -36,5 +36,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-    

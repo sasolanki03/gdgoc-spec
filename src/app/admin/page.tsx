@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useAuth, useUser } from '@/firebase/provider';
+import { useAuth, useUser } from '@/firebase';
 import { GoogleAuthProvider, signInWithRedirect, getRedirectResult, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
