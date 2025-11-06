@@ -85,6 +85,8 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
   const { formState: { isDirty }, trigger } = form;
 
   useEffect(() => {
+    // This effect ensures that if the image is changed, the form is marked as "dirty"
+    // which will enable the save button.
     if (imageChanged) {
       trigger();
     }
@@ -100,6 +102,7 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
       };
       reader.readAsDataURL(file);
     } else {
+      // If a file is cleared, revert to the original event image if it exists
       setImagePreview(event?.imageUrl || null);
       setImageChanged(false);
     }
@@ -115,7 +118,7 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
     const imageFile = values.image?.[0];
 
     try {
-        if (imageFile) {
+        if (imageFile) { // An image was newly selected
             const validationResult = z.any()
                 .refine((file) => file.size <= MAX_FILE_SIZE, `Max file size is 4MB.`)
                 .refine((file) => ACCEPTED_IMAGE_TYPES.includes(file.type), ".jpg, .jpeg, .png and .webp files are accepted.")
@@ -132,6 +135,7 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
             finalImageUrl = await getDownloadURL(uploadResult.ref);
         }
 
+        // Ensure there is an image URL, either the old one or the newly uploaded one.
         if (!finalImageUrl) {
             toast({ variant: 'destructive', title: 'Image Required', description: 'Please select an image for the event.' });
             setIsSubmitting(false);
