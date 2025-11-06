@@ -4,6 +4,7 @@ import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
+import { getStorage, FirebaseStorage } from 'firebase/storage';
 
 export function initializeFirebase() {
   let app: FirebaseApp;
@@ -14,7 +15,8 @@ export function initializeFirebase() {
   }
   const auth = getAuth(app);
   const firestore = getFirestore(app);
-  return { firebaseApp: app, auth, firestore };
+  const storage = getStorage(app);
+  return { firebaseApp: app, auth, firestore, storage };
 }
 
 export * from './provider';

@@ -9,6 +9,8 @@ import { format } from 'date-fns';
 import { Calendar as CalendarIcon, Upload } from 'lucide-react';
 import Image from 'next/image';
 import { Timestamp } from 'firebase/firestore';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useStorage } from '@/firebase';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -32,7 +34,6 @@ import type { Event } from '@/lib/types';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Calendar } from '../ui/calendar';
 import { cn } from '@/lib/utils';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useToast } from '@/hooks/use-toast';
 
 const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB
@@ -47,7 +48,7 @@ const formSchema = z.object({
   venue: z.string().min(3, 'Venue is required.'),
   status: z.enum(['Upcoming', 'Past', 'Continue']),
   type: z.enum(['Workshop', 'Hackathon', 'Seminar', 'Study Jam', 'Tech Talk', 'Info Session']),
-  imageUrl: z.any()
+  image: z.any().optional(),
 }).refine(data => data.endDate >= data.startDate, {
   message: "End date cannot be before start date",
   path: ["endDate"],
@@ -60,17 +61,10 @@ interface EventFormProps {
 
 export function EventForm({ event, onSuccess }: EventFormProps) {
   const { toast } = useToast();
-  
-  const getInitialPreview = () => {
-    if (!event?.imageUrl) return null;
-    if (event.imageUrl.startsWith('data:') || event.imageUrl.startsWith('http')) {
-        return event.imageUrl;
-    }
-    const image = PlaceHolderImages.find(img => img.id === event.imageUrl);
-    return image ? image.imageUrl : null;
-  };
-
-  const [imagePreview, setImagePreview] = useState<string | null>(getInitialPreview());
+  const storage = useStorage();
+  const [imagePreview, setImagePreview] = useState<string | null>(event?.imageUrl || null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imageChanged, setImageChanged] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -84,69 +78,63 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
       venue: event?.venue || '',
       status: event?.status || 'Upcoming',
       type: event?.type || 'Workshop',
-      imageUrl: event?.imageUrl || undefined,
+      image: undefined,
     },
   });
 
-  const { formState: { isDirty }, trigger, setValue } = form;
-  const [imageChanged, setImageChanged] = useState(false);
+  const { formState: { isDirty }, trigger } = form;
 
   useEffect(() => {
     if (imageChanged) {
-        // This effectively marks the form as dirty when an image is changed.
+      trigger();
     }
-  }, [imageChanged]);
+  }, [imageChanged, trigger]);
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
-        setImageChanged(true); // Mark that the image has been changed
+        setImageChanged(true);
       };
       reader.readAsDataURL(file);
-      // We set the file object to the form value
-      setValue('imageUrl', event.target.files, { shouldValidate: true, shouldDirty: true });
     } else {
-        setImagePreview(getInitialPreview());
-        setImageChanged(false);
+      setImagePreview(event?.imageUrl || null);
+      setImageChanged(false);
     }
   };
-  
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    
-    let finalImageUrl = imagePreview;
+    if (!storage) {
+        toast({ variant: "destructive", title: "Error", description: "Storage service is not available." });
+        return;
+    }
+    setIsSubmitting(true);
+    let finalImageUrl = event?.imageUrl || '';
+    const imageFile = values.image?.[0];
 
     try {
-        // If a new file was uploaded, values.imageUrl will be a FileList
-        if (values.imageUrl instanceof FileList && values.imageUrl.length > 0) {
-            const file = values.imageUrl[0];
+        if (imageFile) {
             const validationResult = z.any()
                 .refine((file) => file.size <= MAX_FILE_SIZE, `Max file size is 4MB.`)
                 .refine((file) => ACCEPTED_IMAGE_TYPES.includes(file.type), ".jpg, .jpeg, .png and .webp files are accepted.")
-                .safeParse(file);
+                .safeParse(imageFile);
 
             if (!validationResult.success) {
-                form.setError('imageUrl', { message: validationResult.error.errors[0].message });
+                form.setError('image', { message: validationResult.error.errors[0].message });
+                setIsSubmitting(false);
                 return;
             }
 
-            finalImageUrl = await new Promise<string>((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result as string);
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
+            const imageStorageRef = storageRef(storage, `event-banners/${Date.now()}-${imageFile.name}`);
+            const uploadResult = await uploadBytes(imageStorageRef, imageFile);
+            finalImageUrl = await getDownloadURL(uploadResult.ref);
         }
 
         if (!finalImageUrl) {
-            toast({
-                variant: 'destructive',
-                title: 'Image Required',
-                description: 'Please select an image for the event.'
-            });
+            toast({ variant: 'destructive', title: 'Image Required', description: 'Please select an image for the event.' });
+            setIsSubmitting(false);
             return;
         }
         
@@ -156,17 +144,18 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
             endDate: Timestamp.fromDate(values.endDate),
             imageUrl: finalImageUrl,
         };
+        // @ts-ignore
+        delete eventData.image;
 
-        onSuccess(eventData);
+        onSuccess(eventData as Omit<Event, 'id'>);
         form.reset();
         setImagePreview(null);
-    } catch (error) {
+        setImageChanged(false);
+    } catch (error: any) {
         console.error("Error processing form:", error);
-        toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Could not process the form."
-        });
+        toast({ variant: "destructive", title: "Error", description: error.message || "Could not save the event." });
+    } finally {
+        setIsSubmitting(false);
     }
   };
 
@@ -175,7 +164,7 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto p-1">
         <FormField
           control={form.control}
-          name="imageUrl"
+          name="image"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Event Banner</FormLabel>
@@ -189,13 +178,15 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
                             <Upload className="h-10 w-10 text-muted-foreground" />
                         </div>
                     )}
-                    
                 </div>
                 <FormControl>
                     <Input 
                         type="file" 
                         accept="image/*" 
-                        onChange={handleImageChange}
+                        onChange={(e) => {
+                            field.onChange(e.target.files);
+                            handleImageChange(e);
+                        }}
                     />
                 </FormControl>
               <FormMessage />
@@ -389,8 +380,8 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
             />
         </div>
 
-        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting || (!isDirty && !imageChanged)}>
-          {form.formState.isSubmitting ? 'Saving...' : (event ? 'Save Changes' : 'Create Event')}
+        <Button type="submit" className="w-full" disabled={isSubmitting || (!isDirty && !imageChanged)}>
+          {isSubmitting ? 'Saving...' : (event ? 'Save Changes' : 'Create Event')}
         </Button>
       </form>
     </Form>
