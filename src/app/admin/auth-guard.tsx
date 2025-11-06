@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useAdmin } from '@/firebase/auth/use-admin';
