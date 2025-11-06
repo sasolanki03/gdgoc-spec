@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -219,6 +218,7 @@ export function EditTeamMemberForm({ member, onSuccess }: EditTeamMemberFormProp
                         <SelectItem value="Mechanical Engineering">Mechanical Engineering</SelectItem>
                         <SelectItem value="Civil Engineering">Civil Engineering</SelectItem>
                         <SelectItem value="Electrical Engineering">Electrical Engineering</SelectItem>
+                        <SelectItem value="Food Engineering &amp; technology">Food Engineering &amp; technology</SelectItem>
                     </SelectContent>
                 </Select>
                 <FormMessage />
@@ -271,5 +271,4 @@ export function EditTeamMemberForm({ member, onSuccess }: EditTeamMemberFormProp
     </Form>
   );
 }
-
     
