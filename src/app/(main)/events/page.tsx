@@ -1,8 +1,7 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
-import { collection, query, orderBy, where } from 'firebase/firestore';
+import { collection, query, orderBy } from 'firebase/firestore';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 
 import type { Event as EventType } from '@/lib/types';
@@ -38,7 +37,7 @@ export default function EventsPage() {
       return query(collection(firestore, 'events'), orderBy('startDate', 'desc'));
   }, [firestore]);
 
-  const { data: events, loading } = useCollection<EventType>(eventsQuery);
+  const { data: events, isLoading: loading } = useCollection<EventType>(eventsQuery);
 
   const upcomingEvents = useMemo(() => events?.filter(e => e.status === 'Upcoming' || e.status === 'Continue') || [], [events]);
   const pastEvents = useMemo(() => events?.filter(e => e.status === 'Past') || [], [events]);

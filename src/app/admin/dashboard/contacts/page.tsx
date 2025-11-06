@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo } from 'react';
@@ -31,7 +30,7 @@ export default function AdminContactsPage() {
         return query(collection(firestore, 'contacts'), orderBy('createdAt', 'desc'));
     }, [firestore]);
 
-    const { data: messages, loading } = useCollection<ContactMessage>(messagesQuery);
+    const { data: messages, isLoading: loading } = useCollection<ContactMessage>(messagesQuery);
 
     return (
         <Card className="w-full max-w-6xl mx-auto">

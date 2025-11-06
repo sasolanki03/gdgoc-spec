@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo } from 'react';
@@ -33,7 +32,7 @@ export default function AdminRegistrationsPage() {
         return query(collection(firestore, 'registrations'), orderBy('registeredAt', 'desc'));
     }, [firestore]);
 
-    const { data: registrations, loading } = useCollection<EventRegistration>(registrationsQuery);
+    const { data: registrations, isLoading: loading } = useCollection<EventRegistration>(registrationsQuery);
 
     return (
         <Card className="w-full max-w-6xl mx-auto">

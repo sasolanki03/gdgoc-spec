@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -48,7 +47,7 @@ export default function LeaderboardPage() {
     return query(collection(firestore, 'leaderboard'));
   }, [firestore]);
 
-  const { data: allLeaderboardData, loading } = useCollection<Omit<LeaderboardEntry, 'rank'>>(leaderboardQuery);
+  const { data: allLeaderboardData, isLoading: loading } = useCollection<Omit<LeaderboardEntry, 'rank'>>(leaderboardQuery);
 
   const eventLeaderboardData = useMemo(() => {
     if (!allLeaderboardData || !selectedEventId) return [];

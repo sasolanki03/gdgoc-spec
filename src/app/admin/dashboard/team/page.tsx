@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -63,7 +62,7 @@ export default function AdminTeamPage() {
         return query(collection(firestore, 'teamMembers'), orderBy('name', 'asc'));
     }, [firestore]);
 
-    const { data: teamMembers, loading, error } = useCollection<TeamMember>(teamQuery);
+    const { data: teamMembers, isLoading: loading, error } = useCollection<TeamMember>(teamQuery);
 
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);

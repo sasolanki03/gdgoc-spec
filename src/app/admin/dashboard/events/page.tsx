@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -66,7 +65,7 @@ export default function AdminEventsPage() {
         return query(collection(firestore, 'events'), orderBy('startDate', 'desc'));
     }, [firestore]);
 
-    const { data: events, loading, error } = useCollection<Event>(eventsQuery);
+    const { data: events, isLoading: loading, error } = useCollection<Event>(eventsQuery);
 
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -62,7 +61,7 @@ export default function AdminStatsPage() {
         return query(collection(firestore, 'stats'), orderBy('order', 'asc'));
     }, [firestore]);
 
-    const { data: stats, loading, error } = useCollection<StatItem>(statsQuery);
+    const { data: stats, isLoading: loading, error } = useCollection<StatItem>(statsQuery);
 
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [selectedStat, setSelectedStat] = useState<StatItem | null>(null);

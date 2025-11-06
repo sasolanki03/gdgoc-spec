@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -24,7 +23,7 @@ export default function AdminGalleryPage() {
         return query(collection(firestore, 'gallery'), orderBy('order', 'asc'));
     }, [firestore]);
 
-    const { data: images, loading, error } = useCollection<GalleryImage>(galleryQuery);
+    const { data: images, isLoading: loading, error } = useCollection<GalleryImage>(galleryQuery);
 
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);

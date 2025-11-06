@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -76,7 +75,7 @@ export default function AdminLeaderboardPage() {
         return query(collection(firestore, 'leaderboard'));
     }, [firestore]);
 
-    const { data: allLeaderboardData, loading, error } = useCollection<Omit<LeaderboardEntry, 'rank'>>(leaderboardQuery);
+    const { data: allLeaderboardData, isLoading: loading, error } = useCollection<Omit<LeaderboardEntry, 'rank'>>(leaderboardQuery);
 
     const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
     const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo } from 'react';
@@ -39,7 +38,7 @@ export default function TeamPage() {
     return collection(firestore, 'teamMembers');
   }, [firestore]);
 
-  const { data: teamMembers, loading } = useCollection<TeamMember>(teamQuery);
+  const { data: teamMembers, isLoading: loading } = useCollection<TeamMember>(teamQuery);
 
   const groupedTeams = useMemo(() => {
     if (!teamMembers) return {};
