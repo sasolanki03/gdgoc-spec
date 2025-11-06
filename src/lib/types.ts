@@ -22,6 +22,7 @@ export type TeamMember = {
   photo: string; // Can be an ID from placeholder-images or a data URI
   bio: string;
   socials: SocialLink[];
+  order: number;
 };
 
 export type Event = {

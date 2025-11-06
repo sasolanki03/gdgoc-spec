@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -59,7 +60,7 @@ export default function AdminTeamPage() {
     const firestore = useFirestore();
     const teamQuery = useMemoFirebase(() => {
         if (!firestore) return null;
-        return query(collection(firestore, 'teamMembers'), orderBy('name', 'asc'));
+        return query(collection(firestore, 'teamMembers'), orderBy('order', 'asc'));
     }, [firestore]);
 
     const { data: teamMembers, isLoading: loading, error } = useCollection<TeamMember>(teamQuery);
@@ -168,8 +169,8 @@ export default function AdminTeamPage() {
                     <TableHead className="hidden md:table-cell">
                       Position
                     </TableHead>
-                    <TableHead className="hidden md:table-cell">
-                      Branch & Year
+                     <TableHead className="hidden md:table-cell text-center">
+                      Order
                     </TableHead>
                     <TableHead>
                       <span className="sr-only">Actions</span>
@@ -186,7 +187,7 @@ export default function AdminTeamPage() {
                             <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                             <TableCell><Skeleton className="h-5 w-20" /></TableCell>
                             <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-28" /></TableCell>
-                            <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-32" /></TableCell>
+                            <TableCell className="hidden md:table-cell text-center"><Skeleton className="h-5 w-8 mx-auto" /></TableCell>
                             <TableCell>
                                 <Skeleton className="h-8 w-8 ml-auto" />
                             </TableCell>
@@ -206,7 +207,7 @@ export default function AdminTeamPage() {
                             <TableCell className="font-medium">{member.name}</TableCell>
                             <TableCell>{member.role}</TableCell>
                             <TableCell className="hidden md:table-cell">{member.position}</TableCell>
-                            <TableCell className="hidden md:table-cell">{member.branch}, {member.year}</TableCell>
+                            <TableCell className="hidden md:table-cell text-center">{member.order}</TableCell>
                             <TableCell>
                                 <AlertDialog>
                                     <DropdownMenu>

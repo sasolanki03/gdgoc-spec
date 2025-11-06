@@ -43,7 +43,7 @@ export default function TeamPage() {
 
   const groupedTeams = useMemo(() => {
     if (!teamMembers) return {};
-    return teamMembers.reduce((acc, member) => {
+    const grouped = teamMembers.reduce((acc, member) => {
       const role = member.role;
       if (!acc[role]) {
         acc[role] = [];
@@ -51,6 +51,13 @@ export default function TeamPage() {
       acc[role].push(member);
       return acc;
     }, {} as Record<TeamMember['role'], TeamMember[]>);
+
+    // Sort members within each group by the 'order' property
+    for (const role in grouped) {
+        grouped[role as TeamMember['role']].sort((a, b) => a.order - b.order);
+    }
+
+    return grouped;
   }, [teamMembers]);
 
 

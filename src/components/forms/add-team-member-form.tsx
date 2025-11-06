@@ -36,6 +36,7 @@ const formSchema = z.object({
   branch: z.string().min(1, 'Please select a branch.'),
   year: z.string().min(1, 'Please select a year.'),
   bio: z.string().min(10, 'Bio must be at least 10 characters.'),
+  order: z.coerce.number().int().min(0, 'Order must be a positive number.'),
   photo: z.any()
     .refine((files) => files?.[0], "Photo is required.")
     .refine((files) => files?.[0]?.size <= MAX_FILE_SIZE, `Max file size is 4MB.`)
@@ -65,6 +66,7 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
       branch: undefined,
       year: undefined,
       bio: '',
+      order: 0,
       photo: undefined,
     },
   });
@@ -108,6 +110,7 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
           branch: values.branch,
           year: values.year,
           bio: values.bio,
+          order: values.order,
           photo: photoDataUrl,
       };
 
@@ -189,33 +192,48 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
             />
         </div>
         
-        <FormField
-          control={form.control}
-          name="role"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Role</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a role" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="Lead">Lead</SelectItem>
-                  <SelectItem value="Co-Lead">Co-Lead</SelectItem>
-                  <SelectItem value="Technical Team">Technical Team</SelectItem>
-                  <SelectItem value="Management Team">Management Team</SelectItem>
-                  <SelectItem value="Design Team">Design Team</SelectItem>
-                  <SelectItem value="Social Media Team">Social Media Team</SelectItem>
-                  <SelectItem value="Organizer">Organizer</SelectItem>
-                  <SelectItem value="Core Team">Core Team</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-2 gap-4">
+            <FormField
+            control={form.control}
+            name="role"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>Role</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Select a role" />
+                    </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                    <SelectItem value="Lead">Lead</SelectItem>
+                    <SelectItem value="Co-Lead">Co-Lead</SelectItem>
+                    <SelectItem value="Technical Team">Technical Team</SelectItem>
+                    <SelectItem value="Management Team">Management Team</SelectItem>
+                    <SelectItem value="Design Team">Design Team</SelectItem>
+                    <SelectItem value="Social Media Team">Social Media Team</SelectItem>
+                    <SelectItem value="Organizer">Organizer</SelectItem>
+                    <SelectItem value="Core Team">Core Team</SelectItem>
+                    </SelectContent>
+                </Select>
+                <FormMessage />
+                </FormItem>
+            )}
+            />
+             <FormField
+                control={form.control}
+                name="order"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Display Order</FormLabel>
+                    <FormControl>
+                        <Input type="number" placeholder="0" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+            />
+        </div>
 
         <div className="grid grid-cols-2 gap-4">
             <FormField
