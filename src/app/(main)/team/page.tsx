@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -8,7 +9,7 @@ import { TeamMemberCard } from '@/components/shared/team-member-card';
 import type { TeamMember } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const teamOrder: TeamMember['role'][] = ['Lead', 'Co-Lead', 'Technical Team', 'Management Team', 'Design Team', 'Core Team'];
+const teamOrder: TeamMember['role'][] = ['Lead', 'Co-Lead', 'Technical Team', 'Management Team', 'Design Team', 'Organizer', 'Core Team'];
 
 const TeamSkeleton = () => (
     <div className="space-y-16">

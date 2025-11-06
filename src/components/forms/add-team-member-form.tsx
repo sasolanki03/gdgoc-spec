@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -31,7 +32,7 @@ const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/web
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
   position: z.string().min(2, 'Position is required.'),
-  role: z.enum(['Lead', 'Co-Lead', 'Technical Team', 'Management Team', 'Design Team', 'Core Team']),
+  role: z.enum(['Lead', 'Co-Lead', 'Technical Team', 'Management Team', 'Design Team', 'Core Team', 'Organizer']),
   branch: z.string().min(1, 'Please select a branch.'),
   year: z.string().min(1, 'Please select a year.'),
   bio: z.string().min(10, 'Bio must be at least 10 characters.'),
@@ -206,6 +207,7 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
                   <SelectItem value="Technical Team">Technical Team</SelectItem>
                   <SelectItem value="Management Team">Management Team</SelectItem>
                   <SelectItem value="Design Team">Design Team</SelectItem>
+                  <SelectItem value="Organizer">Organizer</SelectItem>
                   <SelectItem value="Core Team">Core Team</SelectItem>
                 </SelectContent>
               </Select>
@@ -233,7 +235,7 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
                         <SelectItem value="Mechanical Engineering">Mechanical Engineering</SelectItem>
                         <SelectItem value="Civil Engineering">Civil Engineering</SelectItem>
                         <SelectItem value="Electrical Engineering">Electrical Engineering</SelectItem>
-                        <SelectItem value="Food Engineering &amp; technology">Food Engineering &amp; technology</SelectItem>
+                        <SelectItem value="Food Engineering & technology">Food Engineering & technology</SelectItem>
                     </SelectContent>
                 </Select>
                 <FormMessage />
