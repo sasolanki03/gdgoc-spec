@@ -2,17 +2,23 @@
 'use client';
 
 import React from 'react';
-import type { TeamMember, SocialLink } from '@/lib/types';
+import type { TeamMember } from '@/lib/types';
+import Image from 'next/image';
+import { Github, Twitter, Linkedin, Instagram, Link as LinkIcon, Mail, Phone } from 'lucide-react';
+
 
 interface TeamMemberBadgeProps {
   member: TeamMember;
 }
 
-const iconMap: Record<string, string> = {
-  chat: '💬',
-  website: '🌐',
-  linkedin: '🔗',
-  github: '💻',
+const iconComponents = {
+  GitHub: Github,
+  Twitter: Twitter,
+  LinkedIn: Linkedin,
+  Instagram: Instagram,
+  Website: LinkIcon,
+  Email: Mail,
+  Phone: Phone,
 };
 
 
@@ -35,6 +41,10 @@ export function TeamMemberBadge({ member }: TeamMemberBadgeProps) {
             box-shadow: 0 18px 40px rgba(126, 34, 206, 0.28); 
         }
 
+        .profile-image-wrapper {
+            margin-top: -3.5rem; /* pull image up */
+        }
+        
         .profile-image {
             position: relative;
             width: 140px; 
@@ -43,6 +53,9 @@ export function TeamMemberBadge({ member }: TeamMemberBadgeProps) {
             overflow: hidden;
             border: 3px solid #f0f0f0; 
             transition: box-shadow 0.3s ease-in-out;
+            margin-left: auto;
+            margin-right: auto;
+            background-color: #fff;
         }
 
         .team-badge:hover .profile-image {
@@ -51,7 +64,7 @@ export function TeamMemberBadge({ member }: TeamMemberBadgeProps) {
 
         .icon-container {
             position: absolute;
-            top: -30px; 
+            top: -65px; /* Adjust based on new image position */
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -80,6 +93,7 @@ export function TeamMemberBadge({ member }: TeamMemberBadgeProps) {
             transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out;
             cursor: pointer;
             text-decoration: none;
+            color: #4c1d95;
         }
 
         .icon-overlay:hover {
@@ -132,28 +146,37 @@ export function TeamMemberBadge({ member }: TeamMemberBadgeProps) {
             transform: translateY(2px);
         }
       `}</style>
-      <div className="team-badge bg-white shadow-xl p-6 w-72 flex flex-col items-center">
+      <div className="team-badge bg-white shadow-xl p-6 w-full max-w-xs flex flex-col items-center pt-24 mt-14">
         
         <div className="icon-container">
-            {socialIcons.map((social) => (
+            {socialIcons.map((social) => {
+                 const Icon = social.name in iconComponents ? iconComponents[social.name as keyof typeof iconComponents] : LinkIcon;
+                 let href = social.href;
+                 if (social.name === 'Email') href = `mailto:${href}`;
+                 if (social.name === 'Phone') href = `tel:${href}`;
+                 return (
                  <a 
                     key={social.name} 
-                    href={social.href} 
+                    href={href} 
                     className="icon-overlay" 
                     title={social.name}
                     target="_blank"
                     rel="noopener noreferrer"
                  >
-                    {iconMap[social.name.toLowerCase()] || '🔗'}
+                    <Icon className="h-5 w-5" />
                 </a>
-            ))}
+            )})}
         </div>
 
-        <div className="profile-image mb-4">
-            <img 
-                src={member.photo} 
-                alt={`${member.name} Profile`}
-            />
+        <div className="profile-image-wrapper absolute top-0 w-full">
+            <div className="profile-image mb-4">
+                <Image 
+                    src={member.photo} 
+                    alt={`${member.name} Profile`}
+                    fill
+                    className="object-cover"
+                />
+            </div>
         </div>
 
         <div className="text-content text-center">

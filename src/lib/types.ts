@@ -8,7 +8,7 @@ export type NavItem = {
 };
 
 export type SocialLink = {
-  name: 'GitHub' | 'Twitter' | 'LinkedIn' | 'Instagram' | 'Discord' | 'Chat' | 'Website';
+  name: 'GitHub' | 'Twitter' | 'LinkedIn' | 'Instagram' | 'Discord' | 'Website' | 'Email' | 'Phone';
   href: string;
 };
 
