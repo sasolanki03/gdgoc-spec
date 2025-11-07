@@ -9,7 +9,7 @@ import { TeamMemberBadge } from '@/components/shared/team-member-badge';
 import type { TeamMember } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const teamOrder: TeamMember['role'][] = ['Lead', 'Co-Lead', 'Technical Team', 'Event Management Team', 'Community & Outreach Team', 'Social Media & Designing Team', 'Organizer', 'Core Team'];
+const teamOrder: TeamMember['role'][] = ['Lead', 'Co-Lead', 'Faculty Advisor', 'Technical Team', 'Event Management Team', 'Community & Outreach Team', 'Social Media & Designing Team', 'Organizer', 'Core Team'];
 
 const TeamSkeleton = () => (
     <div className="space-y-16">
@@ -92,4 +92,3 @@ export default function TeamPage() {
     </div>
   );
 }
-

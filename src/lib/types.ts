@@ -15,7 +15,7 @@ export type SocialLink = {
 export type TeamMember = {
   id: string;
   name: string;
-  role: 'Lead' | 'Co-Lead' | 'Technical Team' | 'Event Management Team' | 'Community & Outreach Team' | 'Social Media & Designing Team' | 'Organizer' | 'Core Team';
+  role: 'Lead' | 'Co-Lead' | 'Faculty Advisor' | 'Technical Team' | 'Event Management Team' | 'Community & Outreach Team' | 'Social Media & Designing Team' | 'Organizer' | 'Core Team';
   position: string;
   branch: string;
   year: string;

@@ -32,9 +32,9 @@ const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/web
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
   position: z.string().min(2, 'Position is required.'),
-  role: z.enum(['Lead', 'Co-Lead', 'Technical Team', 'Event Management Team', 'Social Media & Designing Team', 'Community & Outreach Team', 'Core Team', 'Organizer']),
-  branch: z.string().min(1, 'Please select a branch.'),
-  year: z.string().min(1, 'Please select a year.'),
+  role: z.enum(['Lead', 'Co-Lead', 'Faculty Advisor', 'Technical Team', 'Event Management Team', 'Social Media & Designing Team', 'Community & Outreach Team', 'Core Team', 'Organizer']),
+  branch: z.string().optional(),
+  year: z.string().optional(),
   bio: z.string().min(10, 'Bio must be at least 10 characters.'),
   order: z.coerce.number().int().min(0, 'Order must be a positive number.'),
   photo: z.any()
@@ -44,6 +44,12 @@ const formSchema = z.object({
       (files) => ACCEPTED_IMAGE_TYPES.includes(files?.[0]?.type),
       ".jpg, .jpeg, .png and .webp files are accepted."
     ),
+}).refine(data => data.role === 'Faculty Advisor' || (data.branch && data.branch.length > 0), {
+    message: 'Please select a branch.',
+    path: ['branch'],
+}).refine(data => data.role === 'Faculty Advisor' || (data.year && data.year.length > 0), {
+    message: 'Please select a year.',
+    path: ['year'],
 });
 
 
@@ -70,6 +76,8 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
       photo: undefined,
     },
   });
+
+  const selectedRole = form.watch('role');
 
   const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -107,8 +115,8 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
           name: values.name,
           position: values.position,
           role: values.role,
-          branch: values.branch,
-          year: values.year,
+          branch: values.role === 'Faculty Advisor' ? '' : values.branch || '',
+          year: values.role === 'Faculty Advisor' ? '' : values.year || '',
           bio: values.bio,
           order: values.order,
           photo: photoDataUrl,
@@ -208,6 +216,7 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
                     <SelectContent>
                     <SelectItem value="Lead">Lead</SelectItem>
                     <SelectItem value="Co-Lead">Co-Lead</SelectItem>
+                    <SelectItem value="Faculty Advisor">Faculty Advisor</SelectItem>
                     <SelectItem value="Technical Team">Technical Team</SelectItem>
                     <SelectItem value="Event Management Team">Event Management Team</SelectItem>
                     <SelectItem value="Social Media & Designing Team">Social Media & Designing Team</SelectItem>
@@ -235,56 +244,58 @@ export function AddTeamMemberForm({ onSuccess }: AddTeamMemberFormProps) {
             />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-            <FormField
-            control={form.control}
-            name="branch"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>Branch</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select a branch" />
-                        </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                        <SelectItem value="Computer Engineering">Computer Engineering</SelectItem>
-                        <SelectItem value="Information Technology">Information Technology</SelectItem>
-                        <SelectItem value="Mechanical Engineering">Mechanical Engineering</SelectItem>
-                        <SelectItem value="Civil Engineering">Civil Engineering</SelectItem>
-                        <SelectItem value="Electrical Engineering">Electrical Engineering</SelectItem>
-                        <SelectItem value="Food Engineering & technology">Food Engineering & technology</SelectItem>
-                    </SelectContent>
-                </Select>
-                <FormMessage />
-                </FormItem>
-            )}
-            />
-            <FormField
-            control={form.control}
-            name="year"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>Year</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select a year" />
-                        </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                        <SelectItem value="First Year">1st Year</SelectItem>
-                        <SelectItem value="Second Year">2nd Year</SelectItem>
-                        <SelectItem value="Third Year">3rd Year</SelectItem>
-                        <SelectItem value="Final Year">Final Year</SelectItem>
-                    </SelectContent>
-                </Select>
-                <FormMessage />
-                </FormItem>
-            )}
-            />
-        </div>
+        {selectedRole !== 'Faculty Advisor' && (
+            <div className="grid grid-cols-2 gap-4">
+                <FormField
+                control={form.control}
+                name="branch"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Branch</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a branch" />
+                            </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                            <SelectItem value="Computer Engineering">Computer Engineering</SelectItem>
+                            <SelectItem value="Information Technology">Information Technology</SelectItem>
+                            <SelectItem value="Mechanical Engineering">Mechanical Engineering</SelectItem>
+                            <SelectItem value="Civil Engineering">Civil Engineering</SelectItem>
+                            <SelectItem value="Electrical Engineering">Electrical Engineering</SelectItem>
+                            <SelectItem value="Food Engineering & technology">Food Engineering & technology</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                <FormField
+                control={form.control}
+                name="year"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Year</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a year" />
+                            </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                            <SelectItem value="First Year">1st Year</SelectItem>
+                            <SelectItem value="Second Year">2nd Year</SelectItem>
+                            <SelectItem value="Third Year">3rd Year</SelectItem>
+                            <SelectItem value="Final Year">Final Year</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+            </div>
+        )}
 
         <FormField
           control={form.control}
