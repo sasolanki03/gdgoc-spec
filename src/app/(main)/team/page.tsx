@@ -34,7 +34,7 @@ export default function TeamPage() {
 
   const teamQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'teamMembers'), orderBy('order', 'asc'));
+    return query(collection(firestore, 'team_members'), orderBy('order', 'asc'));
   }, [firestore]);
 
   const { data: teamMembers, isLoading: loading } = useCollection<TeamMember>(teamQuery);

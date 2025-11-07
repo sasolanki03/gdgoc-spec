@@ -60,7 +60,7 @@ export default function AdminTeamPage() {
     const firestore = useFirestore();
     const teamQuery = useMemoFirebase(() => {
         if (!firestore) return null;
-        return query(collection(firestore, 'teamMembers'), orderBy('order', 'asc'));
+        return query(collection(firestore, 'team_members'), orderBy('order', 'asc'));
     }, [firestore]);
 
     const { data: teamMembers, isLoading: loading, error } = useCollection<TeamMember>(teamQuery);
@@ -73,7 +73,7 @@ export default function AdminTeamPage() {
     const handleAddMember = async (newMemberData: Omit<TeamMember, 'id'>) => {
         if (!firestore) return;
         try {
-            await addDoc(collection(firestore, 'teamMembers'), newMemberData);
+            await addDoc(collection(firestore, 'team_members'), newMemberData);
             setIsAddDialogOpen(false);
             toast({
                 title: 'Member Added!',
@@ -88,7 +88,7 @@ export default function AdminTeamPage() {
     const handleUpdateMember = async (id: string, data: Partial<TeamMember>) => {
         if (!firestore) return;
         try {
-            await updateDoc(doc(firestore, 'teamMembers', id), data);
+            await updateDoc(doc(firestore, 'team_members', id), data);
             setIsEditDialogOpen(false);
             setSelectedMember(null);
             toast({
@@ -108,7 +108,7 @@ export default function AdminTeamPage() {
     const handleDeleteMember = async (memberId: string, memberName: string) => {
         if (!firestore) return;
         try {
-            await deleteDoc(doc(firestore, 'teamMembers', memberId));
+            await deleteDoc(doc(firestore, 'team_members', memberId));
             toast({
                 title: 'Member Deleted',
                 description: `${memberName} has been removed from the team.`,
