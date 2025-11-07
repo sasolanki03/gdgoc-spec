@@ -6,7 +6,7 @@
  * This ruleset prioritizes security and clarity by enforcing explicit authorization checks for all data access. It uses a combination of public read access for some collections and role-based access control for sensitive data.  The prototyping philosophy allows for rapid iteration by relaxing data validation constraints but strictly enforcing authorization.
  *
  * Data Structure:
- * - /teamMembers/{teamMemberId}: Publicly readable data about team members.
+ * - /team_members/{teamMemberId}: Publicly readable data about team members.
  * - /student_progress/{studentProgressId}: Publicly readable data about student progress on the leaderboard.
  * - /file_uploads/{fileUploadId}: Metadata for uploaded files, restricted to admin access.
  * - /roles_admin/{userId}: Collection to denote admin roles. Existence of document is sufficient to grant admin privileges.
@@ -29,15 +29,27 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows any signed-in user to read team member data. Only admins can create, update, or delete.
+     * @description Allows public read access to team member data. Only admins can write.
      * @path /team_members/{teamMemberId}
-     * @allow (get, list): Any authenticated user can read team member data.
+     * @allow (get, list): Publicly readable.
      * @allow (create, update, delete): Only admins can perform these operations.
      */
     match /team_members/{teamMemberId} {
       allow get, list: if true;
       allow create, update, delete: if isAdmin();
     }
+
+    /**
+     * @description Fallback rule to allow public read access to the incorrect `teamMembers` path.
+     * This is a temporary measure to fix a persistent client-side error.
+     * @path /teamMembers/{teamMemberId}
+     * @allow (get, list): Publicly readable.
+     */
+    match /teamMembers/{teamMemberId} {
+        allow get, list: if true;
+        allow create, update, delete: if isAdmin();
+    }
+
 
     /**
      * @description Allows anyone to read student progress data. Only admins can create, update, or delete.
@@ -175,3 +187,5 @@ service cloud.firestore {
     }
   }
 }
+
+    
