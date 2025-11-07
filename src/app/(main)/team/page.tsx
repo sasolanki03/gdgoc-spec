@@ -8,6 +8,7 @@ import { PageHeader } from '@/components/shared/page-header';
 import { TeamMemberBadge } from '@/components/shared/team-member-badge';
 import type { TeamMember } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 const teamOrder: TeamMember['role'][] = ['Lead', 'Co-Lead', 'Faculty Advisor', 'Technical Team', 'Event Management Team', 'Community & Outreach Team', 'Social Media & Designing Team', 'Organizer', 'Core Team'];
 
@@ -71,20 +72,28 @@ export default function TeamPage() {
                 <TeamSkeleton />
             ) : (
                 <div className="space-y-16">
-                    {teamOrder.map((role) => (
-                        groupedTeams[role] && groupedTeams[role].length > 0 && (
-                        <section key={role}>
-                            <h2 className="text-3xl font-bold text-center mb-12 font-headline text-gray-800">
-                            {role}
-                            </h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-20 justify-items-center">
-                            {groupedTeams[role].map((member) => (
-                                <TeamMemberBadge key={member.id} member={member} />
-                            ))}
-                            </div>
-                        </section>
+                    {teamOrder.map((role) => {
+                        const members = groupedTeams[role];
+                        if (!members || members.length === 0) return null;
+
+                        return (
+                            <section key={role}>
+                                <h2 className="text-3xl font-bold text-center mb-12 font-headline text-gray-800">
+                                {role}
+                                </h2>
+                                <div className={cn(
+                                    "gap-x-8 gap-y-20 justify-items-center",
+                                    members.length === 1
+                                        ? "flex justify-center"
+                                        : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                                )}>
+                                {members.map((member) => (
+                                    <TeamMemberBadge key={member.id} member={member} />
+                                ))}
+                                </div>
+                            </section>
                         )
-                    ))}
+                    })}
                 </div>
             )}
         </div>
@@ -92,3 +101,4 @@ export default function TeamPage() {
     </div>
   );
 }
+
