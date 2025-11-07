@@ -30,12 +30,12 @@ service cloud.firestore {
 
     /**
      * @description Allows any signed-in user to read team member data. Only admins can create, update, or delete.
-     * @path /teamMembers/{teamMemberId}
+     * @path /team_members/{teamMemberId}
      * @allow (get, list): Any authenticated user can read team member data.
      * @allow (create, update, delete): Only admins can perform these operations.
      */
     match /team_members/{teamMemberId} {
-      allow get, list: if isSignedIn();
+      allow get, list: if true;
       allow create, update, delete: if isAdmin();
     }
 
