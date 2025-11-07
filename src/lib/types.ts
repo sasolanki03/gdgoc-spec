@@ -8,14 +8,14 @@ export type NavItem = {
 };
 
 export type SocialLink = {
-  name: 'GitHub' | 'Twitter' | 'LinkedIn' | 'Instagram' | 'Discord';
+  name: 'GitHub' | 'Twitter' | 'LinkedIn' | 'Instagram' | 'Discord' | 'Chat' | 'Website';
   href: string;
 };
 
 export type TeamMember = {
   id: string;
   name: string;
-  role: 'Lead' | 'Co-Lead' | 'Technical Team' | 'Event Management Team' | 'Social Media & Designing Team' | 'Community & Outreach Team' | 'Core Team' | 'Organizer';
+  role: 'Lead' | 'Co-Lead' | 'Technical Team' | 'Event Management Team' | 'Community & Outreach Team' | 'Social Media & Designing Team' | 'Organizer' | 'Core Team';
   position: string;
   branch: string;
   year: string;

@@ -1,4 +1,8 @@
 
+// This component is no longer used and has been replaced by TeamMemberBadge.
+// It is kept for historical purposes but can be safely deleted.
+// The new component is located at `src/components/shared/team-member-badge.tsx`.
+
 import Image from 'next/image';
 import { Github, Twitter, Linkedin, Instagram } from 'lucide-react';
 import type { TeamMember, SocialLink } from '@/lib/types';

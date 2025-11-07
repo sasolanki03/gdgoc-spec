@@ -2,10 +2,10 @@
 'use client';
 
 import { useMemo } from 'react';
-import { collection } from 'firebase/firestore';
+import { collection, query, orderBy } from 'firebase/firestore';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { PageHeader } from '@/components/shared/page-header';
-import { TeamMemberCard } from '@/components/shared/team-member-card';
+import { TeamMemberBadge } from '@/components/shared/team-member-badge';
 import type { TeamMember } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -19,9 +19,7 @@ const TeamSkeleton = () => (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
                     {[...Array(4)].map((_, i) => (
                          <div key={i} className="text-center">
-                             <Skeleton className="aspect-square rounded-lg" />
-                             <Skeleton className="h-6 w-3/4 mx-auto mt-4" />
-                             <Skeleton className="h-4 w-1/2 mx-auto mt-2" />
+                             <Skeleton className="h-64 w-full rounded-lg" />
                          </div>
                     ))}
                 </div>
@@ -36,7 +34,7 @@ export default function TeamPage() {
 
   const teamQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return collection(firestore, 'teamMembers');
+    return query(collection(firestore, 'teamMembers'), orderBy('order', 'asc'));
   }, [firestore]);
 
   const { data: teamMembers, isLoading: loading } = useCollection<TeamMember>(teamQuery);
@@ -67,7 +65,7 @@ export default function TeamPage() {
         title="Meet the Team"
         description="We're a group of passionate students dedicated to building a strong tech community at our college."
       />
-      <div className="py-10 md:py-12">
+      <div className="py-10 md:py-12 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50">
         <div className="container mx-auto px-5 md:px-20">
             {loading ? (
                 <TeamSkeleton />
@@ -76,12 +74,12 @@ export default function TeamPage() {
                     {teamOrder.map((role) => (
                         groupedTeams[role] && groupedTeams[role].length > 0 && (
                         <section key={role}>
-                            <h2 className="text-3xl font-bold text-center mb-8 font-headline">
+                            <h2 className="text-3xl font-bold text-center mb-12 font-headline text-gray-800">
                             {role}
                             </h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 justify-center">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-12 justify-center">
                             {groupedTeams[role].map((member) => (
-                                <TeamMemberCard key={member.id} member={member} />
+                                <TeamMemberBadge key={member.id} member={member} />
                             ))}
                             </div>
                         </section>
