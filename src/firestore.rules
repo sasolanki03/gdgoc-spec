@@ -29,9 +29,9 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows any signed-in user to read team member data. Only admins can create, update, or delete.
+     * @description Allows public read access to team member data. Only admins can write.
      * @path /team_members/{teamMemberId}
-     * @allow (get, list): Any authenticated user can read team member data.
+     * @allow (get, list): Publicly readable.
      * @allow (create, update, delete): Only admins can perform these operations.
      */
     match /team_members/{teamMemberId} {

@@ -66,7 +66,7 @@ export default function TeamPage() {
         title="Meet the Team"
         description="We're a group of passionate students dedicated to building a strong tech community at our college."
       />
-      <div className="py-10 md:py-12 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50">
+      <div className="py-10 md:py-12 bg-gradient-to-b from-blue-50 via-purple-50 to-pink-50 dark:from-slate-900 dark:via-purple-950 dark:to-slate-950">
         <div className="container mx-auto px-5 md:px-20">
             {loading ? (
                 <TeamSkeleton />
@@ -78,11 +78,11 @@ export default function TeamPage() {
 
                         return (
                             <section key={role}>
-                                <h2 className="text-3xl font-bold text-center mb-12 font-headline text-gray-800">
+                                <h2 className="text-3xl font-bold text-center mb-20 font-headline text-gray-800 dark:text-gray-200">
                                 {role}
                                 </h2>
                                 <div className={cn(
-                                    "gap-x-8 gap-y-20 justify-items-center",
+                                    "gap-x-8 gap-y-24 justify-items-center",
                                     members.length === 1
                                         ? "flex justify-center"
                                         : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
@@ -101,4 +101,3 @@ export default function TeamPage() {
     </div>
   );
 }
-
